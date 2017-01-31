@@ -7,6 +7,6 @@ import java.io.IOException;
  */
 public interface Serializer<T> {
 
-    void write(ThriftWriter out, T value) throws IOException;
+    void write(Writer out, T value) throws IOException;
 
 }

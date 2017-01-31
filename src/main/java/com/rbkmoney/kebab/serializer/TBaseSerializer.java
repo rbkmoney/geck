@@ -1,7 +1,7 @@
 package com.rbkmoney.kebab.serializer;
 
 import com.rbkmoney.kebab.Serializer;
-import com.rbkmoney.kebab.ThriftWriter;
+import com.rbkmoney.kebab.Writer;
 import com.rbkmoney.kebab.thrift.ThriftType;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
@@ -18,7 +18,7 @@ import java.util.Set;
 public class TBaseSerializer implements Serializer<TBase> {
 
     @Override
-    public void write(ThriftWriter out, TBase value) throws IOException {
+    public void write(Writer out, TBase value) throws IOException {
         out.beginObject();
 
         if (value == null) {
@@ -38,7 +38,7 @@ public class TBaseSerializer implements Serializer<TBase> {
         out.endObject();
     }
 
-    private void write(ThriftWriter out, Object object, FieldValueMetaData fieldValueMetaData) throws IOException {
+    private void write(Writer out, Object object, FieldValueMetaData fieldValueMetaData) throws IOException {
         ThriftType type = ThriftType.findByCode(fieldValueMetaData.getType());
         boolean isBinary = fieldValueMetaData.isBinary();
 
@@ -82,15 +82,15 @@ public class TBaseSerializer implements Serializer<TBase> {
         }
     }
 
-    private void write(ThriftWriter out, Set objectSet, SetMetaData metaData) throws IOException {
-        out.beginSet();
+    private void write(Writer out, Set objectSet, SetMetaData metaData) throws IOException {
+        out.beginList();
         for (Object object : objectSet) {
             write(out, object, metaData.getElementMetaData());
         }
-        out.endSet();
+        out.endList();
     }
 
-    private void write(ThriftWriter out, List objectList, ListMetaData metaData) throws IOException {
+    private void write(Writer out, List objectList, ListMetaData metaData) throws IOException {
         out.beginList();
         for (Object object : objectList) {
             write(out, object, metaData.getElementMetaData());
@@ -99,7 +99,7 @@ public class TBaseSerializer implements Serializer<TBase> {
     }
 
 
-    private void write(ThriftWriter out, Map objectMap, MapMetaData metaData) throws IOException {
+    private void write(Writer out, Map objectMap, MapMetaData metaData) throws IOException {
         out.beginMap();
         for (Map.Entry entry : (Set<Map.Entry>) objectMap.entrySet()) {
             out.beginKey();
