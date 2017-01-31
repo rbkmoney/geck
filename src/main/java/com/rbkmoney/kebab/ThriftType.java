@@ -1,4 +1,4 @@
-package com.rbkmoney.kebab.thrift;
+package com.rbkmoney.kebab;
 
 import org.apache.thrift.protocol.TType;
 

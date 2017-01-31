@@ -2,7 +2,7 @@ package com.rbkmoney.kebab.serializer;
 
 import com.rbkmoney.kebab.Serializer;
 import com.rbkmoney.kebab.Writer;
-import com.rbkmoney.kebab.thrift.ThriftType;
+import com.rbkmoney.kebab.ThriftType;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
 import org.apache.thrift.meta_data.*;
