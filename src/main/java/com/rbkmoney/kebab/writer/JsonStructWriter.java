@@ -99,7 +99,7 @@ public class JsonStructWriter implements StructWriter {
     }
 
     @Override
-    public StructWriter binaryValue(byte[] value) throws IOException {
+    public StructWriter value(byte[] value) throws IOException {
         return null;
     }
 

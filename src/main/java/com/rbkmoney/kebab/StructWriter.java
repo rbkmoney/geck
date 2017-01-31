@@ -44,7 +44,7 @@ public interface StructWriter extends Closeable {
 
     StructWriter value(long value) throws IOException;
 
-    StructWriter binaryValue(byte[] value) throws IOException;
+    StructWriter value(byte[] value) throws IOException;
 
     StructWriter nullValue() throws IOException;
 
