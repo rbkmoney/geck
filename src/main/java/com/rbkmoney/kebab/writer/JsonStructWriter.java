@@ -3,6 +3,7 @@ package com.rbkmoney.kebab.writer;
 import com.rbkmoney.kebab.ByteStack;
 import com.rbkmoney.kebab.StructWriter;
 import com.rbkmoney.kebab.ThriftType;
+import com.rbkmoney.kebab.exception.BadFormatException;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -54,7 +55,7 @@ public class JsonStructWriter implements StructWriter {
     }
 
     private void writeAfterValue() throws IOException {
-        writeEnd('}');
+        writeEnd(EMPTY_OBJECT, NONEMPTY_OBJECT, '}');
     }
 
     private void newline() throws IOException {
@@ -117,8 +118,19 @@ public class JsonStructWriter implements StructWriter {
         out.write(symbol);
     }
 
-    private void writeEnd(char symbol) throws IOException {
-        newline();
+    private void writeEnd(byte empty, byte nonEmpty, char symbol) throws IOException {
+        byte element = stack.peek();
+        if (element != empty && element != nonEmpty) {
+            throw new BadFormatException();
+        }
+
+        if (jsonName != null) {
+            throw new IllegalStateException();
+        }
+
+        if (element == nonEmpty) {
+            newline();
+        }
         stack.pop();
         out.write(symbol);
     }
@@ -143,7 +155,7 @@ public class JsonStructWriter implements StructWriter {
 
     @Override
     public void endStruct() throws IOException {
-        writeEnd('}');
+        writeEnd(EMPTY_OBJECT, NONEMPTY_OBJECT, '}');
         writeAfterValue();
     }
 
@@ -155,7 +167,7 @@ public class JsonStructWriter implements StructWriter {
 
     @Override
     public void endList() throws IOException {
-        writeEnd(']');
+        writeEnd(EMPTY_ARRAY, NONEMPTY_ARRAY, ']');
         writeAfterValue();
     }
 
@@ -167,7 +179,7 @@ public class JsonStructWriter implements StructWriter {
 
     @Override
     public void endMap() throws IOException {
-        writeEnd(']');
+        writeEnd(EMPTY_ARRAY, NONEMPTY_ARRAY, ']');
         writeAfterValue();
     }
 
@@ -179,7 +191,7 @@ public class JsonStructWriter implements StructWriter {
 
     @Override
     public void endKey() throws IOException {
-
+        //not used
     }
 
     @Override
@@ -189,7 +201,7 @@ public class JsonStructWriter implements StructWriter {
 
     @Override
     public void endValue() throws IOException {
-        writeEnd('}');
+        writeEnd(EMPTY_OBJECT, NONEMPTY_OBJECT, '}');
     }
 
     @Override
@@ -251,5 +263,9 @@ public class JsonStructWriter implements StructWriter {
     @Override
     public void close() throws IOException {
         out.close();
+
+        if (stack.size() > 1 || stack.size() == 1 && stack.peek() == NONEMPTY_DOCUMENT) {
+            throw new BadFormatException();
+        }
     }
 }

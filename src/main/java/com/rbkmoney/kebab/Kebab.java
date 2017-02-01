@@ -18,7 +18,7 @@ public class Kebab<T extends TBase> {
         try {
             serializer.write(new JsonStructWriter(writer), src);
         } catch (IOException ex) {
-            throw new RuntimeException();
+            throw new RuntimeException(ex);
         }
         return writer.toString();
     }
