@@ -45,7 +45,7 @@ public class KebabTest {
         testObject.setMaps(map);
 
         Kebab kebab = new Kebab();
-        kebab.toJson(testObject);
+        System.out.println(kebab.toJson(testObject));
     }
 
 }

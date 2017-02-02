@@ -191,7 +191,9 @@ public class JsonStructWriter implements StructWriter {
 
     @Override
     public void endKey() throws IOException {
-        //not used
+        if (stack.peek() == JSON_NAME || jsonName != null) {
+            throw new BadFormatException();
+        }
     }
 
     @Override
