@@ -42,6 +42,7 @@ public class KebabTest {
         map.put("kek1", 455);
         map.put("kek2", 564);
         map.put("kek3", 565);
+        map.put(null, null);
         testObject.setMaps(map);
 
         Kebab kebab = new Kebab();
