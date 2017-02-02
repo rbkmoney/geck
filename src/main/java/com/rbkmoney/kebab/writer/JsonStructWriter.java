@@ -37,8 +37,6 @@ public class JsonStructWriter implements StructWriter {
         stack.push(EMPTY_DOCUMENT);
     }
 
-    private String jsonName;
-
     public JsonStructWriter(Writer out) {
         Objects.requireNonNull(out);
         this.out = out;
@@ -47,7 +45,6 @@ public class JsonStructWriter implements StructWriter {
     private void writeBeforeValue(ThriftType type) throws IOException {
         writeBegin(EMPTY_OBJECT, '{');
         name("type");
-        writeJsonName();
         beforeValue();
         writeString(type.toString());
         name("value");
@@ -63,23 +60,6 @@ public class JsonStructWriter implements StructWriter {
         for (int i = 0; i < stack.size(); i++) {
             out.write(' ');
         }
-    }
-
-    private void writeJsonName() throws IOException {
-        if (jsonName != null) {
-            beforeName();
-            writeString(jsonName);
-            jsonName = null;
-        }
-    }
-
-    private void beforeName() throws IOException {
-        if (stack.peek() == NONEMPTY_OBJECT) {
-            out.write(',');
-        }
-        newline();
-        stack.pop();
-        stack.push(JSON_NAME);
     }
 
     private void beforeValue() throws IOException {
@@ -112,7 +92,6 @@ public class JsonStructWriter implements StructWriter {
     }
 
     private void writeBegin(byte empty, char symbol) throws IOException {
-        writeJsonName();
         beforeValue();
         stack.push(empty);
         out.write(symbol);
@@ -124,10 +103,6 @@ public class JsonStructWriter implements StructWriter {
             throw new BadFormatException();
         }
 
-        if (jsonName != null) {
-            throw new IllegalStateException();
-        }
-
         if (element == nonEmpty) {
             newline();
         }
@@ -137,7 +112,6 @@ public class JsonStructWriter implements StructWriter {
 
     private void writeValue(String value, ThriftType type) throws IOException {
         writeBeforeValue(type);
-        writeJsonName();
         beforeValue();
         if (type == ThriftType.BINARY || type == ThriftType.STRING) {
             writeString(value);
@@ -191,7 +165,7 @@ public class JsonStructWriter implements StructWriter {
 
     @Override
     public void endKey() throws IOException {
-        if (stack.peek() == JSON_NAME || jsonName != null) {
+        if (stack.peek() == JSON_NAME) {
             throw new BadFormatException();
         }
     }
@@ -210,11 +184,14 @@ public class JsonStructWriter implements StructWriter {
     public void name(String name) throws IOException {
         Objects.requireNonNull(name);
 
-        if (jsonName != null) {
-            throw new IllegalStateException();
+        if (stack.peek() == NONEMPTY_OBJECT) {
+            out.write(',');
         }
+        newline();
+        stack.pop();
+        stack.push(JSON_NAME);
 
-        this.jsonName = name;
+        writeString(name);
     }
 
     @Override
