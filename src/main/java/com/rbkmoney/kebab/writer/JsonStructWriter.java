@@ -15,19 +15,23 @@ import java.util.Objects;
  */
 public class JsonStructWriter implements StructWriter {
 
-    static final byte EMPTY_OBJECT = 1;
+    static final byte EMPTY_STRUCT = 1;
 
-    static final byte NONEMPTY_OBJECT = 2;
+    static final byte NONEMPTY_STRUCT = 2;
 
-    static final byte EMPTY_ARRAY = 3;
+    static final byte EMPTY_LIST = 3;
 
-    static final byte NONEMPTY_ARRAY = 4;
+    static final byte NONEMPTY_LIST = 4;
 
-    static final byte JSON_NAME = 5;
+    static final byte EMPTY_MAP = 5;
 
-    static final byte EMPTY_DOCUMENT = 6;
+    static final byte NONEMPTY_MAP = 6;
 
-    static final byte NONEMPTY_DOCUMENT = 7;
+    static final byte JSON_NAME = 7;
+
+    static final byte EMPTY_DOCUMENT = 8;
+
+    static final byte NONEMPTY_DOCUMENT = 9;
 
     private final Writer out;
 
@@ -43,7 +47,7 @@ public class JsonStructWriter implements StructWriter {
     }
 
     private void writeBeforeValue(ThriftType type) throws IOException {
-        writeBegin(EMPTY_OBJECT, '{');
+        writeBegin(EMPTY_STRUCT, '{');
         name("type");
         beforeValue();
         writeString(type.toString());
@@ -52,7 +56,7 @@ public class JsonStructWriter implements StructWriter {
     }
 
     private void writeAfterValue() throws IOException {
-        writeEnd(EMPTY_OBJECT, NONEMPTY_OBJECT, '}');
+        writeEnd(EMPTY_STRUCT, NONEMPTY_STRUCT, '}');
     }
 
     private void newline() throws IOException {
@@ -64,12 +68,21 @@ public class JsonStructWriter implements StructWriter {
 
     private void beforeValue() throws IOException {
         switch (stack.peek()) {
-            case EMPTY_ARRAY:
+            case EMPTY_LIST:
                 stack.pop();
-                stack.push(NONEMPTY_ARRAY);
+                stack.push(NONEMPTY_LIST);
                 newline();
                 break;
-            case NONEMPTY_ARRAY:
+            case EMPTY_MAP:
+                stack.pop();
+                stack.push(NONEMPTY_MAP);
+                newline();
+                break;
+            case NONEMPTY_LIST:
+                out.append(',');
+                newline();
+                break;
+            case NONEMPTY_MAP:
                 out.append(',');
                 newline();
                 break;
@@ -80,7 +93,7 @@ public class JsonStructWriter implements StructWriter {
             case JSON_NAME:
                 out.append(':');
                 stack.pop();
-                stack.push(NONEMPTY_OBJECT);
+                stack.push(NONEMPTY_STRUCT);
                 break;
         }
     }
@@ -124,42 +137,42 @@ public class JsonStructWriter implements StructWriter {
     @Override
     public void beginStruct() throws IOException {
         writeBeforeValue(ThriftType.STRUCT);
-        writeBegin(EMPTY_OBJECT, '{');
+        writeBegin(EMPTY_STRUCT, '{');
     }
 
     @Override
     public void endStruct() throws IOException {
-        writeEnd(EMPTY_OBJECT, NONEMPTY_OBJECT, '}');
+        writeEnd(EMPTY_STRUCT, NONEMPTY_STRUCT, '}');
         writeAfterValue();
     }
 
     @Override
     public void beginList(int size) throws IOException {
         writeBeforeValue(ThriftType.LIST);
-        writeBegin(EMPTY_ARRAY, '[');
+        writeBegin(EMPTY_LIST, '[');
     }
 
     @Override
     public void endList() throws IOException {
-        writeEnd(EMPTY_ARRAY, NONEMPTY_ARRAY, ']');
+        writeEnd(EMPTY_LIST, NONEMPTY_LIST, ']');
         writeAfterValue();
     }
 
     @Override
     public void beginMap(int size) throws IOException {
         writeBeforeValue(ThriftType.MAP);
-        writeBegin(EMPTY_ARRAY, '[');
+        writeBegin(EMPTY_MAP, '[');
     }
 
     @Override
     public void endMap() throws IOException {
-        writeEnd(EMPTY_ARRAY, NONEMPTY_ARRAY, ']');
+        writeEnd(EMPTY_MAP, NONEMPTY_MAP, ']');
         writeAfterValue();
     }
 
     @Override
     public void beginKey() throws IOException {
-        writeBegin(EMPTY_OBJECT, '{');
+        writeBegin(EMPTY_STRUCT, '{');
         name("key");
     }
 
@@ -177,14 +190,14 @@ public class JsonStructWriter implements StructWriter {
 
     @Override
     public void endValue() throws IOException {
-        writeEnd(EMPTY_OBJECT, NONEMPTY_OBJECT, '}');
+        writeEnd(EMPTY_STRUCT, NONEMPTY_STRUCT, '}');
     }
 
     @Override
     public void name(String name) throws IOException {
         Objects.requireNonNull(name);
 
-        if (stack.peek() == NONEMPTY_OBJECT) {
+        if (stack.peek() == NONEMPTY_STRUCT) {
             out.write(',');
         }
         newline();
