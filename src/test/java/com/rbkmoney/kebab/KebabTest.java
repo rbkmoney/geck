@@ -1,12 +1,11 @@
 package com.rbkmoney.kebab;
 
-import com.rbkmoney.kebab.test.Fail;
-import com.rbkmoney.kebab.test.Ids;
-import com.rbkmoney.kebab.test.Status;
-import com.rbkmoney.kebab.test.TestObject;
+import com.rbkmoney.kebab.test.*;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -20,11 +19,11 @@ public class KebabTest {
     Kebab kebab = new Kebab();
 
     @Test
-    public void kebabTesting() {
+    public void jsonTest() throws JSONException {
         TestObject testObject = getTestObject();
 
-
-        kebab.toJson(testObject);
+        String json = kebab.toJson(testObject);
+        new JSONObject(json);
     }
 
     @Test
@@ -48,8 +47,6 @@ public class KebabTest {
         gzip2.write(tBinary);
         gzip2.close();
         System.out.println("GZip:Binary:" + bos2.toByteArray().length);
-
-
     }
 
     private TestObject getTestObject() {

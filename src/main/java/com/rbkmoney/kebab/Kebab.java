@@ -15,14 +15,16 @@ import java.io.StringWriter;
 public class Kebab<T extends TBase> {
 
     public String toJson(T src) {
-        StringWriter writer = new StringWriter();
-        Serializer serializer = new TBaseSerializer();
         try {
-            serializer.write(new JsonStructWriter(writer), src);
+            StringWriter writer = new StringWriter();
+            Serializer serializer = new TBaseSerializer();
+            JsonStructWriter jsonStructWriter = new JsonStructWriter(writer);
+            serializer.write(jsonStructWriter, src);
+            jsonStructWriter.close();
+            return writer.toString();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        return writer.toString();
     }
 
     public byte[] toMsgPack(T src) {
@@ -39,6 +41,5 @@ public class Kebab<T extends TBase> {
             throw new RuntimeException(e);
         }
     }
-
 
 }
