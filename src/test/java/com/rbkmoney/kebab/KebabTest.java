@@ -1,6 +1,10 @@
 package com.rbkmoney.kebab;
 
-import com.rbkmoney.kebab.test.*;
+import com.rbkmoney.kebab.serializer.TBaseSerializer;
+import com.rbkmoney.kebab.test.Fail;
+import com.rbkmoney.kebab.test.Ids;
+import com.rbkmoney.kebab.test.Status;
+import com.rbkmoney.kebab.test.TestObject;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
@@ -9,6 +13,7 @@ import org.json.JSONObject;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
@@ -17,6 +22,15 @@ import java.util.zip.GZIPOutputStream;
  */
 public class KebabTest {
     Kebab kebab = new Kebab();
+
+    @Test
+    public void tBaseSerializerTest() throws IOException {
+        TestObject testObject = getTestObject();
+        long start = System.currentTimeMillis();
+        new TBaseSerializer().write(new MockStructWriter(), testObject);
+        long end = System.currentTimeMillis();
+        System.out.println("TBaseSerializer execution time " + (end - start) + " ms");
+    }
 
     @Test
     public void jsonTest() throws JSONException {
@@ -32,9 +46,9 @@ public class KebabTest {
         byte[] msgPack = kebab.toMsgPack(testObject);
         byte[] tCompact = new TSerializer(new TCompactProtocol.Factory()).serialize(testObject);
         byte[] tBinary = new TSerializer(new TBinaryProtocol.Factory()).serialize(testObject);
-        System.out.println("MsgPack:"+msgPack.length);
-        System.out.println("Compact:"+tCompact.length);
-        System.out.println("Binary:"+tBinary.length);
+        System.out.println("MsgPack:" + msgPack.length);
+        System.out.println("Compact:" + tCompact.length);
+        System.out.println("Binary:" + tBinary.length);
 
         ByteArrayOutputStream bos1 = new ByteArrayOutputStream(msgPack.length);
         GZIPOutputStream gzip1 = new GZIPOutputStream(bos1);
