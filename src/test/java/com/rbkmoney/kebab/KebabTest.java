@@ -1,8 +1,9 @@
 package com.rbkmoney.kebab;
 
-import com.rbkmoney.kebab.test.*;
-import com.rbkmoney.kebab.writer.WriterStub;
-import org.apache.thrift.TException;
+import com.rbkmoney.kebab.test.Fail;
+import com.rbkmoney.kebab.test.Ids;
+import com.rbkmoney.kebab.test.Status;
+import com.rbkmoney.kebab.test.TestObject;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
