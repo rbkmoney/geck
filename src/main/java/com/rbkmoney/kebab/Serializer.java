@@ -7,7 +7,7 @@ import java.io.IOException;
  */
 public interface Serializer<T> {
 
-    void read(StructReader in) throws IOException;
+    T read(StructReader in) throws IOException;
 
     void write(StructWriter out, T value) throws IOException;
 
