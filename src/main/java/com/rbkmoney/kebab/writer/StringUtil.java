@@ -42,7 +42,7 @@ public final class StringUtil {
             return fromAsciiBytes(bytes);
         }
 
-        char[] chars = new char[(bytes.length * 8 - 1) / 5];
+        char[] chars = new char[((bytes.length << 3) - 1) / 5];
         int maxBits = chars.length * 5 + 1;
 
         char c = 0;
