@@ -7,7 +7,7 @@ import java.io.IOException;
  */
 public class MockStructWriter implements StructWriter {
     @Override
-    public void beginStruct() throws IOException {
+    public void beginStruct(int size) throws IOException {
         //do nothing
     }
 
