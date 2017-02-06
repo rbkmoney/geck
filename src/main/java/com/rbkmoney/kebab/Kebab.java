@@ -8,6 +8,7 @@ import org.apache.thrift.TBase;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.Writer;
 
 /**
  * Created by tolkonepiu on 24/01/2017.
@@ -15,22 +16,20 @@ import java.io.StringWriter;
 public class Kebab<T extends TBase> {
 
     public String toJson(T src) {
+        StringWriter writer = new StringWriter();
+        Serializer serializer = new TBaseSerializer();
         try {
-            StringWriter writer = new StringWriter();
-            Serializer serializer = new TBaseSerializer();
-            JsonStructWriter jsonStructWriter = new JsonStructWriter(writer);
-            serializer.write(jsonStructWriter, src);
-            jsonStructWriter.close();
-            return writer.toString();
+            serializer.write(new JsonStructWriter(writer), src);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
+        return writer.toString();
     }
 
-    public byte[] toMsgPack(T src) {
+    public byte[] toMsgPack(T src, boolean useDict) {
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            MsgPackWriter writer = new MsgPackWriter(os, true);
+            MsgPackWriter writer = new MsgPackWriter(os, true, true);
             TBaseSerializer serializer = new TBaseSerializer();
 
             serializer.write(writer, src);
@@ -41,5 +40,16 @@ public class Kebab<T extends TBase> {
             throw new RuntimeException(e);
         }
     }
+
+    public byte[] write(T src, StructWriter writer) {
+        Serializer serializer = new TBaseSerializer();
+        try {
+            serializer.write(writer, src);
+            return new byte[0];
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
 
 }

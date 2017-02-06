@@ -144,7 +144,7 @@ public class JsonStructWriter implements StructWriter {
     }
 
     @Override
-    public void beginStruct() throws IOException {
+    public void beginStruct(int size) throws IOException {
         writeBeforeValue(ThriftType.STRUCT);
         writeBegin(EMPTY_STRUCT, '{');
     }
