@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import static com.rbkmoney.kebab.writer.StringUtil.compressAsciiString;
+import static com.rbkmoney.kebab.writer.StringUtil.toAsciiBytes;
 
 /**
  * Created by vpankrashkin on 31.01.17.
@@ -46,13 +47,13 @@ public class MsgPackWriter implements StructWriter {
     }
 
     @Override
-    public void beginStruct() throws IOException {
-        msgPacker.packExtensionTypeHeader(startStruct, 0);
+    public void beginStruct(int size) throws IOException {
+        msgPacker.packExtensionTypeHeader(startStruct, size);
     }
 
     @Override
     public void endStruct() throws IOException {
-        msgPacker.packExtensionTypeHeader(endStruct, 0);
+        //msgPacker.packExtensionTypeHeader(endStruct, 0);
     }
 
     /**
@@ -63,7 +64,8 @@ public class MsgPackWriter implements StructWriter {
         if (size >= 0) {
             msgPacker.packArrayHeader(size);
         } else {
-            msgPacker.packExtensionTypeHeader(startList, 0);
+            throw new BadFormatException("Unsupported option");
+            //msgPacker.packExtensionTypeHeader(startList, 0);
         }
     }
 
@@ -77,7 +79,8 @@ public class MsgPackWriter implements StructWriter {
         if (size >= 0) {
             msgPacker.packMapHeader(size);
         } else {
-            msgPacker.packExtensionTypeHeader(startMap, 0);
+            throw new BadFormatException("Unsupported option");
+            //msgPacker.packExtensionTypeHeader(startMap, 0);
         }
     }
 
@@ -116,9 +119,6 @@ public class MsgPackWriter implements StructWriter {
             char idx;
             if ((idx = dictionary.putIfAbsent(name, nextDictIdx)) == noDictEntryValue) {
                 byte[] data = compressAsciiString(name);
-                /*if (length != data.length) {
-                    throw new BadFormatException("Only ASCII symbols're expected");
-                }*/
                 msgPacker.packExtensionTypeHeader(pointDictionary, data.length);
                 msgPacker.writePayload(data);
                 msgPacker.packInt(nextDictIdx++);
@@ -127,10 +127,7 @@ public class MsgPackWriter implements StructWriter {
                 msgPacker.packInt(idx);
             }
         } else {
-            byte[] data = StringUtil.toAsciiBytes(name);
-            if (length != data.length) {
-                throw new BadFormatException("Only ASCII symbols're expected");
-            }
+            byte[] data = toAsciiBytes(name);
             msgPacker.packRawStringHeader(length);
             msgPacker.writePayload(data);
         }

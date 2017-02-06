@@ -1,9 +1,8 @@
 package com.rbkmoney.kebab;
 
-import com.rbkmoney.kebab.test.Fail;
-import com.rbkmoney.kebab.test.Ids;
-import com.rbkmoney.kebab.test.Status;
-import com.rbkmoney.kebab.test.TestObject;
+import com.rbkmoney.kebab.test.*;
+import com.rbkmoney.kebab.writer.WriterStub;
+import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
@@ -51,6 +50,12 @@ public class KebabTest {
         gzip2.write(tBinary);
         gzip2.close();
         System.out.println("GZip:Binary:" + bos2.toByteArray().length);
+
+        ByteArrayOutputStream bos3 = new ByteArrayOutputStream(tCompact.length);
+        GZIPOutputStream gzip3 = new GZIPOutputStream(bos3);
+        gzip3.write(tCompact);
+        gzip3.close();
+        System.out.println("GZip:Compact:" + bos3.toByteArray().length);
 
 
     }

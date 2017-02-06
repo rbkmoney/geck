@@ -9,14 +9,18 @@ import java.nio.charset.Charset;
  */
 public final class StringUtil {
     public static final Charset CHARSET = Charset.forName("UTF-8");
+    private static final int LOW_ASCII_FLAG = 0x80;
 
     static byte[] compressAsciiString(String str) throws BadFormatException {
+        if (str.length() == 0) {
+            return new byte[0];
+        }
         byte[] bytes = new byte[(int)Math.ceil((str.length()*5+1) / 8.)];
-        bytes[0] = (byte) 0x80;
+        bytes[0] = (byte) LOW_ASCII_FLAG;
         int bitIndex = 1;
         for (int i = 0; i < str.length(); ++i) {
             char c = str.charAt(i);
-            if ((c & 0x80 ) != 0) {
+            if ((c & LOW_ASCII_FLAG) != 0) {
                 throw new BadFormatException("Only ASCII symbols're expected");
             }
 
@@ -24,57 +28,48 @@ public final class StringUtil {
                 return toAsciiBytes(str);
             }
             byte cb = (byte) ((c - 0x5F) + 1);
-            //System.out.println("Char: "+c + ", bytes: "+ intToString(c, 8, 8) + ", cb_bytes: "+intToString(cb & 0xFF, 8, 8));
-            //System.out.println("BeforeBits: "+ intToString(bytes[bitIndex / 8], 8, 8));
-
-            bytes[bitIndex / 8] |= ((cb & 0b10000) >> 4) << (7 - (bitIndex++ % 8));
-            //System.out.println("Bidx: "+bitIndex+", Bits: "+ intToString(bytes[(bitIndex-1) / 8], 8, 8) + ", |cbits: "+ intToString(orb, 8, 8));
-
-            bytes[bitIndex / 8] |= ((cb & 0b01000) >> 3) << (7 - (bitIndex++ % 8));
-            //System.out.println("Bidx: "+bitIndex+", Bits: "+ intToString(bytes[(bitIndex-1) / 8], 8, 8) + ", |cbits: "+ intToString(orb, 8, 8));
-
-            bytes[bitIndex / 8] |= ((cb & 0b00100) >> 2) << (7 - (bitIndex++ % 8));
-            //System.out.println("Bidx: "+bitIndex+", Bits: "+ intToString(bytes[(bitIndex-1) / 8], 8, 8) + ", |cbits: "+ intToString(orb, 8, 8));
-
-            bytes[bitIndex / 8] |= ((cb & 0b00010) >> 1) << (7 - (bitIndex++ % 8));
-            //System.out.println("Bidx: "+bitIndex+", Bits: "+ intToString(bytes[(bitIndex-1) / 8], 8, 8) + ", |cbits: "+ intToString(orb, 8, 8));
-
-            bytes[bitIndex / 8] |= ((cb & 0b00001) >> 0) << (7 - (bitIndex++ % 8));
-            //System.out.println("Bidx: "+bitIndex+", Bits: "+ intToString(bytes[(bitIndex-1) / 8], 8, 8) + ", |cbits: "+ intToString(orb, 8, 8));
+            bytes[bitIndex >> 3] |= ((cb & 0b10000) >> 4) << (7 - (bitIndex++ % 8));
+            bytes[bitIndex >> 3] |= ((cb & 0b01000) >> 3) << (7 - (bitIndex++ % 8));
+            bytes[bitIndex >> 3] |= ((cb & 0b00100) >> 2) << (7 - (bitIndex++ % 8));
+            bytes[bitIndex >> 3] |= ((cb & 0b00010) >> 1) << (7 - (bitIndex++ % 8));
+            bytes[bitIndex >> 3] |= ((cb & 0b00001) >> 0) << (7 - (bitIndex++ % 8));
         }
         return bytes;
     }
 
     static String decompressAsciiString(byte[] bytes) throws BadFormatException {
-        if ((bytes[0] & 0x80) != 0x80) {
+        if (bytes.length == 0 || (bytes[0] & LOW_ASCII_FLAG) == 0) {
             return fromAsciiBytes(bytes);
         }
 
         char[] chars = new char[(bytes.length * 8 - 1) / 5];
         int maxBits = chars.length * 5 + 1;
-        int cLength = 0;
 
-        for (int bitIndex = 1; bitIndex < maxBits;) {
-            char c = 0;
-            c |= (bytes[bitIndex / 8] >> (7 - (bitIndex++ % 8)) & 1) << 4;
-            c |= (bytes[bitIndex / 8] >> (7 - (bitIndex++ % 8)) & 1) << 3;
-            c |= (bytes[bitIndex / 8] >> (7 - (bitIndex++ % 8)) & 1) << 2;
-            c |= (bytes[bitIndex / 8] >> (7 - (bitIndex++ % 8)) & 1) << 1;
-            c |= (bytes[bitIndex / 8] >> (7 - (bitIndex++ % 8)) & 1) << 0;
+        char c = 0;
+        int bitIndex = 1;
+        while (bitIndex < maxBits) {
+            c = 0;
+            c |= (bytes[bitIndex >> 3] >> (7 - (bitIndex++ % 8)) & 1) << 4;
+            c |= (bytes[bitIndex >> 3] >> (7 - (bitIndex++ % 8)) & 1) << 3;
+            c |= (bytes[bitIndex >> 3] >> (7 - (bitIndex++ % 8)) & 1) << 2;
+            c |= (bytes[bitIndex >> 3] >> (7 - (bitIndex++ % 8)) & 1) << 1;
+            c |= (bytes[bitIndex >> 3] >> (7 - (bitIndex++ % 8)) & 1) << 0;
             if (c != 0) {
-                cLength = (bitIndex-1) / 5 ;
-                chars[cLength - 1] = (char) ((c + 0x5F) - 1);
-            } else {
-                cLength = (bitIndex-1) / 5 - 1;
+                chars[(bitIndex-1) / 5 - 1] = (char) ((c + 0x5F) - 1);
             }
         }
+        int cLength = c != 0 ? (bitIndex-1) / 5 : (bitIndex-1) / 5 - 1;
         return new String(chars, 0, cLength);
     }
 
-    static byte[] toAsciiBytes(final String str) {
+    static byte[] toAsciiBytes(final String str) throws BadFormatException {
         final byte[] bytes = new byte[str.length()];
         for (int i = 0; i < str.length(); i++) {
-            bytes[i] = (byte) str.charAt(i);
+            char c = str.charAt(i);
+            if ((c & LOW_ASCII_FLAG ) != 0) {
+                throw new BadFormatException("Only ASCII symbols're expected");
+            }
+            bytes[i] = (byte) c;
         }
         return bytes;
     }
@@ -85,7 +80,7 @@ public final class StringUtil {
 
     static boolean isAsciiString(String str) {
         for (int i = 0; i < str.length(); ++i) {
-            if (str.charAt(i) > 0x7F) {
+            if ((str.charAt(i) & LOW_ASCII_FLAG) != 0) {
                 return false;
             }
         }

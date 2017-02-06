@@ -9,7 +9,7 @@ import java.io.IOException;
  */
 public class WriterStub implements StructWriter {
     @Override
-    public void beginStruct() throws IOException {
+    public void beginStruct(int size) throws IOException {
 
     }
 
