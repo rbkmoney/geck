@@ -5,6 +5,8 @@ import com.rbkmoney.kebab.exception.BadFormatException;
 import gnu.trove.map.hash.TObjectCharHashMap;
 import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessagePacker;
+import org.msgpack.core.buffer.ArrayBufferOutput;
+import org.msgpack.core.buffer.MessageBufferOutput;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -15,7 +17,7 @@ import static com.rbkmoney.kebab.handler.StringUtil.toAsciiBytes;
 /**
  * Created by vpankrashkin on 31.01.17.
  */
-public class MsgPackHandler implements StructHandler<OutputStream> {
+public abstract class MsgPackHandler<R> implements StructHandler<R> {
     private static final byte nop = 0;
     private static final byte startStruct = 1;
     private static final byte endStruct = 2;
@@ -32,16 +34,53 @@ public class MsgPackHandler implements StructHandler<OutputStream> {
     private static final byte pointDictionary = 13;
     private static final byte pointDictionaryRef = 14;
 
-    private final boolean autoClose;
     private final boolean useDictionary;
-    private final MessagePacker msgPacker;
     private final TObjectCharHashMap<String> dictionary;
     private final char noDictEntryValue = 0;
     private char nextDictIdx = 0;
+    protected final MessagePacker msgPacker;
+    protected final Object dataObject;
 
-    public MsgPackHandler(OutputStream stream, boolean autoClose, boolean useDictionary) {
-        this.autoClose = autoClose;
-        this.msgPacker = MessagePack.newDefaultPacker(stream);
+    public static MsgPackHandler<OutputStream> newStreamedInstance(OutputStream stream, boolean autoClose, boolean useDictionary) {
+        return new MsgPackHandler<OutputStream>(stream, useDictionary) {
+            @Override
+            protected MessagePacker createPacker(Object dataObject) {
+                return MessagePack.newDefaultPacker((OutputStream) dataObject);
+            }
+
+            @Override
+            public OutputStream getResult() throws IOException {
+                if (autoClose) {
+                    msgPacker.close();
+                } else {
+                    msgPacker.flush();
+                }
+                return (OutputStream) dataObject;
+            }
+        };
+    }
+
+    public static MsgPackHandler<byte[]> newBufferedInstance(boolean useDictionary) {
+        return new MsgPackHandler<byte[]>(new ArrayBufferOutput(), useDictionary) {
+            @Override
+            protected MessagePacker createPacker(Object dataObject) {
+                return MessagePack.newDefaultPacker((ArrayBufferOutput) dataObject);
+            }
+
+            @Override
+            public byte[] getResult() throws IOException {
+                ArrayBufferOutput abo = ((ArrayBufferOutput)dataObject);
+                msgPacker.flush();
+                byte[] result = abo.toByteArray();
+                abo.clear();
+                return result;
+            }
+        };
+    }
+
+    public MsgPackHandler(Object dataObject, boolean useDictionary) {
+        this.dataObject = dataObject;
+        this.msgPacker = createPacker(dataObject);
         this.useDictionary = useDictionary;
         this.dictionary = useDictionary ? new TObjectCharHashMap<>(64, 0.5f, noDictEntryValue) : null;
     }
@@ -179,15 +218,5 @@ public class MsgPackHandler implements StructHandler<OutputStream> {
         msgPacker.packNil();
     }
 
-    @Override
-    public OutputStream getResult() throws IOException {
-        if (autoClose) {
-            msgPacker.close();
-        } else {
-            msgPacker.flush();
-        }
-
-        return null;
-    }
-
+    abstract protected MessagePacker createPacker(Object dataObject);
 }

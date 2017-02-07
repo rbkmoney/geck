@@ -15,8 +15,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.IntConsumer;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -103,26 +105,35 @@ public class KebabTest {
     public void testPerformance() {
         boolean useDict = true;
         TestObject testObject = getTestObject(100, () -> Status.unknown(new Unknown("SomeData")));
-        //warmup
         HandlerStub writerStub = new HandlerStub();
-        TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
-        IntConsumer stubConsumer = i -> kebab.write(testObject, writerStub);
-        IntConsumer msgPackConsumer = i -> kebab.toMsgPack(testObject, useDict);
-        IntConsumer tWriter = i -> {
+        TSerializer binarySerializer = new TSerializer(new TBinaryProtocol.Factory());
+        IntFunction<Integer> stubConsumer = i -> kebab.write(testObject, writerStub).length;
+        IntFunction<Integer> msgPackConsumer = i -> kebab.toMsgPack(testObject, useDict).length;
+        IntFunction<Integer> jsonConsumer = i -> kebab.toJson(testObject).length();
+        IntFunction<Integer> tBinaryWriter = i -> {
             try {
-                serializer.serialize(testObject);
+                return binarySerializer.serialize(testObject).length;
             } catch (TException e) {
                 e.printStackTrace();
+                throw new RuntimeException(e);
             }
         };
-        IntConsumer consumer = tWriter;
-        IntStream.range(0, 100000).forEach(consumer);
+        List<Map.Entry<String, IntFunction<Integer>>> consumers = Arrays.asList(
+                new AbstractMap.SimpleEntry("Stub", stubConsumer),
+                new AbstractMap.SimpleEntry("TBinary", tBinaryWriter),
+                new AbstractMap.SimpleEntry("MsgPack", msgPackConsumer),
+                new AbstractMap.SimpleEntry("Json", jsonConsumer)
+        );
+        System.out.println("Warmup...");
+        consumers.stream().forEach(entry -> IntStream.range(0, 100000).forEach(i -> entry.getValue().apply(i)));
 
-        long startTime = System.currentTimeMillis();
-        IntStream.range(0, 100000).forEach(consumer);
-        System.out.println("Time:" + (System.currentTimeMillis() - startTime));
-        System.out.println("неопределенность".getBytes().length);
-        System.out.println(Base64.getEncoder().withoutPadding().encode("неопределенность".getBytes()).length);
+        System.out.println("Test...");
+        consumers.stream().forEach(entry -> {
+            long startTime = System.currentTimeMillis();
+            int bytes = IntStream.range(0, 50000).map(i -> entry.getValue().apply(i)).sum();
+            System.out.println(entry.getKey() + "\t Time:\t" + (System.currentTimeMillis() - startTime) + "\t Bytes:\t" +bytes);
+        });
+
     }
 
     private TestObject getTestObject(int statusCount, Supplier<Status> statusGen) {
