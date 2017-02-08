@@ -2,7 +2,7 @@ package com.rbkmoney.kebab;
 
 import com.rbkmoney.kebab.handler.JsonStructHandler;
 import com.rbkmoney.kebab.kit.msgpack.MsgPackHandler;
-import com.rbkmoney.kebab.processor.TBaseStructProcessor;
+import com.rbkmoney.kebab.kit.tbase.TBaseProcessor;
 import org.apache.thrift.TBase;
 
 import java.io.IOException;
@@ -20,7 +20,7 @@ public class Kebab<T extends TBase> {
     public String toJson(T src) {
         try {
             StringWriter writer = new StringWriter();
-            TBaseStructProcessor structProcessor = new TBaseStructProcessor();
+            TBaseProcessor structProcessor = new TBaseProcessor();
             JsonStructHandler jsonStructHandler = new JsonStructHandler(writer);
             return  structProcessor.process(src, jsonStructHandler);
         } catch (IOException ex) {
@@ -31,7 +31,7 @@ public class Kebab<T extends TBase> {
     public byte[] toMsgPack(T src, boolean useDict) {
         try {
             MsgPackHandler<byte[]> handler = MsgPackHandler.newBufferedInstance(useDict);
-            TBaseStructProcessor serializer = new TBaseStructProcessor();
+            TBaseProcessor serializer = new TBaseProcessor();
 
             return serializer.process(src, handler);
         } catch (IOException e) {
@@ -40,7 +40,7 @@ public class Kebab<T extends TBase> {
     }
 
     public byte[] write(T src, StructHandler writer) {
-        StructProcessor structProcessor = new TBaseStructProcessor();
+        StructProcessor structProcessor = new TBaseProcessor();
         try {
             structProcessor.process(src, writer);
             return new byte[0];

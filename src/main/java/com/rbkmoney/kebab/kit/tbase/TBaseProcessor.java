@@ -1,4 +1,4 @@
-package com.rbkmoney.kebab.processor;
+package com.rbkmoney.kebab.kit.tbase;
 
 import com.rbkmoney.kebab.StructProcessor;
 import com.rbkmoney.kebab.StructHandler;
@@ -16,7 +16,7 @@ import java.util.Set;
 /**
  * Created by tolkonepiu on 27/01/2017.
  */
-public class TBaseStructProcessor implements StructProcessor<TBase> {
+public class TBaseProcessor implements StructProcessor<TBase> {
 
     @Override
     public <R> R process(TBase value, StructHandler<R> handler) throws IOException {
