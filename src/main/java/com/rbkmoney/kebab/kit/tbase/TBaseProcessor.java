@@ -41,7 +41,7 @@ public class TBaseProcessor implements StructProcessor<TBase> {
             FieldMetaData fieldMetaData = fieldMetaDataMap.get(tFieldIdEnum);
             if (value.isSet(tFieldIdEnum)) {
                 out.name(tFieldIdEnum.getFieldName());
-                write(out, value.getFieldValue(tFieldIdEnum), fieldMetaData.valueMetaData);
+                write(value.getFieldValue(tFieldIdEnum), fieldMetaData.valueMetaData, out);
             } else if (fieldMetaData.requirementType == TFieldRequirementType.REQUIRED) {
                 throw new IllegalStateException(String.format("Field '%s' is required and must not be null", tFieldIdEnum.getFieldName()));
             }
@@ -59,9 +59,9 @@ public class TBaseProcessor implements StructProcessor<TBase> {
         return size;
     }
 
-    private void write(StructHandler out, Object object, FieldValueMetaData fieldValueMetaData) throws IOException {
+    private void write(Object object, FieldValueMetaData fieldValueMetaData, StructHandler handler) throws IOException {
         if (object == null) {
-            out.nullValue();
+            handler.nullValue();
             return;
         }
 
@@ -69,44 +69,44 @@ public class TBaseProcessor implements StructProcessor<TBase> {
         boolean isBinary = fieldValueMetaData.isBinary();
 
         if (isBinary) {
-            out.value((byte[]) object);
+            handler.value((byte[]) object);
         } else {
             switch (type) {
                 case BOOLEAN:
-                    out.value((boolean) object);
+                    handler.value((boolean) object);
                     break;
                 case STRING:
-                    out.value((String) object);
+                    handler.value((String) object);
                     break;
                 case BYTE:
-                    out.value((byte) object);
+                    handler.value((byte) object);
                     break;
                 case SHORT:
-                    out.value((short) object);
+                    handler.value((short) object);
                     break;
                 case INTEGER:
-                    out.value((int) object);
+                    handler.value((int) object);
                     break;
                 case LONG:
-                    out.value((long) object);
+                    handler.value((long) object);
                     break;
                 case DOUBLE:
-                    out.value((double) object);
+                    handler.value((double) object);
                     break;
                 case ENUM:
-                    out.value(object.toString());
+                    handler.value(object.toString());
                     break;
                 case LIST:
-                    writeList(out, (List) object, (ListMetaData) fieldValueMetaData);
+                    writeList((List) object, (ListMetaData) fieldValueMetaData, handler);
                     break;
                 case SET:
-                    writeSet(out, (Set) object, (SetMetaData) fieldValueMetaData);
+                    writeSet((Set) object, (SetMetaData) fieldValueMetaData, handler);
                     break;
                 case MAP:
-                    writeMap(out, (Map) object, (MapMetaData) fieldValueMetaData);
+                    writeMap((Map) object, (MapMetaData) fieldValueMetaData, handler);
                     break;
                 case STRUCT:
-                    writeStruct(out, (TBase) object);
+                    writeStruct(handler, (TBase) object);
                     break;
                 default:
                     throw new IllegalStateException(String.format("Type '%s' not found", type));
@@ -114,33 +114,33 @@ public class TBaseProcessor implements StructProcessor<TBase> {
         }
     }
 
-    private void writeSet(StructHandler out, Set objectSet, SetMetaData metaData) throws IOException {
-        out.beginList(objectSet.size());
+    private void writeSet(Set objectSet, SetMetaData metaData, StructHandler handler) throws IOException {
+        handler.beginList(objectSet.size());
         for (Object object : objectSet) {
-            write(out, object, metaData.getElementMetaData());
+            write(object, metaData.getElementMetaData(), handler);
         }
-        out.endList();
+        handler.endList();
     }
 
-    private void writeList(StructHandler out, List objectList, ListMetaData metaData) throws IOException {
-        out.beginList(objectList.size());
+    private void writeList(List objectList, ListMetaData metaData, StructHandler handler) throws IOException {
+        handler.beginList(objectList.size());
         for (Object object : objectList) {
-            write(out, object, metaData.getElementMetaData());
+            write(object, metaData.getElementMetaData(), handler);
         }
-        out.endList();
+        handler.endList();
     }
 
-    private void writeMap(StructHandler out, Map objectMap, MapMetaData metaData) throws IOException {
-        out.beginMap(objectMap.size());
+    private void writeMap(Map objectMap, MapMetaData metaData, StructHandler handler) throws IOException {
+        handler.beginMap(objectMap.size());
         for (Map.Entry entry : (Set<Map.Entry>) objectMap.entrySet()) {
-            out.beginKey();
-            write(out, entry.getKey(), metaData.getKeyMetaData());
-            out.endKey();
-            out.beginValue();
-            write(out, entry.getValue(), metaData.getValueMetaData());
-            out.endValue();
+            handler.beginKey();
+            write(entry.getKey(), metaData.getKeyMetaData(), handler);
+            handler.endKey();
+            handler.beginValue();
+            write(entry.getValue(), metaData.getValueMetaData(), handler);
+            handler.endValue();
         }
-        out.endMap();
+        handler.endMap();
     }
 
 

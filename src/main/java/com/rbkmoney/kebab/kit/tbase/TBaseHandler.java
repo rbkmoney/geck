@@ -9,6 +9,15 @@ import java.io.IOException;
  * Created by tolkonepiu on 08/02/2017.
  */
 public class TBaseHandler implements StructHandler<TBase> {
+
+    private final Class<? extends TBase> parentClass;
+
+    private TBase tBase = null;
+
+    public TBaseHandler(Class<? extends TBase> parentClass) {
+        this.parentClass = parentClass;
+    }
+
     @Override
     public void beginStruct(int size) throws IOException {
 
@@ -96,6 +105,6 @@ public class TBaseHandler implements StructHandler<TBase> {
 
     @Override
     public TBase getResult() throws IOException {
-        return null;
+        return tBase;
     }
 }
