@@ -13,6 +13,10 @@ import java.io.StringWriter;
  */
 public class Kebab<T extends TBase> {
 
+    public boolean remove() {
+        return true;
+    }
+
     public String toJson(T src) {
         try {
             StringWriter writer = new StringWriter();

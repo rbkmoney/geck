@@ -1,8 +1,10 @@
 package com.rbkmoney.kebab;
 
-import com.rbkmoney.kebab.processor.TBaseStructProcessor;
-import com.rbkmoney.kebab.test.*;
 import com.rbkmoney.kebab.handler.HandlerStub;
+import com.rbkmoney.kebab.processor.TBaseStructProcessor;
+import com.rbkmoney.kebab.test.Status;
+import com.rbkmoney.kebab.test.TestObject;
+import com.rbkmoney.kebab.test.Unknown;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -14,18 +16,23 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
-import java.util.function.Supplier;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
+
+import static com.rbkmoney.kebab.KebabUtil.getTestObject;
+import static org.junit.Assert.*;
 
 /**
  * Created by tolkonepiu on 25/01/2017.
  */
 public class KebabTest {
     Kebab kebab = new Kebab();
+
+    @Test
+    public void testKebab() {
+        assertTrue(kebab.remove());
+    }
 
     @Test
     public void tBaseSerializerTest() throws IOException {
@@ -136,48 +143,6 @@ public class KebabTest {
 
     }
 
-    private TestObject getTestObject(int statusCount, Supplier<Status> statusGen) {
-        TestObject testObject = getTestObject();
-        List<Status> lists = Collections.nCopies(statusCount, statusGen.get());
-        testObject.setStatuses(lists);
-        return testObject;
-    }
 
-    private TestObject getTestObject() {
-        TestObject testObject = new TestObject();
-        testObject.setDescription("kek");
-        testObject.setValue(2.32);
-
-        Ids ids = new Ids();
-        ids.setBigId(2141214124L);
-        ids.setId(12312);
-        ids.setMiniId((short) 2334);
-        ids.setMicroId((byte) 127);
-
-        testObject.setIds(ids);
-
-        testObject.setData(new byte[]{4, 2});
-
-        testObject.setNumbers(Arrays.asList(1, 2, 3, 4, 5));
-
-        Set<String> suk = new HashSet<>(Arrays.asList("kek1", "kek2"));
-
-        testObject.setFuck(Arrays.asList(suk, suk, suk));
-
-        Fail fail = new Fail();
-
-        fail.setReasons(new HashSet<>(Arrays.asList("kek1", "kek2")));
-
-        Map<String, Integer> map = new HashMap<>();
-        map.put("kek1", 455);
-        map.put("kek2", 564);
-        map.put("kek3", 565);
-        //map.put(null, 666);
-        //map.put("null", null);
-        testObject.setMaps(map);
-
-        testObject.setStatus(Status.fail(new Fail(fail)));
-        return testObject;
-    }
 
 }

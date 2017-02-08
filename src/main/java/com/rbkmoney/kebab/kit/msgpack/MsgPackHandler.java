@@ -91,7 +91,7 @@ public abstract class MsgPackHandler<R> implements StructHandler<R> {
 
     @Override
     public void endList() throws IOException {
-        msgPacker.packExtensionTypeHeader(MsgPackFlags.endList, 0);
+        //msgPacker.packExtensionTypeHeader(MsgPackFlags.endList, 0);
     }
 
     @Override
@@ -161,21 +161,6 @@ public abstract class MsgPackHandler<R> implements StructHandler<R> {
     @Override
     public void value(String value) throws IOException {
         msgPacker.packString(value);
-    }
-
-    @Override
-    public void value(byte value) throws IOException {
-        msgPacker.packByte(value);
-    }
-
-    @Override
-    public void value(short value) throws IOException {
-        msgPacker.packShort(value);
-    }
-
-    @Override
-    public void value(int value) throws IOException {
-        msgPacker.packInt(value);
     }
 
     @Override

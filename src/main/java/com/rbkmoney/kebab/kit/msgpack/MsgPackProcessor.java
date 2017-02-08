@@ -6,13 +6,14 @@ import com.rbkmoney.kebab.exception.BadFormatException;
 import gnu.trove.map.hash.TCharObjectHashMap;
 import org.msgpack.core.ExtensionTypeHeader;
 import org.msgpack.core.MessageFormat;
+import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessageUnpacker;
-import org.msgpack.value.Value;
 import org.msgpack.value.ValueType;
 
 import java.io.IOException;
 
 import static com.rbkmoney.kebab.kit.msgpack.MsgPackFlags.*;
+import static com.rbkmoney.kebab.kit.msgpack.StringUtil.decompressAsciiString;
 import static com.rbkmoney.kebab.kit.msgpack.StringUtil.fromAsciiBytes;
 
 /**
@@ -21,6 +22,21 @@ import static com.rbkmoney.kebab.kit.msgpack.StringUtil.fromAsciiBytes;
 public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
     private final TCharObjectHashMap<String> dictionary;
     private final char noDictEntryValue = 0;
+
+
+    public static MsgPackProcessor<byte[]> newBinaryInstance() {
+        return new MsgPackProcessor<byte[]>() {
+            @Override
+            protected MessageUnpacker getUnpacker(byte[] value) {
+                return MessagePack.newDefaultUnpacker(value);
+            }
+
+            @Override
+            protected MessageUnpacker releaseUnpacker(MessageUnpacker unpacker, byte[] value) {
+                return unpacker;
+            }
+        };
+    }
 
     public MsgPackProcessor() {
         this.dictionary = new TCharObjectHashMap<>(64, 0.5f, noDictEntryValue) ;
@@ -48,7 +64,7 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
         handler.beginStruct(length);
         for (int i = 0; i < length; ++i) {
             processName(unpacker, handler);
-            processValue(unpacker, handler);
+            processValue(unpacker, handler, unpacker.getNextFormat());
         }
         handler.endStruct();
     }
@@ -81,14 +97,17 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
         handler.name(name);
     }
 
-    private void processValue(MessageUnpacker unpacker, StructHandler handler, MessageFormat format, ExtensionTypeHeader typeHeader) throws IOException {
+    private void processValue(MessageUnpacker unpacker, StructHandler handler, MessageFormat format) throws IOException {
         switch (format.getValueType()) {
             case BOOLEAN:
                 handler.value(unpacker.unpackBoolean());
                 break;
             case INTEGER:
-                Value value = unpacker.unpackValue();
-
+                handler.value(unpacker.unpackLong());
+                break;
+            case FLOAT:
+                handler.value(unpacker.unpackDouble());
+                break;
             case STRING:
                 handler.value(unpacker.unpackString());
                 break;
@@ -104,23 +123,43 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
             case BINARY:
                 handler.value(unpacker.readPayload(unpacker.unpackBinaryHeader()));
                 break;
-
+            case EXTENSION:
+                ExtensionTypeHeader typeHeader = getExtensionTypeHeader(startStruct, unpacker.unpackExtensionTypeHeader());
+                processStruct(unpacker, handler, typeHeader);
+                break;
+            default:
+                throw new BadFormatException("Unexpected format type: " + format);
         }
     }
 
-    private void processList(MessageUnpacker unpacker, StructHandler handler, MessageFormat format) {
-
+    private void processList(MessageUnpacker unpacker, StructHandler handler, MessageFormat format) throws IOException {
+        int length = unpacker.unpackArrayHeader();
+        handler.beginList(length);
+        for (int i = 0; i < length; ++i) {
+            processValue(unpacker, handler, unpacker.getNextFormat());
+        }
+        handler.endList();
     }
 
-    private void processMap(MessageUnpacker unpacker, StructHandler handler, MessageFormat format) {
-
+    private void processMap(MessageUnpacker unpacker, StructHandler handler, MessageFormat format) throws IOException {
+        int length = unpacker.unpackMapHeader();
+        handler.beginMap(length);
+        for (int i = 0; i < length; ++i) {
+            handler.beginKey();
+            processValue(unpacker, handler, unpacker.getNextFormat());
+            handler.endKey();
+            handler.beginValue();
+            processValue(unpacker, handler, unpacker.getNextFormat());
+            handler.endValue();
+        }
+        handler.endMap();
     }
 
     private String putInDictionary(int key, byte[] data) throws BadFormatException {
         if (key > Character.MAX_VALUE) {
             throw new BadFormatException("Dictionary key is too long: "+ key);
         }
-        String str = fromAsciiBytes(data);
+        String str = decompressAsciiString(data);
         if (dictionary.putIfAbsent((char) key, str) != null) {
             throw new BadFormatException("Dictionary key is already set: " + key);
         }
@@ -140,11 +179,14 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
 
     private ExtensionTypeHeader getExtensionTypeHeader(int expectedType, MessageUnpacker unpacker) throws IOException {
         getHeader(ValueType.EXTENSION, unpacker);
-        ExtensionTypeHeader extHeader = unpacker.unpackExtensionTypeHeader();
-        if (extHeader.getType() == expectedType) {
-            return extHeader;
+        return getExtensionTypeHeader(expectedType, unpacker.unpackExtensionTypeHeader());
+    }
+
+    private ExtensionTypeHeader getExtensionTypeHeader(int expectedType, ExtensionTypeHeader typeHeader) throws BadFormatException {
+        if (typeHeader.getType() == expectedType) {
+            return typeHeader;
         }
-        throwBadFormat("wrong extension type", startStruct, extHeader);
+        throwBadFormat("wrong extension type", startStruct, typeHeader);
         return null;
     }
 
@@ -157,9 +199,9 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
         return null;
     }
 
-    protected abstract MessageUnpacker getUnpacker(S value);
+    protected abstract MessageUnpacker getUnpacker(S value) throws IOException;
 
-    protected abstract MessageUnpacker releaseUnpacker(MessageUnpacker unpacker, S value);
+    protected abstract MessageUnpacker releaseUnpacker(MessageUnpacker unpacker, S value) throws IOException;
 
     private static void throwBadFormat(String message, ValueType expectedType, MessageFormat actualFormat) throws BadFormatException {
         throw new BadFormatException("MsgPack bad format: " + message + ", expected type: " + expectedType + ", actual format: " + actualFormat);
