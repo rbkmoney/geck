@@ -6,15 +6,17 @@ import com.rbkmoney.kebab.test.Status;
 import com.rbkmoney.kebab.test.TestObject;
 
 import java.util.*;
-import java.util.function.Supplier;
+import java.util.function.IntFunction;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Created by vpankrashkin on 08.02.17.
  */
 public class KebabUtil {
-    public static TestObject getTestObject(int statusCount, Supplier<Status> statusGen) {
+    public static TestObject getTestObject(int statusCount, IntFunction<Status> statusGen) {
         TestObject testObject = getTestObject();
-        List<Status> lists = Collections.nCopies(statusCount, statusGen.get());
+        List<Status> lists = IntStream.range(0, statusCount).mapToObj(statusGen::apply).collect(Collectors.toList());
         testObject.setStatuses(lists);
         return testObject;
     }

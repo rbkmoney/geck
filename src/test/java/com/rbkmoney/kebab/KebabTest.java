@@ -111,7 +111,7 @@ public class KebabTest {
     @Test
     public void testPerformance() {
         boolean useDict = true;
-        TestObject testObject = getTestObject(100, () -> Status.unknown(new Unknown("SomeData")));
+        TestObject testObject = getTestObject(100, i -> Status.unknown(new Unknown("SomeData")));
         HandlerStub writerStub = new HandlerStub();
         TSerializer binarySerializer = new TSerializer(new TBinaryProtocol.Factory());
         IntFunction<Integer> stubConsumer = i -> kebab.write(testObject, writerStub).length;
