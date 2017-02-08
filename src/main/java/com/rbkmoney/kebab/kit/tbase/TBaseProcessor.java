@@ -1,7 +1,7 @@
 package com.rbkmoney.kebab.kit.tbase;
 
-import com.rbkmoney.kebab.StructProcessor;
 import com.rbkmoney.kebab.StructHandler;
+import com.rbkmoney.kebab.StructProcessor;
 import com.rbkmoney.kebab.ThriftType;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
@@ -22,31 +22,30 @@ public class TBaseProcessor implements StructProcessor<TBase> {
     public <R> R process(TBase value, StructHandler<R> handler) throws IOException {
         if (value == null) {
             handler.nullValue();
-            return null;
+        } else {
+            writeStruct(value, handler);
         }
-
-        writeStruct(handler, value);
 
         return handler.getResult();
     }
 
-    private void writeStruct(StructHandler out, TBase value) throws IOException {
+    private void writeStruct(TBase value, StructHandler handler) throws IOException {
         TFieldIdEnum[] tFieldIdEnums = value.getFields();
         Map<TFieldIdEnum, FieldMetaData> fieldMetaDataMap = value.getFieldMetaData();
         int size = getFieldsCount(value, tFieldIdEnums);
 
-        out.beginStruct(size);
+        handler.beginStruct(size);
 
         for (TFieldIdEnum tFieldIdEnum : tFieldIdEnums) {
             FieldMetaData fieldMetaData = fieldMetaDataMap.get(tFieldIdEnum);
             if (value.isSet(tFieldIdEnum)) {
-                out.name(tFieldIdEnum.getFieldName());
-                write(value.getFieldValue(tFieldIdEnum), fieldMetaData.valueMetaData, out);
+                handler.name(tFieldIdEnum.getFieldName());
+                write(value.getFieldValue(tFieldIdEnum), fieldMetaData.valueMetaData, handler);
             } else if (fieldMetaData.requirementType == TFieldRequirementType.REQUIRED) {
                 throw new IllegalStateException(String.format("Field '%s' is required and must not be null", tFieldIdEnum.getFieldName()));
             }
         }
-        out.endStruct();
+        handler.endStruct();
     }
 
     private int getFieldsCount(TBase value, TFieldIdEnum[] tFieldIdEnums) {
@@ -106,7 +105,7 @@ public class TBaseProcessor implements StructProcessor<TBase> {
                     writeMap((Map) object, (MapMetaData) fieldValueMetaData, handler);
                     break;
                 case STRUCT:
-                    writeStruct(handler, (TBase) object);
+                    writeStruct((TBase) object, handler);
                     break;
                 default:
                     throw new IllegalStateException(String.format("Type '%s' not found", type));
