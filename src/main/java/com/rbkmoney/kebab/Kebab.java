@@ -1,6 +1,6 @@
 package com.rbkmoney.kebab;
 
-import com.rbkmoney.kebab.handler.JsonStructHandler;
+import com.rbkmoney.kebab.kit.json.JsonHandler;
 import com.rbkmoney.kebab.kit.msgpack.MsgPackHandler;
 import com.rbkmoney.kebab.kit.tbase.TBaseProcessor;
 import org.apache.thrift.TBase;
@@ -21,8 +21,8 @@ public class Kebab<T extends TBase> {
         try {
             StringWriter writer = new StringWriter();
             TBaseProcessor structProcessor = new TBaseProcessor();
-            JsonStructHandler jsonStructHandler = new JsonStructHandler(writer);
-            return  structProcessor.process(src, jsonStructHandler);
+            JsonHandler jsonHandler = new JsonHandler(writer);
+            return  structProcessor.process(src, jsonHandler);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
