@@ -1,11 +1,10 @@
 package com.rbkmoney.kebab;
 
 import com.rbkmoney.kebab.handler.JsonStructHandler;
-import com.rbkmoney.kebab.handler.MsgPackHandler;
+import com.rbkmoney.kebab.kit.msgpack.MsgPackHandler;
 import com.rbkmoney.kebab.processor.TBaseStructProcessor;
 import org.apache.thrift.TBase;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 
