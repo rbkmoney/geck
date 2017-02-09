@@ -1,9 +1,6 @@
 package com.rbkmoney.kebab;
 
-import com.rbkmoney.kebab.test.Fail;
-import com.rbkmoney.kebab.test.Ids;
-import com.rbkmoney.kebab.test.Status;
-import com.rbkmoney.kebab.test.TestObject;
+import com.rbkmoney.kebab.test.*;
 
 import java.util.*;
 import java.util.function.IntFunction;
@@ -17,7 +14,7 @@ public class KebabUtil {
     public static TestObject getTestObject(int statusCount, IntFunction<Status> statusGen) {
         TestObject testObject = getTestObject();
         List<Status> lists = IntStream.range(0, statusCount).mapToObj(statusGen::apply).collect(Collectors.toList());
-        testObject.setStatuses(lists);
+//        testObject.setStatuses(lists);
         return testObject;
     }
 
@@ -52,9 +49,15 @@ public class KebabUtil {
         map.put("kek3", 565);
         //map.put(null, 666);
         //map.put("null", null);
-        testObject.setMaps(map);
-
+//        testObject.setMaps(map);
+//
         testObject.setStatus(Status.fail(new Fail(fail)));
+
+        List<Status> lists = Collections.nCopies(10, Status.unknown(new Unknown("SomeData")));
+        testObject.setStatuses(lists);
+
+        testObject.setActive(true);
+
         return testObject;
     }
 }
