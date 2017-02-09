@@ -283,6 +283,11 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
                 throw new BadFormatException("'name' not found");
             }
             ((TBaseElementContext) elementContext).getValue().setFieldValue(tFieldIdEnum, value);
+            tFieldIdEnum = null;
+        }
+
+        if (tFieldIdEnum != null) {
+            throw new BadFormatException("'name' must be null");
         }
 
         if (elementContext.isCollectionElementContext()) {
