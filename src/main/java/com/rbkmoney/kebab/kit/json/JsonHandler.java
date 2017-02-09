@@ -2,7 +2,7 @@ package com.rbkmoney.kebab.kit.json;
 
 import com.rbkmoney.kebab.ByteStack;
 import com.rbkmoney.kebab.StructHandler;
-import com.rbkmoney.kebab.ThriftType;
+import com.rbkmoney.kebab.kit.tbase.ThriftType;
 import com.rbkmoney.kebab.exception.BadFormatException;
 
 import java.io.IOException;

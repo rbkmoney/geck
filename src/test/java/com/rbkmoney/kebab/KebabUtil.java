@@ -49,8 +49,8 @@ public class KebabUtil {
         map.put("kek3", 565);
         //map.put(null, 666);
         //map.put("null", null);
-//        testObject.setMaps(map);
-//
+        testObject.setMaps(map);
+
         testObject.setStatus(Status.fail(new Fail(fail)));
 
         List<Status> lists = Collections.nCopies(10, Status.unknown(new Unknown("SomeData")));

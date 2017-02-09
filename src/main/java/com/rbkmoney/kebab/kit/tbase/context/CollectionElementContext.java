@@ -1,6 +1,5 @@
 package com.rbkmoney.kebab.kit.tbase.context;
 
-import com.rbkmoney.kebab.ThriftType;
 import org.apache.thrift.meta_data.FieldValueMetaData;
 import org.apache.thrift.meta_data.ListMetaData;
 import org.apache.thrift.meta_data.SetMetaData;
@@ -12,28 +11,15 @@ import java.util.Set;
 /**
  * Created by tolkonepiu on 09/02/2017.
  */
-public class CollectionElementContext implements ElementContext<Collection> {
-
-    private final ThriftType type;
+public class CollectionElementContext implements ElementContext {
 
     private final FieldValueMetaData valueMetaData;
 
     private Collection collection;
 
-    public CollectionElementContext(ThriftType type, FieldValueMetaData valueMetaData, Collection collection) {
-        this.type = type;
+    public CollectionElementContext(FieldValueMetaData valueMetaData, Collection collection) {
         this.valueMetaData = valueMetaData;
         this.collection = collection;
-    }
-
-    @Override
-    public ThriftType getType() {
-        return type;
-    }
-
-    @Override
-    public FieldValueMetaData getMetaData() {
-        return valueMetaData;
     }
 
     public FieldValueMetaData getElementMetaData() {
@@ -62,7 +48,6 @@ public class CollectionElementContext implements ElementContext<Collection> {
         return (SetMetaData) valueMetaData;
     }
 
-    @Override
     public Collection getValue() {
         return collection;
     }

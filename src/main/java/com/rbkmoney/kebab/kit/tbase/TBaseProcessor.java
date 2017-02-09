@@ -2,7 +2,6 @@ package com.rbkmoney.kebab.kit.tbase;
 
 import com.rbkmoney.kebab.StructHandler;
 import com.rbkmoney.kebab.StructProcessor;
-import com.rbkmoney.kebab.ThriftType;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
 import org.apache.thrift.TFieldRequirementType;

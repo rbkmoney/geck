@@ -1,8 +1,6 @@
 package com.rbkmoney.kebab.kit.tbase;
 
-import com.rbkmoney.kebab.ThriftType;
-import com.rbkmoney.kebab.kit.tbase.context.CollectionElementContext;
-import com.rbkmoney.kebab.kit.tbase.context.ElementContext;
+import com.rbkmoney.kebab.kit.tbase.context.*;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
 import org.apache.thrift.meta_data.FieldMetaData;
@@ -35,19 +33,34 @@ public class TBaseUtil {
 
     public static FieldValueMetaData getValueMetaData(TFieldIdEnum tFieldIdEnum, ElementContext elementContext) {
         if (elementContext.isTBaseElementContext()) {
-            return getValueMetaData(tFieldIdEnum, (TBase) elementContext.getValue());
-        } else {
-            CollectionElementContext collectionElementContext = elementContext.asCollectionElementContext();
-            return collectionElementContext.getElementMetaData();
+            return getValueMetaData(tFieldIdEnum, ((TBaseElementContext) elementContext).getValue());
         }
+
+        if (elementContext.isCollectionElementContext()) {
+            return ((CollectionElementContext) elementContext).getElementMetaData();
+        }
+
+        throw new IllegalStateException("Unknown element context");
     }
 
     public static ThriftType getType(TFieldIdEnum tFieldIdEnum, ElementContext context) {
         if (context.isTBaseElementContext()) {
-            return getType(tFieldIdEnum, (TBase) context.getValue());
-        } else {
-            return getType(context.asCollectionElementContext().getElementMetaData());
+            return getType(tFieldIdEnum, ((TBaseElementContext) context).getValue());
         }
+
+        if (context.isCollectionElementContext()) {
+            return getType(((CollectionElementContext) context).getElementMetaData());
+        }
+
+        if (context.isMapKeyElementContext()) {
+            return getType(((MapKeyElementContext) context).getKeyMetaData());
+        }
+
+        if (context.isMapValueElementContext()) {
+            return getType(((MapValueElementContext) context).getValueMetaData());
+        }
+
+        throw new IllegalStateException("Unknown element context");
     }
 
     public static ThriftType getType(TFieldIdEnum tFieldIdEnum, TBase tBase) {

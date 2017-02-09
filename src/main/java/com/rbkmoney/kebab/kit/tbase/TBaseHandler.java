@@ -1,16 +1,14 @@
 package com.rbkmoney.kebab.kit.tbase;
 
 import com.rbkmoney.kebab.StructHandler;
-import com.rbkmoney.kebab.ThriftType;
 import com.rbkmoney.kebab.exception.BadFormatException;
-import com.rbkmoney.kebab.kit.tbase.context.CollectionElementContext;
-import com.rbkmoney.kebab.kit.tbase.context.ElementContext;
-import com.rbkmoney.kebab.kit.tbase.context.TBaseElementContext;
+import com.rbkmoney.kebab.kit.tbase.context.*;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
 import org.apache.thrift.TFieldRequirementType;
 import org.apache.thrift.meta_data.FieldMetaData;
 import org.apache.thrift.meta_data.FieldValueMetaData;
+import org.apache.thrift.meta_data.MapMetaData;
 import org.apache.thrift.meta_data.StructMetaData;
 
 import java.io.IOException;
@@ -40,15 +38,14 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
             if (stack.isEmpty()) {
                 TBase tBase = parentClass.newInstance();
 
-                stack.add(new TBaseElementContext(ThriftType.STRUCT, null, tBase));
+                stack.add(new TBaseElementContext(tBase));
             } else {
                 ElementContext elementContext = stack.peek();
 
                 FieldValueMetaData valueMetaData = TBaseUtil.getValueMetaData(tFieldIdEnum, elementContext);
-                ThriftType type = ThriftType.findByCode(valueMetaData.getType());
                 TBase child = ((StructMetaData) valueMetaData).getStructClass().newInstance();
                 saveValueInElementContext(elementContext, child);
-                stack.addFirst(new TBaseElementContext(type, valueMetaData, child));
+                stack.addFirst(new TBaseElementContext(child));
             }
 
         } catch (InstantiationException | IllegalAccessException ex) {
@@ -66,16 +63,23 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
         ElementContext elementContext = stack.pop();
 
         if (!elementContext.isTBaseElementContext()) {
-            //TODO add error message
-            throw new BadFormatException();
+            throw new BadFormatException("'BeginStruct' not found");
         }
 
-        TBaseElementContext tBaseElementContext = elementContext.asTBaseElementContext();
-
-        TBase tBase = tBaseElementContext.getValue();
-        //TODO check required fields
+        TBase tBase = ((TBaseElementContext) elementContext).getValue();
+        checkRequiredFields(tBase);
 
         result = (R) tBase;
+    }
+
+    private void checkRequiredFields(TBase tBase) throws BadFormatException {
+        Map<TFieldIdEnum, FieldMetaData> fieldValueMetaDataMap = tBase.getFieldMetaData();
+        for (TFieldIdEnum field : tBase.getFields()) {
+            FieldMetaData metaData = fieldValueMetaDataMap.get(field);
+            if (metaData.requirementType == TFieldRequirementType.REQUIRED && !tBase.isSet(field)) {
+                throw new BadFormatException(String.format("Field '%s' is required and must not be null", tFieldIdEnum.getFieldName()));
+            }
+        }
     }
 
     @Override
@@ -84,17 +88,17 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
         FieldValueMetaData valueMetaData = TBaseUtil.getValueMetaData(tFieldIdEnum, elementContext);
         ThriftType type = ThriftType.findByCode(valueMetaData.getType());
-        
+
         switch (type) {
             case LIST:
                 List list = new ArrayList<>(size);
                 saveValueInElementContext(elementContext, list);
-                stack.addFirst(new CollectionElementContext(type, valueMetaData, list));
+                stack.addFirst(new CollectionElementContext(valueMetaData, list));
                 break;
             case SET:
                 Set set = new HashSet(size);
                 saveValueInElementContext(elementContext, set);
-                stack.addFirst(new CollectionElementContext(type, valueMetaData, set));
+                stack.addFirst(new CollectionElementContext(valueMetaData, set));
                 break;
             default:
                 throw new BadFormatException(String.format("Field '%s' value expected '%s', actual collection", tFieldIdEnum.getFieldName(), type));
@@ -104,46 +108,102 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
     @Override
     public void endList() throws IOException {
         if (stack.isEmpty()) {
-            //TODO add message error
-            throw new BadFormatException();
+            throw new BadFormatException("Stack is empty");
         }
 
         ElementContext context = stack.pop();
 
         if (!context.isCollectionElementContext()) {
-            //TODO add message error
-            throw new BadFormatException();
+            throw new BadFormatException("'BeginList' not found");
         }
     }
 
     @Override
     public void beginMap(int size) throws IOException {
+        ElementContext elementContext = stack.peek();
 
+        FieldValueMetaData valueMetaData = TBaseUtil.getValueMetaData(tFieldIdEnum, elementContext);
+
+        Map map = new HashMap(size);
+        saveValueInElementContext(elementContext, map);
+        stack.addFirst(new MapElementContext((MapMetaData) valueMetaData, map));
     }
 
     @Override
     public void endMap() throws IOException {
+        if (stack.isEmpty()) {
+            throw new BadFormatException("Stack is empty");
+        }
 
+        ElementContext context = stack.pop();
+
+        if (!context.isMapElementContext()) {
+            throw new BadFormatException("'beginMap' not found");
+        }
     }
 
     @Override
     public void beginKey() throws IOException {
+        ElementContext elementContext = stack.peek();
 
+        if (!elementContext.isMapElementContext()) {
+            throw new BadFormatException();
+        }
+
+        MapElementContext parent = (MapElementContext) elementContext;
+
+        stack.addFirst(new MapKeyElementContext(parent));
     }
 
     @Override
     public void endKey() throws IOException {
+        ElementContext elementContext = stack.peek();
 
+        if (!elementContext.isMapKeyElementContext()) {
+            throw new BadFormatException("'beginKey' not found");
+        }
     }
 
     @Override
     public void beginValue() throws IOException {
+        ElementContext elementContext = stack.peek();
+
+        if (!elementContext.isMapKeyElementContext()) {
+            throw new BadFormatException("'beginKey' not found");
+        }
+
+        MapKeyElementContext mapKeyElementContext = (MapKeyElementContext) elementContext;
+
+        stack.addFirst(new MapValueElementContext(mapKeyElementContext.getParent()));
 
     }
 
     @Override
     public void endValue() throws IOException {
+        ElementContext elementContext = stack.pop();
 
+        if (!elementContext.isMapValueElementContext()) {
+            throw new BadFormatException("'beginValue' not found");
+        }
+
+        Object value = ((MapValueElementContext) elementContext).getValue();
+
+        elementContext = stack.pop();
+
+        if (!elementContext.isMapKeyElementContext()) {
+            throw new BadFormatException("'beginKey' not found");
+        }
+
+        Object key = ((MapKeyElementContext) elementContext).getKey();
+
+
+        elementContext = stack.peek();
+
+        if (!elementContext.isMapElementContext()) {
+            throw new BadFormatException("'beginMap' not found");
+        }
+
+        ((MapElementContext) elementContext).getValue().put(key, value);
     }
 
     @Override
@@ -153,11 +213,10 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
         ElementContext elementContext = stack.peek();
 
         if (!elementContext.isTBaseElementContext()) {
-            //TODO error description
-            throw new BadFormatException();
+            throw new BadFormatException("'name' must be caused only in struct");
         }
 
-        TBase tBase = elementContext.asTBaseElementContext().getValue();
+        TBase tBase = ((TBaseElementContext) elementContext).getValue();
 
         tFieldIdEnum = TBaseUtil.getField(name, tBase);
     }
@@ -175,6 +234,11 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
     @Override
     public void value(double value) throws IOException {
         value(value, ThriftType.DOUBLE);
+    }
+
+    @Override
+    public void value(byte[] value) throws IOException {
+        value(value, ThriftType.BINARY);
     }
 
     @Override
@@ -201,11 +265,6 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
     }
 
-    @Override
-    public void value(byte[] value) throws IOException {
-        value(value, ThriftType.BINARY);
-    }
-
     private void value(Object value, ThriftType actualType) throws IOException {
         ElementContext elementContext = stack.peek();
 
@@ -221,16 +280,21 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
     private void saveValueInElementContext(ElementContext elementContext, Object value) throws IOException {
         if (elementContext.isTBaseElementContext()) {
             if (tFieldIdEnum == null) {
-                //TODO add error message
-                throw new BadFormatException();
+                throw new BadFormatException("'name' not found");
             }
-            TBaseElementContext tBaseElementContext = elementContext.asTBaseElementContext();
-            tBaseElementContext.getValue().setFieldValue(tFieldIdEnum, value);
-            return;
+            ((TBaseElementContext) elementContext).getValue().setFieldValue(tFieldIdEnum, value);
         }
+
         if (elementContext.isCollectionElementContext()) {
-            CollectionElementContext collectionElementContext = elementContext.asCollectionElementContext();
-            collectionElementContext.getValue().add(value);
+            ((CollectionElementContext) elementContext).getValue().add(value);
+        }
+
+        if (elementContext.isMapKeyElementContext()) {
+            ((MapKeyElementContext) elementContext).setKey(value);
+        }
+
+        if (elementContext.isMapValueElementContext()) {
+            ((MapValueElementContext) elementContext).setValue(value);
         }
     }
 
@@ -241,23 +305,12 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
         }
 
         ElementContext elementContext = stack.peek();
-
-        if (elementContext.isTBaseElementContext()) {
-            TBase tBase = elementContext.asTBaseElementContext().getValue();
-            if (tBase != null) {
-                FieldMetaData metaData = TBaseUtil.getMetaData(tFieldIdEnum, tBase);
-                if (metaData.requirementType == TFieldRequirementType.REQUIRED) {
-                    throw new BadFormatException(String.format("Field '%s' is required and must not be null", tFieldIdEnum.getFieldName()));
-                }
-                tBase.setFieldValue(tFieldIdEnum, null);
-            }
-        }
+        saveValueInElementContext(elementContext, null);
     }
 
     @Override
     public R getResult() throws IOException {
         return result;
     }
-
 
 }
