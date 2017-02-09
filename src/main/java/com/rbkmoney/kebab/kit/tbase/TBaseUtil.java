@@ -1,6 +1,8 @@
 package com.rbkmoney.kebab.kit.tbase;
 
 import com.rbkmoney.kebab.ThriftType;
+import com.rbkmoney.kebab.kit.tbase.context.CollectionElementContext;
+import com.rbkmoney.kebab.kit.tbase.context.ElementContext;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
 import org.apache.thrift.meta_data.FieldMetaData;
@@ -31,8 +33,29 @@ public class TBaseUtil {
         return getMetaData(tFieldIdEnum, tBase).valueMetaData;
     }
 
+    public static FieldValueMetaData getValueMetaData(TFieldIdEnum tFieldIdEnum, ElementContext elementContext) {
+        if (elementContext.isTBaseElementContext()) {
+            return getValueMetaData(tFieldIdEnum, (TBase) elementContext.getValue());
+        } else {
+            CollectionElementContext collectionElementContext = elementContext.asCollectionElementContext();
+            return collectionElementContext.getElementMetaData();
+        }
+    }
+
+    public static ThriftType getType(TFieldIdEnum tFieldIdEnum, ElementContext context) {
+        if (context.isTBaseElementContext()) {
+            return getType(tFieldIdEnum, (TBase) context.getValue());
+        } else {
+            return getType(context.asCollectionElementContext().getElementMetaData());
+        }
+    }
+
     public static ThriftType getType(TFieldIdEnum tFieldIdEnum, TBase tBase) {
         FieldValueMetaData valueMetaData = getValueMetaData(tFieldIdEnum, tBase);
+        return getType(valueMetaData);
+    }
+
+    public static ThriftType getType(FieldValueMetaData valueMetaData) {
         if (valueMetaData.isBinary()) {
             return ThriftType.BINARY;
         }

@@ -44,33 +44,17 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
             } else {
                 ElementContext elementContext = stack.peek();
 
-                if (elementContext.isTBaseElementContext()) {
-                    TBaseElementContext tBaseElementContext = elementContext.asTBaseElementContext();
-
-                    TBase value = tBaseElementContext.getValue();
-
-                    FieldValueMetaData valueMetaData = TBaseUtil.getValueMetaData(tFieldIdEnum, value);
-                    ThriftType type = ThriftType.findByCode(valueMetaData.getType());
-                    TBase child = ((StructMetaData) valueMetaData).getStructClass().newInstance();
-
-                    value.setFieldValue(tFieldIdEnum, child);
-                    stack.addFirst(new TBaseElementContext(type, valueMetaData, child));
-                    return;
-                }
-
-                if (elementContext.isCollectionElementContext()) {
-                    CollectionElementContext collectionElementContext = elementContext.asCollectionElementContext();
-
-                    FieldValueMetaData valueMetaData = collectionElementContext.getElementMetaData();
-                    TBase child = ((StructMetaData) valueMetaData).getStructClass().newInstance();
-
-                    collectionElementContext.getValue().add(child);
-                    stack.addFirst(new TBaseElementContext(ThriftType.STRUCT, valueMetaData, child));
-                }
+                FieldValueMetaData valueMetaData = TBaseUtil.getValueMetaData(tFieldIdEnum, elementContext);
+                ThriftType type = ThriftType.findByCode(valueMetaData.getType());
+                TBase child = ((StructMetaData) valueMetaData).getStructClass().newInstance();
+                saveValueInElementContext(elementContext, child);
+                stack.addFirst(new TBaseElementContext(type, valueMetaData, child));
             }
+
         } catch (InstantiationException | IllegalAccessException ex) {
             throw new IOException(ex);
         }
+
     }
 
     @Override
@@ -98,47 +82,22 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
     public void beginList(int size) throws IOException {
         ElementContext elementContext = stack.peek();
 
-        if (elementContext.isTBaseElementContext()) {
-            TBaseElementContext tBaseElementContext = elementContext.asTBaseElementContext();
-
-            TBase value = tBaseElementContext.getValue();
-            FieldValueMetaData valueMetaData = TBaseUtil.getValueMetaData(tFieldIdEnum, value);
-            ThriftType type = ThriftType.findByCode(valueMetaData.getType());
-            switch (type) {
-                case LIST:
-                    List list = new ArrayList<>(size);
-                    value.setFieldValue(tFieldIdEnum, list);
-                    stack.addFirst(new CollectionElementContext(type, valueMetaData, list));
-                    break;
-                case SET:
-                    Set set = new HashSet(size);
-                    value.setFieldValue(tFieldIdEnum, set);
-                    stack.addFirst(new CollectionElementContext(type, valueMetaData, set));
-                    break;
-                default:
-                    throw new BadFormatException(String.format("Field '%s' value expected '%s', actual collection", tFieldIdEnum.getFieldName(), type));
-            }
-            return;
-        }
-
-        if (elementContext.isCollectionElementContext()) {
-            CollectionElementContext collectionElementContext = elementContext.asCollectionElementContext();
-            FieldValueMetaData valueMetaData = collectionElementContext.getElementMetaData();
-            ThriftType type = ThriftType.findByCode(valueMetaData.getType());
-            switch (type) {
-                case LIST:
-                    List list = new ArrayList<>(size);
-                    collectionElementContext.getValue().add(list);
-                    stack.addFirst(new CollectionElementContext(type, valueMetaData, list));
-                    break;
-                case SET:
-                    Set set = new HashSet(size);
-                    collectionElementContext.getValue().add(set);
-                    stack.addFirst(new CollectionElementContext(type, valueMetaData, set));
-                    break;
-                default:
-                    throw new BadFormatException(String.format("Field '%s' value expected '%s', actual collection", tFieldIdEnum.getFieldName(), type));
-            }
+        FieldValueMetaData valueMetaData = TBaseUtil.getValueMetaData(tFieldIdEnum, elementContext);
+        ThriftType type = ThriftType.findByCode(valueMetaData.getType());
+        
+        switch (type) {
+            case LIST:
+                List list = new ArrayList<>(size);
+                saveValueInElementContext(elementContext, list);
+                stack.addFirst(new CollectionElementContext(type, valueMetaData, list));
+                break;
+            case SET:
+                Set set = new HashSet(size);
+                saveValueInElementContext(elementContext, set);
+                stack.addFirst(new CollectionElementContext(type, valueMetaData, set));
+                break;
+            default:
+                throw new BadFormatException(String.format("Field '%s' value expected '%s', actual collection", tFieldIdEnum.getFieldName(), type));
         }
     }
 
@@ -221,14 +180,7 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
     @Override
     public void value(long value) throws IOException {
         ElementContext elementContext = stack.peek();
-        ThriftType type;
-        if (elementContext.isTBaseElementContext()) {
-            type = TBaseUtil.getType(tFieldIdEnum, elementContext.asTBaseElementContext().getValue());
-        } else {
-            CollectionElementContext collectionElementContext = elementContext.asCollectionElementContext();
-            FieldValueMetaData elementMetaData = collectionElementContext.getElementMetaData();
-            type = ThriftType.findByCode(elementMetaData.getType());
-        }
+        ThriftType type = TBaseUtil.getType(tFieldIdEnum, elementContext);
 
         switch (type) {
             case BYTE:
@@ -257,25 +209,29 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
     private void value(Object value, ThriftType actualType) throws IOException {
         ElementContext elementContext = stack.peek();
 
-        if (elementContext.isTBaseElementContext()) {
+        ThriftType expectedType = TBaseUtil.getType(tFieldIdEnum, elementContext);
 
-            TBaseElementContext tBaseElementContext = elementContext.asTBaseElementContext();
-            TBase tBase = tBaseElementContext.getValue();
-
-            ThriftType expectedType = TBaseUtil.getType(tFieldIdEnum, tBase);
-
-            if (expectedType != actualType) {
-                throw new BadFormatException(String.format("Field '%s' value expected '%s', actual '%s'", tFieldIdEnum.getFieldName(), expectedType, actualType));
-            }
-            tBase.setFieldValue(tFieldIdEnum, value);
-            return;
+        if (expectedType != actualType) {
+            throw new BadFormatException(String.format("Field '%s' value expected '%s', actual '%s'", tFieldIdEnum.getFieldName(), expectedType, actualType));
         }
 
+        saveValueInElementContext(elementContext, value);
+    }
+
+    private void saveValueInElementContext(ElementContext elementContext, Object value) throws IOException {
+        if (elementContext.isTBaseElementContext()) {
+            if (tFieldIdEnum == null) {
+                //TODO add error message
+                throw new BadFormatException();
+            }
+            TBaseElementContext tBaseElementContext = elementContext.asTBaseElementContext();
+            tBaseElementContext.getValue().setFieldValue(tFieldIdEnum, value);
+            return;
+        }
         if (elementContext.isCollectionElementContext()) {
             CollectionElementContext collectionElementContext = elementContext.asCollectionElementContext();
             collectionElementContext.getValue().add(value);
         }
-
     }
 
     @Override
