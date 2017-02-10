@@ -3,15 +3,10 @@ package com.rbkmoney.kebab.kit.tbase;
 import com.rbkmoney.kebab.StructHandler;
 import com.rbkmoney.kebab.exception.BadFormatException;
 import com.rbkmoney.kebab.kit.tbase.context.*;
-import gnu.trove.list.linked.TLinkedList;
-import gnu.trove.set.hash.TLinkedHashSet;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
 import org.apache.thrift.TFieldRequirementType;
-import org.apache.thrift.meta_data.FieldMetaData;
-import org.apache.thrift.meta_data.FieldValueMetaData;
-import org.apache.thrift.meta_data.MapMetaData;
-import org.apache.thrift.meta_data.StructMetaData;
+import org.apache.thrift.meta_data.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -28,7 +23,6 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
     private TFieldIdEnum tFieldIdEnum;
 
     private R result;
-
 
     public TBaseHandler(Class<R> parentClass) {
         this.parentClass = parentClass;
@@ -230,7 +224,19 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
     @Override
     public void value(String value) throws IOException {
-        value(value, ThriftType.STRING);
+        ElementContext elementContext = stack.peek();
+        FieldValueMetaData valueMetaData = TBaseUtil.getValueMetaData(tFieldIdEnum, elementContext);
+        ThriftType type = ThriftType.findByCode(valueMetaData.getType());
+
+        switch (type) {
+            case STRING:
+                value(value, ThriftType.STRING);
+                break;
+            case ENUM:
+                Class enumClass = ((EnumMetaData) valueMetaData).getEnumClass();
+                value(Enum.valueOf(enumClass, value), ThriftType.ENUM);
+                break;
+        }
     }
 
     @Override
@@ -262,7 +268,7 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
                 value(value, ThriftType.LONG);
                 break;
             default:
-                throw new BadFormatException(String.format("Field '%s' value expected '%s', actual integer", tFieldIdEnum.getFieldName(), type));
+                throw new BadFormatException(String.format("value expected '%s', actual integer", type));
         }
 
     }
@@ -272,9 +278,9 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
         ThriftType expectedType = TBaseUtil.getType(tFieldIdEnum, elementContext);
 
-//        if (expectedType != actualType) {
-//            throw new BadFormatException(String.format("Field '%s' value expected '%s', actual '%s'", tFieldIdEnum.getFieldName(), expectedType, actualType));
-//        }
+        if (expectedType != actualType) {
+            throw new BadFormatException(String.format("Value expected '%s', actual '%s'", expectedType, actualType));
+        }
 
         saveValueInElementContext(elementContext, value);
     }
