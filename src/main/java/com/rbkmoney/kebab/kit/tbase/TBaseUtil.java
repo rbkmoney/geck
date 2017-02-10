@@ -40,6 +40,14 @@ public class TBaseUtil {
             return ((CollectionElementContext) elementContext).getElementMetaData();
         }
 
+        if (elementContext.isMapKeyElementContext()) {
+            return ((MapKeyElementContext) elementContext).getKeyMetaData();
+        }
+
+        if (elementContext.isMapValueElementContext()) {
+            return ((MapValueElementContext) elementContext).getValueMetaData();
+        }
+
         throw new IllegalStateException("Unknown element context");
     }
 

@@ -113,8 +113,10 @@ public class TBaseProcessor implements StructProcessor<TBase> {
     }
 
     private void writeSet(Set objectSet, SetMetaData metaData, StructHandler handler) throws IOException {
+        System.out.println(objectSet);
         handler.beginList(objectSet.size());
         for (Object object : objectSet) {
+            System.out.println(object);
             write(object, metaData.getElementMetaData(), handler);
         }
         handler.endList();

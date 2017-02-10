@@ -3,6 +3,8 @@ package com.rbkmoney.kebab.kit.tbase;
 import com.rbkmoney.kebab.StructHandler;
 import com.rbkmoney.kebab.exception.BadFormatException;
 import com.rbkmoney.kebab.kit.tbase.context.*;
+import gnu.trove.list.linked.TLinkedList;
+import gnu.trove.set.hash.TLinkedHashSet;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
 import org.apache.thrift.TFieldRequirementType;
@@ -91,12 +93,12 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
         switch (type) {
             case LIST:
-                List list = new ArrayList<>(size);
+                List list = new ArrayList(size);
                 saveValueInElementContext(elementContext, list);
                 stack.addFirst(new CollectionElementContext(valueMetaData, list));
                 break;
             case SET:
-                Set set = new HashSet(size);
+                Set set = new LinkedHashSet(size);
                 saveValueInElementContext(elementContext, set);
                 stack.addFirst(new CollectionElementContext(valueMetaData, set));
                 break;
@@ -270,9 +272,9 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
         ThriftType expectedType = TBaseUtil.getType(tFieldIdEnum, elementContext);
 
-        if (expectedType != actualType) {
-            throw new BadFormatException(String.format("Field '%s' value expected '%s', actual '%s'", tFieldIdEnum.getFieldName(), expectedType, actualType));
-        }
+//        if (expectedType != actualType) {
+//            throw new BadFormatException(String.format("Field '%s' value expected '%s', actual '%s'", tFieldIdEnum.getFieldName(), expectedType, actualType));
+//        }
 
         saveValueInElementContext(elementContext, value);
     }
