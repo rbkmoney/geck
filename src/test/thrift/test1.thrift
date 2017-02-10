@@ -11,6 +11,7 @@ struct TestObject {
     8: optional map<string, i32> maps
     9: optional list<Status> statuses
     10: required bool active
+    11: required map<map<set<Kek>, Status>, map<Status, set<Ids>>> kebabMap
 }
 
 union Status {
@@ -29,6 +30,10 @@ struct Fail {
 
 struct Ok {
 
+}
+
+enum Kek {
+    TEST1, TEST2, TEST3
 }
 
 struct Ids {
