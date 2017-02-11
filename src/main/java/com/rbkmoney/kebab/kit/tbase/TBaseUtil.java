@@ -1,6 +1,5 @@
 package com.rbkmoney.kebab.kit.tbase;
 
-import com.rbkmoney.kebab.kit.tbase.context.*;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
 import org.apache.thrift.meta_data.FieldMetaData;
@@ -29,58 +28,6 @@ public class TBaseUtil {
 
     public static FieldValueMetaData getValueMetaData(TFieldIdEnum tFieldIdEnum, TBase tBase) {
         return getMetaData(tFieldIdEnum, tBase).valueMetaData;
-    }
-
-    public static FieldValueMetaData getValueMetaData(TFieldIdEnum tFieldIdEnum, ElementContext elementContext) {
-        if (elementContext.isTBaseElementContext()) {
-            return getValueMetaData(tFieldIdEnum, ((TBaseElementContext) elementContext).getValue());
-        }
-
-        if (elementContext.isCollectionElementContext()) {
-            return ((CollectionElementContext) elementContext).getElementMetaData();
-        }
-
-        if (elementContext.isMapKeyElementContext()) {
-            return ((MapKeyElementContext) elementContext).getKeyMetaData();
-        }
-
-        if (elementContext.isMapValueElementContext()) {
-            return ((MapValueElementContext) elementContext).getValueMetaData();
-        }
-
-        throw new IllegalStateException("Unknown element context");
-    }
-
-    public static ThriftType getType(TFieldIdEnum tFieldIdEnum, ElementContext context) {
-        if (context.isTBaseElementContext()) {
-            return getType(tFieldIdEnum, ((TBaseElementContext) context).getValue());
-        }
-
-        if (context.isCollectionElementContext()) {
-            return getType(((CollectionElementContext) context).getElementMetaData());
-        }
-
-        if (context.isMapKeyElementContext()) {
-            return getType(((MapKeyElementContext) context).getKeyMetaData());
-        }
-
-        if (context.isMapValueElementContext()) {
-            return getType(((MapValueElementContext) context).getValueMetaData());
-        }
-
-        throw new IllegalStateException("Unknown element context");
-    }
-
-    public static ThriftType getType(TFieldIdEnum tFieldIdEnum, TBase tBase) {
-        FieldValueMetaData valueMetaData = getValueMetaData(tFieldIdEnum, tBase);
-        return getType(valueMetaData);
-    }
-
-    public static ThriftType getType(FieldValueMetaData valueMetaData) {
-        if (valueMetaData.isBinary()) {
-            return ThriftType.BINARY;
-        }
-        return ThriftType.findByCode(valueMetaData.getType());
     }
 
 }

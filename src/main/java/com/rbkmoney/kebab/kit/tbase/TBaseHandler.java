@@ -1,8 +1,8 @@
 package com.rbkmoney.kebab.kit.tbase;
 
+import com.rbkmoney.kebab.ByteStack;
 import com.rbkmoney.kebab.StructHandler;
 import com.rbkmoney.kebab.exception.BadFormatException;
-import com.rbkmoney.kebab.kit.tbase.context.*;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
 import org.apache.thrift.TFieldRequirementType;
@@ -16,9 +16,25 @@ import java.util.*;
  */
 public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
+    final static byte STRUCT = 1;
+
+    final static byte LIST = 2;
+
+    final static byte SET = 3;
+
+    final static byte MAP = 4;
+
+    final static byte KEY = 5;
+
+    final static byte VALUE = 6;
+
     private final Class<R> parentClass;
 
-    private LinkedList<ElementContext> stack = new LinkedList<>();
+    private ByteStack stateStack = new ByteStack();
+
+    private LinkedList elementStack = new LinkedList();
+
+    private LinkedList<FieldValueMetaData> valueMetaDataStack = new LinkedList<>();
 
     private TFieldIdEnum tFieldIdEnum;
 
@@ -31,39 +47,35 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
     @Override
     public void beginStruct(int size) throws IOException {
         try {
-            if (stack.isEmpty()) {
+            if (stateStack.isEmpty()) {
                 TBase tBase = parentClass.newInstance();
-
-                stack.add(new TBaseElementContext(tBase));
+                addElement(STRUCT, tBase);
             } else {
-                ElementContext elementContext = stack.peek();
-
-                FieldValueMetaData valueMetaData = TBaseUtil.getValueMetaData(tFieldIdEnum, elementContext);
+                FieldValueMetaData valueMetaData = getChildValueMetaData();
                 TBase child = ((StructMetaData) valueMetaData).getStructClass().newInstance();
-                saveValueInElementContext(elementContext, child);
-                stack.addFirst(new TBaseElementContext(child));
+                saveValue(child, elementStack.peek());
+                addElement(STRUCT, child, valueMetaData);
             }
-
         } catch (InstantiationException | IllegalAccessException ex) {
             throw new IOException(ex);
         }
+    }
 
+    private void addElement(byte state, Object value) {
+        addElement(state, value, null);
+    }
+
+    private void addElement(byte state, Object value, FieldValueMetaData fieldValueMetaData) {
+        stateStack.push(state);
+        elementStack.addFirst(value);
+        valueMetaDataStack.addFirst(fieldValueMetaData);
     }
 
     @Override
     public void endStruct() throws IOException {
-        if (stack.isEmpty()) {
-            throw new BadFormatException();
-        }
-
-        ElementContext elementContext = stack.pop();
-
-        if (!elementContext.isTBaseElementContext()) {
-            throw new BadFormatException("'BeginStruct' not found");
-        }
-
-        TBase tBase = ((TBaseElementContext) elementContext).getValue();
+        TBase tBase = (TBase) end(STRUCT);
         checkRequiredFields(tBase);
+        valueMetaDataStack.pop();
 
         result = (R) tBase;
     }
@@ -80,139 +92,110 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
     @Override
     public void beginList(int size) throws IOException {
-        ElementContext elementContext = stack.peek();
-
-        FieldValueMetaData valueMetaData = TBaseUtil.getValueMetaData(tFieldIdEnum, elementContext);
-        ThriftType type = ThriftType.findByCode(valueMetaData.getType());
+        FieldValueMetaData valueMetaData = getChildValueMetaData();
+        ThriftType type = ThriftType.findByMetaData(valueMetaData);
 
         switch (type) {
             case LIST:
                 List list = new ArrayList(size);
-                saveValueInElementContext(elementContext, list);
-                stack.addFirst(new CollectionElementContext(valueMetaData, list));
+                saveValue(list, elementStack.peek());
+                addElement(LIST, list, valueMetaData);
                 break;
             case SET:
-                Set set = new LinkedHashSet(size);
-                saveValueInElementContext(elementContext, set);
-                stack.addFirst(new CollectionElementContext(valueMetaData, set));
+                Set set = new HashSet(size);
+                saveValue(set, elementStack.peek());
+                addElement(SET, set, valueMetaData);
                 break;
             default:
-                throw new BadFormatException(String.format("Field '%s' value expected '%s', actual collection", tFieldIdEnum.getFieldName(), type));
+                throw new BadFormatException(String.format("value expected '%s', actual collection", type));
+        }
+    }
+
+    private FieldValueMetaData getChildValueMetaData() {
+        FieldValueMetaData valueMetaData = valueMetaDataStack.peek();
+        switch (stateStack.peek()) {
+            case STRUCT:
+                return TBaseUtil.getValueMetaData(tFieldIdEnum, (TBase) elementStack.peek());
+            case LIST:
+                return ((ListMetaData) valueMetaData).getElementMetaData();
+            case SET:
+                return ((SetMetaData) valueMetaData).getElementMetaData();
+            case KEY:
+                return ((MapMetaData) valueMetaData).getKeyMetaData();
+            case VALUE:
+                return ((MapMetaData) valueMetaData).getValueMetaData();
+            default:
+                return valueMetaData;
         }
     }
 
     @Override
     public void endList() throws IOException {
-        if (stack.isEmpty()) {
-            throw new BadFormatException("Stack is empty");
-        }
-
-        ElementContext context = stack.pop();
-
-        if (!context.isCollectionElementContext()) {
-            throw new BadFormatException("'BeginList' not found");
-        }
+        end(LIST, SET);
+        valueMetaDataStack.pop();
     }
 
     @Override
     public void beginMap(int size) throws IOException {
-        ElementContext elementContext = stack.peek();
-
-        FieldValueMetaData valueMetaData = TBaseUtil.getValueMetaData(tFieldIdEnum, elementContext);
+        FieldValueMetaData valueMetaData = getChildValueMetaData();
 
         Map map = new HashMap(size);
-        saveValueInElementContext(elementContext, map);
-        stack.addFirst(new MapElementContext((MapMetaData) valueMetaData, map));
+        saveValue(map, elementStack.peek());
+        addElement(MAP, map, valueMetaData);
     }
 
     @Override
     public void endMap() throws IOException {
-        if (stack.isEmpty()) {
-            throw new BadFormatException("Stack is empty");
-        }
+        end(MAP);
+        valueMetaDataStack.pop();
+    }
 
-        ElementContext context = stack.pop();
-
-        if (!context.isMapElementContext()) {
-            throw new BadFormatException("'beginMap' not found");
+    private Object end(byte... requiredStates) throws IOException {
+        byte state = stateStack.pop();
+        for (byte requireState : requiredStates) {
+            if (state == requireState) {
+                return elementStack.pop();
+            }
         }
+        throw new BadFormatException("incorrect state " + state);
     }
 
     @Override
     public void beginKey() throws IOException {
-        ElementContext elementContext = stack.peek();
-
-        if (!elementContext.isMapElementContext()) {
-            throw new BadFormatException();
-        }
-
-        MapElementContext parent = (MapElementContext) elementContext;
-
-        stack.addFirst(new MapKeyElementContext(parent));
+        stateStack.push(KEY);
     }
 
     @Override
     public void endKey() throws IOException {
-        ElementContext elementContext = stack.peek();
-
-        if (!elementContext.isMapKeyElementContext()) {
-            throw new BadFormatException("'beginKey' not found");
+        byte state = stateStack.peek();
+        if (state != KEY) {
+            throw new BadFormatException("incorrect state " + state);
         }
     }
 
     @Override
     public void beginValue() throws IOException {
-        ElementContext elementContext = stack.peek();
-
-        if (!elementContext.isMapKeyElementContext()) {
-            throw new BadFormatException("'beginKey' not found");
-        }
-
-        MapKeyElementContext mapKeyElementContext = (MapKeyElementContext) elementContext;
-
-        stack.addFirst(new MapValueElementContext(mapKeyElementContext.getParent()));
-
+        stateStack.push(VALUE);
     }
 
     @Override
     public void endValue() throws IOException {
-        ElementContext elementContext = stack.pop();
 
-        if (!elementContext.isMapValueElementContext()) {
-            throw new BadFormatException("'beginValue' not found");
-        }
+        Object value = end(VALUE);
+        Object key = end(KEY);
 
-        Object value = ((MapValueElementContext) elementContext).getValue();
-
-        elementContext = stack.pop();
-
-        if (!elementContext.isMapKeyElementContext()) {
-            throw new BadFormatException("'beginKey' not found");
-        }
-
-        Object key = ((MapKeyElementContext) elementContext).getKey();
-
-
-        elementContext = stack.peek();
-
-        if (!elementContext.isMapElementContext()) {
-            throw new BadFormatException("'beginMap' not found");
-        }
-
-        ((MapElementContext) elementContext).getValue().put(key, value);
+        ((Map) elementStack.peek()).put(key, value);
     }
 
     @Override
     public void name(String name) throws IOException {
         Objects.requireNonNull(name, "name must not be null");
 
-        ElementContext elementContext = stack.peek();
-
-        if (!elementContext.isTBaseElementContext()) {
-            throw new BadFormatException("'name' must be caused only in struct");
+        if (tFieldIdEnum != null) {
+            throw new BadFormatException("'name' have was caused");
         }
 
-        TBase tBase = ((TBaseElementContext) elementContext).getValue();
+        TBase tBase = (TBase) elementStack.peek();
 
         tFieldIdEnum = TBaseUtil.getField(name, tBase);
     }
@@ -224,9 +207,8 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
     @Override
     public void value(String value) throws IOException {
-        ElementContext elementContext = stack.peek();
-        FieldValueMetaData valueMetaData = TBaseUtil.getValueMetaData(tFieldIdEnum, elementContext);
-        ThriftType type = ThriftType.findByCode(valueMetaData.getType());
+        FieldValueMetaData valueMetaData = getChildValueMetaData();
+        ThriftType type = ThriftType.findByMetaData(valueMetaData);
 
         switch (type) {
             case STRING:
@@ -251,74 +233,64 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
     @Override
     public void value(long value) throws IOException {
-        ElementContext elementContext = stack.peek();
-        ThriftType type = TBaseUtil.getType(tFieldIdEnum, elementContext);
+        FieldValueMetaData valueMetaData = getChildValueMetaData();
+        ThriftType type = ThriftType.findByMetaData(valueMetaData);
 
         switch (type) {
             case BYTE:
-                value((byte) value, ThriftType.BYTE);
+                value((byte) value, valueMetaData, ThriftType.BYTE);
                 break;
             case SHORT:
-                value((short) value, ThriftType.SHORT);
+                value((short) value, valueMetaData, ThriftType.SHORT);
                 break;
             case INTEGER:
-                value((int) value, ThriftType.INTEGER);
+                value((int) value, valueMetaData, ThriftType.INTEGER);
                 break;
             case LONG:
-                value(value, ThriftType.LONG);
+                value(value, valueMetaData, ThriftType.LONG);
                 break;
             default:
-                throw new BadFormatException(String.format("value expected '%s', actual integer", type));
+                throw new BadFormatException(String.format("incorrect type of value: expected '%s', actual integer", type));
         }
 
     }
 
     private void value(Object value, ThriftType actualType) throws IOException {
-        ElementContext elementContext = stack.peek();
-
-        ThriftType expectedType = TBaseUtil.getType(tFieldIdEnum, elementContext);
-
-        if (expectedType != actualType) {
-            throw new BadFormatException(String.format("Value expected '%s', actual '%s'", expectedType, actualType));
-        }
-
-        saveValueInElementContext(elementContext, value);
+        FieldValueMetaData valueMetaData = getChildValueMetaData();
+        value(value, valueMetaData, actualType);
     }
 
-    private void saveValueInElementContext(ElementContext elementContext, Object value) throws IOException {
-        if (elementContext.isTBaseElementContext()) {
-            if (tFieldIdEnum == null) {
-                throw new BadFormatException("'name' not found");
-            }
-            ((TBaseElementContext) elementContext).getValue().setFieldValue(tFieldIdEnum, value);
-            tFieldIdEnum = null;
+    private void value(Object value, FieldValueMetaData valueMetaData, ThriftType actualType) throws IOException {
+        ThriftType expectedType = ThriftType.findByMetaData(valueMetaData);
+        if (expectedType != actualType) {
+            throw new BadFormatException(String.format("incorrect type of value: expected '%s', actual '%s'", expectedType, actualType));
         }
 
-        if (tFieldIdEnum != null) {
-            throw new BadFormatException("'name' must be null");
-        }
+        saveValue(value, elementStack.peek());
+    }
 
-        if (elementContext.isCollectionElementContext()) {
-            ((CollectionElementContext) elementContext).getValue().add(value);
-        }
-
-        if (elementContext.isMapKeyElementContext()) {
-            ((MapKeyElementContext) elementContext).setKey(value);
-        }
-
-        if (elementContext.isMapValueElementContext()) {
-            ((MapValueElementContext) elementContext).setValue(value);
+    private void saveValue(Object value, Object parent) throws IOException {
+        switch (stateStack.peek()) {
+            case STRUCT:
+                ((TBase) parent).setFieldValue(tFieldIdEnum, value);
+                tFieldIdEnum = null;
+                break;
+            case LIST:
+            case SET:
+                ((Collection) parent).add(value);
+                break;
+            case KEY:
+            case VALUE:
+                elementStack.addFirst(value);
+                break;
         }
     }
 
     @Override
     public void nullValue() throws IOException {
-        if (stack.isEmpty()) {
-            return;
+        if (!stateStack.isEmpty()) {
+            saveValue(null, elementStack.peek());
         }
-
-        ElementContext elementContext = stack.peek();
-        saveValueInElementContext(elementContext, null);
     }
 
     @Override

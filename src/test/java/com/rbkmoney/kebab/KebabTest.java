@@ -35,15 +35,6 @@ public class KebabTest {
     }
 
     @Test
-    public void tBaseSerializerTest() throws IOException {
-        TestObject testObject = getTestObject();
-        long start = System.currentTimeMillis();
-        new TBaseProcessor().process(testObject, new MockStructHandler());
-        long end = System.currentTimeMillis();
-        System.out.println("TBaseSerializer: execution time " + (end - start) + " ms");
-    }
-
-    @Test
     public void jsonTest() throws JSONException {
         TestObject testObject = getTestObject();
 
