@@ -132,7 +132,7 @@ public class KebabTest {
                 new AbstractMap.SimpleEntry("Json", jsonConsumer)
         );
         System.out.println("Warmup...");
-        consumers.stream().forEach(entry -> IntStream.range(0, 100000).forEach(i -> entry.getValue().apply(i)));
+        consumers.stream().forEach(entry -> IntStream.range(0, 10000).forEach(i -> entry.getValue().apply(i)));
 
         System.out.println("Test...");
         consumers.stream().forEach(entry -> {

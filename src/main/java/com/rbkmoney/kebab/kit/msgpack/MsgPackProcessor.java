@@ -12,9 +12,8 @@ import org.msgpack.value.ValueType;
 
 import java.io.IOException;
 
-import static com.rbkmoney.kebab.kit.msgpack.MsgPackFlags.*;
+import static com.rbkmoney.kebab.kit.EventFlags.*;
 import static com.rbkmoney.kebab.kit.msgpack.StringUtil.decompressAsciiString;
-import static com.rbkmoney.kebab.kit.msgpack.StringUtil.fromAsciiBytes;
 
 /**
  * Created by vpankrashkin on 07.02.17.
