@@ -39,8 +39,8 @@ public class Kebab {
         }
     }
 
-    public byte[] write(T src, StructHandler writer) {
-        StructProcessor structProcessor = new TBaseStructProcessor();
+    public <R> R write(TBase src, StructHandler<R> writer) {
+        TBaseProcessor structProcessor = new TBaseProcessor();
         try {
             return structProcessor.process(src, writer);
         } catch (IOException ex) {

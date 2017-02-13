@@ -1,6 +1,12 @@
 package com.rbkmoney.kebab;
 
 import com.rbkmoney.kebab.handler.HandlerStub;
+import com.rbkmoney.kebab.kit.mock.MockTBaseProcessor;
+import com.rbkmoney.kebab.kit.msgpack.MsgPackHandler;
+import com.rbkmoney.kebab.kit.msgpack.MsgPackProcessor;
+import com.rbkmoney.kebab.kit.object.ObjectHandler;
+import com.rbkmoney.kebab.kit.object.ObjectProcessor;
+import com.rbkmoney.kebab.kit.tbase.TBaseHandler;
 import com.rbkmoney.kebab.kit.tbase.TBaseProcessor;
 import com.rbkmoney.kebab.test.Status;
 import com.rbkmoney.kebab.test.TestObject;
@@ -21,7 +27,8 @@ import java.util.stream.IntStream;
 import java.util.zip.GZIPOutputStream;
 
 import static com.rbkmoney.kebab.KebabUtil.getTestObject;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by tolkonepiu on 25/01/2017.
@@ -30,8 +37,14 @@ public class KebabTest {
     Kebab kebab = new Kebab();
 
     @Test
-    public void testKebab() {
+    public void testKebab() throws IOException {
         assertTrue(kebab.remove());
+        TestObject testObject1 = getTestObject(100, i -> Status.unknown(new Unknown("unknown")));//new MockTBaseProcessor().process(new TestObject(), new TBaseHandler<>(TestObject.class));
+        TestObject testObject2 = new ObjectProcessor().process(
+                MsgPackProcessor.newBinaryInstance().process(
+                        new TBaseProcessor().process(testObject1, MsgPackHandler.newBufferedInstance(true)),
+                        new ObjectHandler()), new TBaseHandler<>(TestObject.class));
+        assertEquals(testObject1, testObject2);
     }
 
     @Test
@@ -129,11 +142,10 @@ public class KebabTest {
         consumers.stream().forEach(entry -> {
             long startTime = System.currentTimeMillis();
             int bytes = IntStream.range(0, 50000).map(i -> entry.getValue().apply(i)).sum();
-            System.out.println(entry.getKey() + "\t Time:\t" + (System.currentTimeMillis() - startTime) + "\t Bytes:\t" +bytes);
+            System.out.println(entry.getKey() + "\t Time:\t" + (System.currentTimeMillis() - startTime) + "\t Bytes:\t" + bytes);
         });
 
     }
-
 
 
 }
