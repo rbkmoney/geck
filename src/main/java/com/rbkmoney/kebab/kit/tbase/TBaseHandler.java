@@ -167,13 +167,17 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
     }
 
     private void checkState(byte... requiredStates) throws IOException {
+        if (stateStack.isEmpty()) {
+            throw new BadFormatException("stack is empty");
+        }
+
         byte state = stateStack.peek();
         for (byte requireState : requiredStates) {
             if (state == requireState) {
                 return;
             }
         }
-        throw new BadFormatException("incorrect state " + state);
+        throw new BadFormatException(String.format("incorrect state %d, expected states: %s", state, Arrays.toString(requiredStates)));
     }
 
     @Override
