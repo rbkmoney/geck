@@ -11,8 +11,6 @@ import java.util.Random;
  */
 public class RandomUtil {
 
-    public final static Random RANDOM = new Random();
-
     public static byte randomByte() {
         return (byte) randomNumber(Byte.SIZE);
     }
@@ -22,47 +20,57 @@ public class RandomUtil {
     }
 
     public static int randomUnsignedNumber(int bitsSize, int maxValue) {
-        return randomNumber(bitsSize) & maxValue;
+        return randomUnsignedNumber(bitsSize, maxValue, new Random());
+    }
+
+    public static int randomUnsignedNumber(int bitsSize, int maxValue, Random random) {
+        return randomNumber(bitsSize, random) & maxValue;
     }
 
     public static int randomNumber(int bitSize) {
-        int value = RANDOM.nextInt();
-        for (int n = Integer.SIZE / bitSize; --n > 0; value >>= bitSize);
+        return randomNumber(bitSize, new Random());
+    }
+
+    public static int randomNumber(int bitSize, Random random) {
+        int value = random.nextInt();
+        for (int n = Integer.SIZE / bitSize; --n > 0; value >>= bitSize) ;
         return value;
     }
 
     public static int randomInt() {
-        return RANDOM.nextInt();
+        return new Random().nextInt();
     }
 
     public static int randomInt(int bound) {
-        return RANDOM.nextInt(bound);
+        return new Random().nextInt(bound);
     }
 
     public static long randomLong() {
-        return RANDOM.nextLong();
+        return new Random().nextLong();
     }
 
     public static double randomDouble() {
-        return RANDOM.nextDouble();
+        return new Random().nextDouble();
     }
 
     public static boolean randomBoolean() {
-        return RANDOM.nextBoolean();
+        return new Random().nextBoolean();
     }
 
     public static byte[] randomByteArray(int maxSize) {
-        int size = RANDOM.nextInt(maxSize);
+        Random random = new Random();
+        int size = random.nextInt(maxSize);
         byte[] byteArray = new byte[size];
-        RANDOM.nextBytes(byteArray);
+        random.nextBytes(byteArray);
         return byteArray;
     }
 
     public static String randomString(int maxLength) {
-        int size = RANDOM.nextInt(maxLength);
+        Random random = new Random();
+        int size = random.nextInt(maxLength);
         char[] value = new char[size];
         for (int i = 0; i < size; i++) {
-            value[i] = (char) randomUnsignedNumber(Character.SIZE, Character.MAX_VALUE);
+            value[i] = (char) randomUnsignedNumber(Character.SIZE, Character.MAX_VALUE, random);
         }
         return new String(value);
     }
@@ -70,7 +78,7 @@ public class RandomUtil {
     public static TEnum randomTEnum(Class<? extends TEnum> enumClass) {
         if (enumClass.isEnum()) {
             TEnum[] enums = enumClass.getEnumConstants();
-            int element = RANDOM.nextInt(enums.length);
+            int element = new Random().nextInt(enums.length);
             return enums[element];
         }
         return null;
@@ -78,7 +86,7 @@ public class RandomUtil {
 
     public static TFieldIdEnum randomField(TBase tBase) {
         TFieldIdEnum[] fields = tBase.getFields();
-        int element = RANDOM.nextInt(fields.length);
+        int element = new Random().nextInt(fields.length);
         return fields[element];
     }
 
