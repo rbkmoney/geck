@@ -6,6 +6,7 @@ import com.rbkmoney.kebab.exception.BadFormatException;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
 import org.apache.thrift.TFieldRequirementType;
+import org.apache.thrift.TUnion;
 import org.apache.thrift.meta_data.*;
 
 import java.io.IOException;
@@ -73,19 +74,30 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
     @Override
     public void endStruct() throws IOException {
-        TBase tBase = (TBase) end(STRUCT);
-        checkRequiredFields(tBase);
+        checkState(STRUCT);
+
+        TBase tBase = (TBase) elementStack.pop();
+        stateStack.pop();
         valueMetaDataStack.pop();
+
+        checkRequiredFields(tBase);
 
         result = (R) tBase;
     }
 
     private void checkRequiredFields(TBase tBase) throws BadFormatException {
-        Map<TFieldIdEnum, FieldMetaData> fieldValueMetaDataMap = tBase.getFieldMetaData();
-        for (TFieldIdEnum field : tBase.getFields()) {
-            FieldMetaData metaData = fieldValueMetaDataMap.get(field);
-            if (metaData.requirementType == TFieldRequirementType.REQUIRED && !tBase.isSet(field)) {
-                throw new BadFormatException(String.format("Field '%s' is required and must not be null", tFieldIdEnum.getFieldName()));
+        if (tBase instanceof TUnion) {
+            TUnion tUnion = (TUnion) tBase;
+            if (!tUnion.isSet()) {
+                throw new BadFormatException(String.format("one of fields in union '%s' must be set", tUnion.getClass().getSimpleName()));
+            }
+        } else {
+            Map<TFieldIdEnum, FieldMetaData> fieldValueMetaDataMap = tBase.getFieldMetaData();
+            for (TFieldIdEnum field : tBase.getFields()) {
+                FieldMetaData metaData = fieldValueMetaDataMap.get(field);
+                if (metaData.requirementType == TFieldRequirementType.REQUIRED && !tBase.isSet(field)) {
+                    throw new BadFormatException(String.format("Field '%s' is required and must not be null", field.getFieldName()));
+                }
             }
         }
     }
@@ -131,7 +143,9 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
     @Override
     public void endList() throws IOException {
-        end(LIST, SET);
+        checkState(LIST, SET);
+        stateStack.pop();
+        elementStack.pop();
         valueMetaDataStack.pop();
     }
 
@@ -146,15 +160,17 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
     @Override
     public void endMap() throws IOException {
-        end(MAP);
+        checkState(MAP);
+        stateStack.pop();
+        elementStack.pop();
         valueMetaDataStack.pop();
     }
 
-    private Object end(byte... requiredStates) throws IOException {
-        byte state = stateStack.pop();
+    private void checkState(byte... requiredStates) throws IOException {
+        byte state = stateStack.peek();
         for (byte requireState : requiredStates) {
             if (state == requireState) {
-                return elementStack.pop();
+                return;
             }
         }
         throw new BadFormatException("incorrect state " + state);
@@ -162,28 +178,32 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
     @Override
     public void beginKey() throws IOException {
+        checkState(MAP);
         stateStack.push(KEY);
     }
 
     @Override
     public void endKey() throws IOException {
-        byte state = stateStack.peek();
-        if (state != KEY) {
-            throw new BadFormatException("incorrect state " + state);
-        }
+        checkState(KEY);
     }
 
     @Override
     public void beginValue() throws IOException {
+        checkState(KEY);
         stateStack.push(VALUE);
     }
 
     @Override
     public void endValue() throws IOException {
+        checkState(VALUE);
+        Object value = elementStack.pop();
+        stateStack.pop();
 
-        Object value = end(VALUE);
-        Object key = end(KEY);
+        checkState(KEY);
+        Object key = elementStack.pop();
+        stateStack.pop();
 
+        checkState(MAP);
         ((Map) elementStack.peek()).put(key, value);
     }
 
@@ -195,6 +215,7 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
             throw new BadFormatException("'name' have was caused");
         }
 
+        checkState(STRUCT);
         TBase tBase = (TBase) elementStack.peek();
 
         tFieldIdEnum = TBaseUtil.getField(name, tBase);
@@ -246,11 +267,8 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
             case INTEGER:
                 value((int) value, valueMetaData, ThriftType.INTEGER);
                 break;
-            case LONG:
-                value(value, valueMetaData, ThriftType.LONG);
-                break;
             default:
-                throw new BadFormatException(String.format("incorrect type of value: expected '%s', actual integer", type));
+                value(value, valueMetaData, ThriftType.LONG);
         }
 
     }

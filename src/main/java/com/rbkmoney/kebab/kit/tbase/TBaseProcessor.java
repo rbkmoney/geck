@@ -5,6 +5,7 @@ import com.rbkmoney.kebab.StructProcessor;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
 import org.apache.thrift.TFieldRequirementType;
+import org.apache.thrift.TUnion;
 import org.apache.thrift.meta_data.*;
 
 import java.io.IOException;
@@ -22,53 +23,59 @@ public class TBaseProcessor implements StructProcessor<TBase> {
         if (value == null) {
             handler.nullValue();
         } else {
-            writeStruct(value, handler);
+            processStruct(value, handler);
         }
 
         return handler.getResult();
     }
 
-    private void writeStruct(TBase value, StructHandler handler) throws IOException {
+    protected void processStruct(TBase value, StructHandler handler) throws IOException {
         TFieldIdEnum[] tFieldIdEnums = value.getFields();
         Map<TFieldIdEnum, FieldMetaData> fieldMetaDataMap = value.getFieldMetaData();
-        int size = getFieldsCount(value, tFieldIdEnums);
 
+        int size = TBaseUtil.getSetFieldsCount(value);
         handler.beginStruct(size);
 
-        for (TFieldIdEnum tFieldIdEnum : tFieldIdEnums) {
-            FieldMetaData fieldMetaData = fieldMetaDataMap.get(tFieldIdEnum);
-            if (value.isSet(tFieldIdEnum)) {
+        if (value instanceof TUnion) {
+            TUnion union = (TUnion) value;
+            if (union.isSet()) {
+                TFieldIdEnum tFieldIdEnum = union.getSetField();
                 handler.name(tFieldIdEnum.getFieldName());
-                write(value.getFieldValue(tFieldIdEnum), fieldMetaData.valueMetaData, handler);
-            } else if (fieldMetaData.requirementType == TFieldRequirementType.REQUIRED) {
-                throw new IllegalStateException(String.format("Field '%s' is required and must not be null", tFieldIdEnum.getFieldName()));
+                process(union.getFieldValue(), fieldMetaDataMap.get(tFieldIdEnum).valueMetaData, handler);
+            } else {
+                processUnsetUnion(union, handler);
+            }
+        } else {
+            for (TFieldIdEnum tFieldIdEnum : tFieldIdEnums) {
+                FieldMetaData fieldMetaData = fieldMetaDataMap.get(tFieldIdEnum);
+                if (value.isSet(tFieldIdEnum)) {
+                    handler.name(tFieldIdEnum.getFieldName());
+                    process(value.getFieldValue(tFieldIdEnum), fieldMetaData.valueMetaData, handler);
+                } else {
+                    processUnsetField(tFieldIdEnum, fieldMetaData, handler);
+                }
             }
         }
+
         handler.endStruct();
     }
 
-    private int getFieldsCount(TBase value, TFieldIdEnum[] tFieldIdEnums) {
-        int size = 0;
-        for (TFieldIdEnum tFieldIdEnum : tFieldIdEnums) {
-            if (value.isSet(tFieldIdEnum)) {
-                size++;
-            }
-        }
-        return size;
+    protected void processUnsetUnion(TUnion tUnion, StructHandler handler) throws IOException {
+        throw new IllegalStateException(String.format("one of fields in union '%s' must be set", tUnion.getClass().getSimpleName()));
     }
 
-    private void write(Object object, FieldValueMetaData fieldValueMetaData, StructHandler handler) throws IOException {
+    protected void processUnsetField(TFieldIdEnum tFieldIdEnum, FieldMetaData fieldMetaData, StructHandler handler) throws IOException {
+        if (fieldMetaData.requirementType == TFieldRequirementType.REQUIRED) {
+            throw new IllegalStateException(String.format("Field '%s' is required and must not be null", tFieldIdEnum.getFieldName()));
+        }
+    }
+
+    private void process(Object object, FieldValueMetaData fieldValueMetaData, StructHandler handler) throws IOException {
         if (object == null) {
             handler.nullValue();
-            return;
-        }
-
-        ThriftType type = ThriftType.findByCode(fieldValueMetaData.getType());
-        boolean isBinary = fieldValueMetaData.isBinary();
-
-        if (isBinary) {
-            handler.value((byte[]) object);
         } else {
+            ThriftType type = ThriftType.findByMetaData(fieldValueMetaData);
+
             switch (type) {
                 case BOOLEAN:
                     handler.value((boolean) object);
@@ -94,17 +101,20 @@ public class TBaseProcessor implements StructProcessor<TBase> {
                 case ENUM:
                     handler.value(object.toString());
                     break;
+                case BINARY:
+                    handler.value((byte[]) object);
+                    break;
                 case LIST:
-                    writeList((List) object, (ListMetaData) fieldValueMetaData, handler);
+                    processList((List) object, (ListMetaData) fieldValueMetaData, handler);
                     break;
                 case SET:
-                    writeSet((Set) object, (SetMetaData) fieldValueMetaData, handler);
+                    processSet((Set) object, (SetMetaData) fieldValueMetaData, handler);
                     break;
                 case MAP:
-                    writeMap((Map) object, (MapMetaData) fieldValueMetaData, handler);
+                    processMap((Map) object, (MapMetaData) fieldValueMetaData, handler);
                     break;
                 case STRUCT:
-                    writeStruct((TBase) object, handler);
+                    processStruct((TBase) object, handler);
                     break;
                 default:
                     throw new IllegalStateException(String.format("Type '%s' not found", type));
@@ -112,30 +122,30 @@ public class TBaseProcessor implements StructProcessor<TBase> {
         }
     }
 
-    private void writeSet(Set objectSet, SetMetaData metaData, StructHandler handler) throws IOException {
+    private void processSet(Set objectSet, SetMetaData metaData, StructHandler handler) throws IOException {
         handler.beginList(objectSet.size());
         for (Object object : objectSet) {
-            write(object, metaData.getElementMetaData(), handler);
+            process(object, metaData.getElementMetaData(), handler);
         }
         handler.endList();
     }
 
-    private void writeList(List objectList, ListMetaData metaData, StructHandler handler) throws IOException {
+    private void processList(List objectList, ListMetaData metaData, StructHandler handler) throws IOException {
         handler.beginList(objectList.size());
         for (Object object : objectList) {
-            write(object, metaData.getElementMetaData(), handler);
+            process(object, metaData.getElementMetaData(), handler);
         }
         handler.endList();
     }
 
-    private void writeMap(Map objectMap, MapMetaData metaData, StructHandler handler) throws IOException {
+    private void processMap(Map objectMap, MapMetaData metaData, StructHandler handler) throws IOException {
         handler.beginMap(objectMap.size());
         for (Map.Entry entry : (Set<Map.Entry>) objectMap.entrySet()) {
             handler.beginKey();
-            write(entry.getKey(), metaData.getKeyMetaData(), handler);
+            process(entry.getKey(), metaData.getKeyMetaData(), handler);
             handler.endKey();
             handler.beginValue();
-            write(entry.getValue(), metaData.getValueMetaData(), handler);
+            process(entry.getValue(), metaData.getValueMetaData(), handler);
             handler.endValue();
         }
         handler.endMap();

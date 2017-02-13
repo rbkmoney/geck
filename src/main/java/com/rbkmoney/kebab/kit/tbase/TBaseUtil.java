@@ -30,4 +30,14 @@ public class TBaseUtil {
         return getMetaData(tFieldIdEnum, tBase).valueMetaData;
     }
 
+    public static int getSetFieldsCount(TBase value) {
+        int size = 0;
+        for (TFieldIdEnum tFieldIdEnum : value.getFields()) {
+            if (value.isSet(tFieldIdEnum)) {
+                size++;
+            }
+        }
+        return size;
+    }
+
 }
