@@ -3,6 +3,7 @@ package com.rbkmoney.kebab.kit.object;
 import com.rbkmoney.kebab.StructHandler;
 import com.rbkmoney.kebab.StructProcessor;
 import com.rbkmoney.kebab.exception.BadFormatException;
+import com.rbkmoney.kebab.kit.ObjectUtil;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -23,7 +24,7 @@ public class ObjectProcessor implements StructProcessor<Object> {
     }
 
     private void processStart(Object value, StructHandler handler) throws IOException {
-        processStruct(convertType(Map.class, value), handler);
+        processStruct(ObjectUtil.convertType(Map.class, value), handler);
     }
 
     private void processStruct(Map map, StructHandler handler) throws IOException {
@@ -35,7 +36,7 @@ public class ObjectProcessor implements StructProcessor<Object> {
             name = unescapeName(name, isMap);
             handler.name(name);
             if (isMap) {
-                processMap(convertType(List.class, entry.getValue()), true, handler);
+                processMap(ObjectUtil.convertType(List.class, entry.getValue()), true, handler);
             } else {
                 processValue(entry.getValue(), handler, false);
             }
@@ -53,7 +54,7 @@ public class ObjectProcessor implements StructProcessor<Object> {
         }
         for (Object entry; it.hasNext();) {
             entry = it.next();
-            Map mapEntry = convertType(Map.class, entry);
+            Map mapEntry = ObjectUtil.convertType(Map.class, entry);
 
             handler.beginKey();
             processValue(mapEntry.get(MAP_KEY), handler, true);
@@ -102,15 +103,6 @@ public class ObjectProcessor implements StructProcessor<Object> {
         }
     }
 
-
-
-    private <T> T convertType(Class<T> tClass, Object val) throws BadFormatException {
-        if (tClass.isAssignableFrom(val.getClass())) {
-            return (T) val;
-        } else {
-            throw new BadFormatException(String.format("Wrong type: %s, expected: %s", val.getClass().getName(), tClass.getName()));
-        }
-    }
 
     private boolean isMap(String name) {
         if (name != null && name.endsWith(MAP_MARK)) {

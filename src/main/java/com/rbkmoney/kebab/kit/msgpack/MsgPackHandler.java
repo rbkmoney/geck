@@ -142,7 +142,7 @@ public abstract class MsgPackHandler<R> implements StructHandler<R> {
         if (useDictionary && length > 3) {
             char idx;
             if ((idx = dictionary.putIfAbsent(name, nextDictIdx)) == noDictEntryValue) {
-                byte[] data = StringUtil.compressAsciiString(name);
+                byte[] data = StringUtil.compactAsciiString(name);
                 msgPacker.packExtensionTypeHeader(EventFlags.pointDictionary, data.length);
                 msgPacker.writePayload(data);
                 msgPacker.packInt(nextDictIdx++);

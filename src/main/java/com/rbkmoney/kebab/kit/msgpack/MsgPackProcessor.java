@@ -13,7 +13,7 @@ import org.msgpack.value.ValueType;
 import java.io.IOException;
 
 import static com.rbkmoney.kebab.kit.EventFlags.*;
-import static com.rbkmoney.kebab.kit.msgpack.StringUtil.decompressAsciiString;
+import static com.rbkmoney.kebab.kit.msgpack.StringUtil.expandAsciiString;
 
 /**
  * Created by vpankrashkin on 07.02.17.
@@ -158,7 +158,7 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
         if (key > Character.MAX_VALUE) {
             throw new BadFormatException("Dictionary key is too long: "+ key);
         }
-        String str = decompressAsciiString(data);
+        String str = expandAsciiString(data);
         if (dictionary.putIfAbsent((char) key, str) != null) {
             throw new BadFormatException("Dictionary key is already set: " + key);
         }

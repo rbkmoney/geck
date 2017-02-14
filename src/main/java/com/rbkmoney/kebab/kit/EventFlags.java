@@ -4,10 +4,10 @@ package com.rbkmoney.kebab.kit;
  * Created by vpankrashkin on 07.02.17.
  */
 public class EventFlags {
-     public static final byte startList = 3;
      public static final byte nop = 0;
      public static final byte startStruct = 1;
      public static final byte endStruct = 2;
+     public static final byte startList = 3;
      public static final byte endList = 4;
      public static final byte startMap = 5;
      public static final byte endMap = 6;
