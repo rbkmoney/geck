@@ -2,10 +2,10 @@ package com.rbkmoney.kebab.kit.json;
 
 import com.rbkmoney.kebab.ByteStack;
 import com.rbkmoney.kebab.StructHandler;
-import com.rbkmoney.kebab.kit.tbase.ThriftType;
 import com.rbkmoney.kebab.exception.BadFormatException;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Base64;
 import java.util.Objects;
@@ -13,7 +13,7 @@ import java.util.Objects;
 /**
  * Created by tolkonepiu on 27/01/2017.
  */
-public class JsonHandler implements StructHandler<String> {
+public class JsonHandler implements StructHandler<Writer> {
 
     static final byte EMPTY_STRUCT = 1;
 
@@ -29,18 +29,14 @@ public class JsonHandler implements StructHandler<String> {
 
     static final byte JSON_NAME = 7;
 
-    static final byte EMPTY_DOCUMENT = 8;
-
-    static final byte NONEMPTY_DOCUMENT = 9;
-
     private final Writer out;
 
     private final boolean pretty;
 
     private ByteStack stack = new ByteStack();
 
-    {
-        stack.push(EMPTY_DOCUMENT);
+    public JsonHandler() {
+        this(new StringWriter());
     }
 
     public JsonHandler(Writer out) {
@@ -53,19 +49,6 @@ public class JsonHandler implements StructHandler<String> {
         this.pretty = pretty;
     }
 
-    private void writeBeforeValue(ThriftType type) throws IOException {
-        writeBegin(EMPTY_STRUCT, '{');
-        name("type");
-        beforeValue();
-        writeString(type.toString());
-        name("value");
-
-    }
-
-    private void writeAfterValue() throws IOException {
-        writeEnd(EMPTY_STRUCT, NONEMPTY_STRUCT, '}');
-    }
-
     private void newline() throws IOException {
         if (pretty) {
             out.write("\n");
@@ -76,6 +59,9 @@ public class JsonHandler implements StructHandler<String> {
     }
 
     private void beforeValue() throws IOException {
+        if (!stack.isEmpty()) {
+            return;
+        }
         switch (stack.peek()) {
             case EMPTY_LIST:
                 stack.pop();
@@ -94,10 +80,6 @@ public class JsonHandler implements StructHandler<String> {
             case NONEMPTY_MAP:
                 out.append(',');
                 newline();
-                break;
-            case EMPTY_DOCUMENT:
-                stack.pop();
-                stack.push(NONEMPTY_DOCUMENT);
                 break;
             case JSON_NAME:
                 out.append(':');
@@ -132,51 +114,47 @@ public class JsonHandler implements StructHandler<String> {
         out.write(symbol);
     }
 
-    private void writeValue(String value, ThriftType type) throws IOException {
-        writeBeforeValue(type);
+    private void writeValue(String value) throws IOException {
+        writeValue(value, false);
+    }
+
+    private void writeValue(String value, boolean asString) throws IOException {
         beforeValue();
-        if (type == ThriftType.BINARY || type == ThriftType.STRING) {
+        if (asString) {
             writeString(value);
         } else {
             out.write(value);
         }
-        writeAfterValue();
     }
 
     @Override
     public void beginStruct(int size) throws IOException {
-        writeBeforeValue(ThriftType.STRUCT);
         writeBegin(EMPTY_STRUCT, '{');
     }
 
     @Override
     public void endStruct() throws IOException {
         writeEnd(EMPTY_STRUCT, NONEMPTY_STRUCT, '}');
-        writeAfterValue();
     }
 
     @Override
     public void beginList(int size) throws IOException {
-        writeBeforeValue(ThriftType.LIST);
         writeBegin(EMPTY_LIST, '[');
     }
 
     @Override
     public void endList() throws IOException {
         writeEnd(EMPTY_LIST, NONEMPTY_LIST, ']');
-        writeAfterValue();
     }
 
     @Override
     public void beginMap(int size) throws IOException {
-        writeBeforeValue(ThriftType.MAP);
         writeBegin(EMPTY_MAP, '[');
     }
 
     @Override
     public void endMap() throws IOException {
         writeEnd(EMPTY_MAP, NONEMPTY_MAP, ']');
-        writeAfterValue();
     }
 
     @Override
@@ -218,43 +196,43 @@ public class JsonHandler implements StructHandler<String> {
 
     @Override
     public void value(boolean value) throws IOException {
-        writeValue(value ? "true" : "false", ThriftType.BOOLEAN);
+        writeValue(value ? "true" : "false");
     }
 
     @Override
     public void value(String value) throws IOException {
-        writeValue(value, ThriftType.STRING);
+        writeValue(value, true);
     }
 
     @Override
     public void value(double value) throws IOException {
-        writeValue(Double.toString(value), ThriftType.DOUBLE);
+        writeValue(Double.toString(value));
     }
 
     @Override
     public void value(long value) throws IOException {
-        writeValue(Long.toString(value), ThriftType.LONG);
+        writeValue(Long.toString(value));
     }
 
     @Override
     public void value(byte[] value) throws IOException {
-        writeValue(Base64.getEncoder().encodeToString(value), ThriftType.BINARY);
+        writeValue(Base64.getEncoder().encodeToString(value), true);
     }
 
     @Override
     public void nullValue() throws IOException {
-        writeValue("null", ThriftType.NULL);
+        writeValue("null");
     }
 
     @Override
-    public String getResult() throws IOException {
+    public Writer getResult() throws IOException {
         out.close();
 
-        if (stack.size() > 1 || stack.size() == 1 && stack.peek() != NONEMPTY_DOCUMENT) {
-            throw new BadFormatException();
+        if (!stack.isEmpty()) {
+            throw new BadFormatException("stack is not empty");
         }
 
-        return out.toString();
+        return out;
     }
 
 }

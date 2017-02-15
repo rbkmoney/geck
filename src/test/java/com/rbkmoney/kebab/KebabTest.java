@@ -48,14 +48,6 @@ public class KebabTest {
     }
 
     @Test
-    public void jsonTest() throws JSONException {
-        TestObject testObject = getTestObject();
-
-        String json = kebab.toJson(testObject);
-        new JSONObject(json);
-    }
-
-    @Test
     public void msgPackTest() throws Exception {
         TestObject testObject = getTestObject();
         byte[] msgPack = kebab.toMsgPack(testObject, true);
