@@ -59,7 +59,7 @@ public class JsonHandler implements StructHandler<Writer> {
     }
 
     private void beforeValue() throws IOException {
-        if (!stack.isEmpty()) {
+        if (stack.isEmpty()) {
             return;
         }
         switch (stack.peek()) {

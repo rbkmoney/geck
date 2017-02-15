@@ -105,7 +105,7 @@ public class KebabTest {
     }
 
     @Test
-    public void testPerformance() {
+    public void testPerformance() throws IOException {
         boolean useDict = true;
         TestObject testObject = getTestObject(100, i -> Status.unknown(new Unknown("SomeData")));
         HandlerStub writerStub = new HandlerStub();
