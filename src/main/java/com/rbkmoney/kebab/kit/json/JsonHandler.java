@@ -3,17 +3,31 @@ package com.rbkmoney.kebab.kit.json;
 import com.rbkmoney.kebab.ByteStack;
 import com.rbkmoney.kebab.StructHandler;
 import com.rbkmoney.kebab.exception.BadFormatException;
+import gnu.trove.map.hash.THashMap;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Base64;
+import java.util.Map;
 import java.util.Objects;
 
 /**
  * Created by tolkonepiu on 27/01/2017.
  */
 public class JsonHandler implements StructHandler<Writer> {
+
+    private final Map<Character, String> replaceCharsMap = new THashMap<>();
+
+    {
+        replaceCharsMap.put('"', "\\\"");
+        replaceCharsMap.put('\n', "\\n");
+        replaceCharsMap.put('\r', "\\r");
+        replaceCharsMap.put('\b', "\\b");
+        replaceCharsMap.put('\f', "\\f");
+        replaceCharsMap.put('\t', "\\t");
+        replaceCharsMap.put('\\', "\\\\");
+    }
 
     static final byte EMPTY_STRUCT = 1;
 
@@ -91,7 +105,18 @@ public class JsonHandler implements StructHandler<Writer> {
 
     private void writeString(String value) throws IOException {
         out.write('"');
-        out.write(value);
+        int length = value.length();
+        for (int i = 0; i < length; i++) {
+            char charValue = value.charAt(i);
+            if (replaceCharsMap.containsKey(charValue)) {
+                out.write(replaceCharsMap.get(charValue));
+            } else if (Character.getType(charValue) == Character.CONTROL) {
+                out.write(String.format("\\u%04x", (int) i));
+            } else {
+                out.write(charValue);
+            }
+        }
+
         out.write('"');
     }
 

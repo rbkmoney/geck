@@ -1,5 +1,6 @@
 package com.rbkmoney.kebab.kit.json;
 
+import com.rbkmoney.kebab.kit.mock.RandomUtil;
 import com.rbkmoney.kebab.kit.tbase.TBaseProcessor;
 import com.rbkmoney.kebab.test.TestObject;
 import org.json.JSONException;
@@ -17,8 +18,26 @@ public class JsonHandlerTest {
 
     @Test
     public void jsonTest() throws JSONException, IOException {
-        TestObject testObject = getTestObject();
-        String json = new TBaseProcessor().process(testObject, new JsonHandler()).toString();
+            TestObject testObject = getTestObject();
+            String json = new TBaseProcessor().process(testObject, new JsonHandler()).toString();
+            System.out.println(json);
+            new JSONObject(json);
+    }
+
+    @Test
+    public void incorrectCharactersTest() throws IOException {
+        JsonHandler jsonHandler = new JsonHandler();
+        jsonHandler.beginStruct(2);
+        jsonHandler.name("ke\"k4 2\nqw\\eqw/eqw\nas\be");
+
+        char[] chars = new char[0x9F + 1];
+        for (int i = 0; i <= 0x9F; i++) {
+            chars[i] = (char) i;
+        }
+        jsonHandler.value(new String(chars));
+
+        jsonHandler.endStruct();
+        String json = jsonHandler.getResult().toString();
         System.out.println(json);
         new JSONObject(json);
     }
