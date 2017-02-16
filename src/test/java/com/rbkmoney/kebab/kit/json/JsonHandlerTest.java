@@ -1,6 +1,5 @@
 package com.rbkmoney.kebab.kit.json;
 
-import com.rbkmoney.kebab.kit.mock.RandomUtil;
 import com.rbkmoney.kebab.kit.tbase.TBaseProcessor;
 import com.rbkmoney.kebab.test.TestObject;
 import org.json.JSONException;
@@ -18,10 +17,10 @@ public class JsonHandlerTest {
 
     @Test
     public void jsonTest() throws JSONException, IOException {
-            TestObject testObject = getTestObject();
-            String json = new TBaseProcessor().process(testObject, new JsonHandler()).toString();
-            System.out.println(json);
-            new JSONObject(json);
+        TestObject testObject = getTestObject();
+        String json = new TBaseProcessor().process(testObject, new JsonHandler()).toString();
+        System.out.println(json);
+        new JSONObject(json);
     }
 
     @Test
@@ -30,10 +29,12 @@ public class JsonHandlerTest {
         jsonHandler.beginStruct(2);
         jsonHandler.name("ke\"k4 2\nqw\\eqw/eqw\nas\be");
 
-        char[] chars = new char[0x9F + 1];
-        for (int i = 0; i <= 0x9F; i++) {
+
+        char[] chars = new char['\u00A0'];
+        for (int i = 0; i < '\u00A0'; i++) {
             chars[i] = (char) i;
         }
+
         jsonHandler.value(new String(chars));
 
         jsonHandler.endStruct();

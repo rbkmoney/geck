@@ -20,6 +20,12 @@ public class JsonHandler implements StructHandler<Writer> {
     private final Map<Character, String> replaceCharsMap = new THashMap<>();
 
     {
+        for (int i = 0; i < '\u00A0'; i++) {
+            if (Character.getType((char) i) == Character.CONTROL) {
+                replaceCharsMap.put((char) i, String.format("\\u%04x", i));
+            }
+        }
+
         replaceCharsMap.put('"', "\\\"");
         replaceCharsMap.put('\n', "\\n");
         replaceCharsMap.put('\r', "\\r");
@@ -110,8 +116,6 @@ public class JsonHandler implements StructHandler<Writer> {
             char charValue = value.charAt(i);
             if (replaceCharsMap.containsKey(charValue)) {
                 out.write(replaceCharsMap.get(charValue));
-            } else if (Character.getType(charValue) == Character.CONTROL) {
-                out.write(String.format("\\u%04x", (int) i));
             } else {
                 out.write(charValue);
             }
