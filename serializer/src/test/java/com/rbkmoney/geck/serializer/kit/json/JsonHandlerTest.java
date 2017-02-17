@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static com.rbkmoney.geck.serializer.KebabUtil.getTestObject;
+import static com.rbkmoney.geck.serializer.GeckUtil.getTestObject;
 
 /**
  * Created by tolkonepiu on 15/02/2017.

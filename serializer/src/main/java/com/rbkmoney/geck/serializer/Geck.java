@@ -11,11 +11,7 @@ import java.io.StringWriter;
 /**
  * Created by tolkonepiu on 24/01/2017.
  */
-public class Kebab {
-
-    public boolean remove() {
-        return true;
-    }
+public class Geck {
 
     public String toJson(TBase src) {
         try {

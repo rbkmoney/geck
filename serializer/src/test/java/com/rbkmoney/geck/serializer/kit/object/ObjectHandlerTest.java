@@ -2,19 +2,19 @@ package com.rbkmoney.geck.serializer.kit.object;
 
 import com.bazaarvoice.jolt.Chainr;
 import com.bazaarvoice.jolt.JsonUtils;
-import com.rbkmoney.geck.serializer.KebabUtil;
+import com.rbkmoney.geck.serializer.GeckUtil;
 import com.rbkmoney.geck.serializer.kit.mock.MockTBaseProcessor;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseProcessor;
 import com.rbkmoney.geck.serializer.test.TestObject;
-import com.rbkmoney.geck.serializer.Kebab;
+import com.rbkmoney.geck.serializer.Geck;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
 
-import static com.rbkmoney.geck.serializer.KebabUtil.getTestObject;
+import static com.rbkmoney.geck.serializer.GeckUtil.getTestObject;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -38,9 +38,9 @@ public class ObjectHandlerTest {
 
     @Test
     public void testHandler() throws IOException {
-        Kebab kebab = new Kebab();
-        TestObject testObject = KebabUtil.getTestObject();
-        Object result = kebab.write(testObject, new ObjectHandler());
+        Geck geck = new Geck();
+        TestObject testObject = GeckUtil.getTestObject();
+        Object result = geck.write(testObject, new ObjectHandler());
         TestObject restoredTestObject = new ObjectProcessor().process(result, new TBaseHandler<>(TestObject.class));
         assertEquals(testObject, restoredTestObject);
         System.out.println(result);
