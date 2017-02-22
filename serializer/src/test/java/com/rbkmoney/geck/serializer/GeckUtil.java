@@ -1,5 +1,6 @@
 package com.rbkmoney.geck.serializer;
 
+import com.rbkmoney.damsel.domain.Invoice;
 import com.rbkmoney.geck.serializer.test.Status;
 import com.rbkmoney.geck.serializer.test.TestObject;
 import com.rbkmoney.geck.serializer.kit.mock.MockTBaseProcessor;
@@ -24,5 +25,9 @@ public class GeckUtil {
 
     public static TestObject getTestObject() throws IOException {
         return new MockTBaseProcessor().process(new TestObject(), new TBaseHandler<>(TestObject.class));
+    }
+
+    public static Invoice getInvoice() throws IOException {
+        return new MockTBaseProcessor().process(new Invoice(), new TBaseHandler<>(Invoice.class));
     }
 }
