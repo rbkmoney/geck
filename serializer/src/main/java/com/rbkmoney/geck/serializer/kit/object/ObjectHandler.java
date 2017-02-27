@@ -4,14 +4,14 @@ import com.rbkmoney.geck.serializer.exception.BadFormatException;
 import com.rbkmoney.geck.serializer.ByteStack;
 import com.rbkmoney.geck.serializer.ObjectStack;
 import com.rbkmoney.geck.serializer.StructHandler;
+import com.rbkmoney.geck.serializer.kit.StructType;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.*;
 
 import static com.rbkmoney.geck.serializer.kit.EventFlags.*;
-import static com.rbkmoney.geck.serializer.kit.object.ObjectHandlerConstants.ESCAPE_CHAR;
-import static com.rbkmoney.geck.serializer.kit.object.ObjectHandlerConstants.MAP_MARK;
+import static com.rbkmoney.geck.serializer.kit.object.ObjectHandlerConstants.*;
 
 /**
  * Created by vpankrashkin on 09.02.17.
@@ -23,7 +23,7 @@ public class ObjectHandler implements StructHandler<Object> {
 
     @Override
     public void beginStruct(int size) throws IOException {
-        internValue(new  LinkedHashMap((int) (size * 1.25)), startStruct, false);
+        internValue(new  LinkedHashMap((int) (size * 1.25)), startStruct, StructType.OTHER);
     }
 
     @Override
@@ -34,7 +34,7 @@ public class ObjectHandler implements StructHandler<Object> {
 
     @Override
     public void beginList(int size) throws IOException {
-        internValue(new ArrayList(size), startList, false);
+        internValue(new ArrayList(size), startList, StructType.LIST);
     }
 
     @Override
@@ -45,17 +45,17 @@ public class ObjectHandler implements StructHandler<Object> {
 
     @Override
     public void beginSet(int size) throws IOException {
-
+        internValue(new HashSet((int) (size * 1.5)), startSet, StructType.SET);
     }
 
     @Override
     public void endSet() throws IOException {
-
+        checkState(startSet, state.pop());
     }
 
     @Override
     public void beginMap(int size) throws IOException {
-        internValue(new ArrayList<>(), startMap, true);
+        internValue(new ArrayList<>(), startMap, StructType.MAP);
     }
 
     @Override
@@ -109,32 +109,32 @@ public class ObjectHandler implements StructHandler<Object> {
 
     @Override
     public void value(boolean value) throws IOException {
-        internValue(value, nop, false);
+        internValue(value, nop, StructType.OTHER);
     }
 
     @Override
     public void value(String value) throws IOException {
-        internValue(value, nop, false);
+        internValue(value, nop, StructType.STRING);
     }
 
     @Override
     public void value(double value) throws IOException {
-        internValue(value, nop, false);
+        internValue(value, nop, StructType.OTHER);
     }
 
     @Override
     public void value(long value) throws IOException {
-        internValue(value, nop, false);
+        internValue(value, nop, StructType.OTHER);
     }
 
     @Override
     public void value(byte[] value) throws IOException {
-        internValue(ByteBuffer.wrap(value), nop, false);
+        internValue(ByteBuffer.wrap(value), nop, StructType.OTHER);
     }
 
     @Override
     public void nullValue() throws IOException {
-        internValue(null, nop, false);
+        internValue(null, nop, StructType.OTHER);
     }
 
     @Override
@@ -143,9 +143,19 @@ public class ObjectHandler implements StructHandler<Object> {
         return result;
     }
 
-    private void internValue(Object value, byte newState, boolean isMap) throws BadFormatException {
-        if (isMap && state.peek() != pointName) {
-            ((List) value).add(MAP_MARK);
+    private void internValue(Object value, byte newState, StructType type) throws BadFormatException {
+        if (state.peek() != pointName) {
+            switch (type){
+                case MAP:
+                    ((List) value).add(MAP_MARK);
+                    break;
+             /*   case SET:
+                    ((List) value).add(SET_MARK);
+                    break;*/
+                case STRING:
+                    value = escapeString((String) value);
+                default:
+            }
         }
 
         switch (state.peek()) {
@@ -155,12 +165,16 @@ public class ObjectHandler implements StructHandler<Object> {
             case pointName:
                 state.pop();
                 String name = (String) context.pop();
-                name = escapeString(name, isMap);
+                if (newState == startMap) {
+                    name = injectType(name, type);
+                }
                 ((Map) context.peek()).put(name, value);
                 break;
             case startList:
                 ((List)context.peek()).add(value);
                 break;
+            case startSet:
+                ((Set)context.peek()).add(value);
             case startMapKey:
                 context.pop();//remove default key val
                 context.push(value);
@@ -178,29 +192,36 @@ public class ObjectHandler implements StructHandler<Object> {
         }
     }
 
-    private String escapeString(String name, boolean isMap) {
+    private String injectType(String name, StructType type) {
+        return name + TYPE_DELIMITER + type.getKey();
+    }
+
+    private String escapeString(String string) {
         int i = 0;
-        for (; i < name.length(); ++i) {
-            if (name.charAt(i) == ESCAPE_CHAR) {
+        for (; i < string.length(); ++i) {
+            char c = string.charAt(i);
+            if (c == ESCAPE_CHAR || c == TYPE_DELIMITER) {
                 break;
             }
         }
-        if (i < name.length()) {
-            StringBuilder sb = new StringBuilder(name.length() + (isMap ? 5 : 1));
-            sb.append(name, 0, i);
-            for (; i < name.length(); ++i) {
-                char c = name.charAt(i);
-                if (c == ESCAPE_CHAR) {
-                    sb.append(ESCAPE_CHAR);
+        if (i < string.length()) {
+            StringBuilder sb = new StringBuilder(string.length() + 1);
+            sb.append(string, 0, i);
+            boolean escape = false;
+            for (; i < string.length(); ++i) {
+                char c = string.charAt(i);
+                if (escape) {
+                    sb.append(c);
+                    escape = false;
+                } else if (c == ESCAPE_CHAR) {
+                    escape = true;
+                } else {
+                    sb.append(c);
                 }
-                sb.append(c);
-            }
-            if (isMap) {
-                sb.append(ObjectHandlerConstants.MAP_MARK);
             }
             return sb.toString();
         } else {
-            return isMap ? name + ObjectHandlerConstants.MAP_MARK : name;
+            return string;
         }
     }
 
