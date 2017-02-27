@@ -13,7 +13,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 
 import static com.rbkmoney.geck.serializer.GeckUtil.getTestObject;
@@ -63,11 +62,9 @@ public class ObjectHandlerTest {
         TestObject testObject1 = getTestObject();
         Object src = new TBaseProcessor().process(testObject1, new ObjectHandler());
         System.out.println(JsonUtils.toJsonString(src));
-        Object dst =
-                new TBaseProcessor().process(new ObjectProcessor().process(src, new TBaseHandler<>(TestObject.class)), new ObjectHandler());
+        Object dst = new TBaseProcessor().process(new ObjectProcessor().process(src, new TBaseHandler<>(TestObject.class)), new ObjectHandler());
         System.out.println(JsonUtils.toJsonString(dst));
         assertEquals(src, dst);
-
     }
 
 

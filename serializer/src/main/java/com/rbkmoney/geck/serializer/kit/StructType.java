@@ -10,6 +10,7 @@ public enum StructType {
     MAP("map"),
     SET("set"),
     LIST("list"),
+    STRUCT("struct"),
     STRING("string"),
     OTHER("");
     private static class Holder {

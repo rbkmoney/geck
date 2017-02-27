@@ -23,53 +23,58 @@ public class ObjectHandler implements StructHandler<Object> {
 
     @Override
     public void beginStruct(int size) throws IOException {
-        internValue(new  LinkedHashMap((int) (size * 1.25)), startStruct, StructType.OTHER);
+        retain(startStruct, new  LinkedHashMap((int) (size * 1.5)));
     }
 
     @Override
     public void endStruct() throws IOException {
         checkState(startStruct, state.pop());
-        context.pop();
+        addValue(context.pop());
     }
 
     @Override
     public void beginList(int size) throws IOException {
-        internValue(new ArrayList(size), startList, StructType.LIST);
+        retain(startList, new ArrayList<>(size));
     }
 
     @Override
     public void endList() throws IOException {
         checkState(startList, state.pop());
-        context.pop();
+        addValue(context.pop());
     }
 
     @Override
     public void beginSet(int size) throws IOException {
-        internValue(new HashSet((int) (size * 1.5)), startSet, StructType.SET);
+        retain(startSet, new HashSet((int) (size * 1.5)));
     }
 
     @Override
     public void endSet() throws IOException {
         checkState(startSet, state.pop());
-        context.pop();
+        addValue(context.pop());
     }
 
     @Override
     public void beginMap(int size) throws IOException {
-        internValue(new ArrayList<>(), startMap, StructType.MAP);
+        ArrayList value = new ArrayList();
+        if (state.peek() == pointName) {
+            context.push(injectType((String) context.pop(), StructType.MAP));
+        } else {
+            value.add(MAP_MARK);
+        }
+        retain(startMap, value);
     }
 
     @Override
     public void endMap() throws IOException {
         checkState(startMap, state.pop());
-        context.pop();
+        addValue(context.pop());
     }
 
     @Override
     public void beginKey() throws IOException {
         checkState(startMap, state.peek());
-        state.push(startMapKey);
-        context.push(null);
+        retain(startMapKey, null);
     }
 
     @Override
@@ -81,8 +86,7 @@ public class ObjectHandler implements StructHandler<Object> {
     @Override
     public void beginValue() throws IOException {
         checkState(endMapKey, state.pop());
-        state.push(startMapValue);
-        context.push(null);
+        retain(startMapValue, null);
     }
 
     @Override
@@ -95,7 +99,7 @@ public class ObjectHandler implements StructHandler<Object> {
         Map entryStruct = new LinkedHashMap();
         entryStruct.put(ObjectHandlerConstants.MAP_KEY, key);
         entryStruct.put(ObjectHandlerConstants.MAP_VALUE, value);
-        ((List) context.peek()).add(entryStruct);
+        addValue(entryStruct);
     }
 
     @Override
@@ -104,38 +108,37 @@ public class ObjectHandler implements StructHandler<Object> {
         if (name.length() == 0) {
             throw new BadFormatException("Name cannot be empty");
         }
-        state.push(pointName);
-        context.push(name);
+        retain(pointName, name);
     }
 
     @Override
     public void value(boolean value) throws IOException {
-        internValue(value, nop, StructType.OTHER);
+        addValue(value);
     }
 
     @Override
     public void value(String value) throws IOException {
-        internValue(escapeString(value), nop, StructType.STRING);
+        addValue(escapeString(value));
     }
 
     @Override
     public void value(double value) throws IOException {
-        internValue(value, nop, StructType.OTHER);
+        addValue(value);
     }
 
     @Override
     public void value(long value) throws IOException {
-        internValue(value, nop, StructType.OTHER);
+        addValue(value);
     }
 
     @Override
     public void value(byte[] value) throws IOException {
-        internValue(ByteBuffer.wrap(value), nop, StructType.OTHER);
+        addValue(ByteBuffer.wrap(value));
     }
 
     @Override
     public void nullValue() throws IOException {
-        internValue(null, nop, StructType.OTHER);
+        addValue(null);
     }
 
     @Override
@@ -144,19 +147,7 @@ public class ObjectHandler implements StructHandler<Object> {
         return result;
     }
 
-    private void internValue(Object value, byte newState, StructType type) throws BadFormatException {
-        if (state.peek() != pointName) {
-            switch (type){
-                case MAP:
-                    ((List) value).add(MAP_MARK);
-                    break;
-             /*   case SET:
-                    ((List) value).add(SET_MARK);
-                    break;*/
-                default:
-            }
-        }
-
+    private void addValue(Object value) throws BadFormatException {
         switch (state.peek()) {
             case nop:
                 result = value;
@@ -164,9 +155,6 @@ public class ObjectHandler implements StructHandler<Object> {
             case pointName:
                 state.pop();
                 String name = (String) context.pop();
-                if (newState == startMap) {
-                    name = injectType(name, type);
-                }
                 ((Map) context.peek()).put(name, value);
                 break;
             case startList:
@@ -183,13 +171,17 @@ public class ObjectHandler implements StructHandler<Object> {
                 context.pop();//remove default value
                 context.push(value);
                 break;
+            case startMap:
+                ((List)context.peek()).add(value);
+                break;
             default:
                 throw new BadFormatException(String.format("Wrong type in intern value stack, actual: %d", state.peek()));
         }
-        if (newState != nop) {
-            state.push(newState);
-            context.push(value);
-        }
+    }
+
+    private void retain(byte stateVal, Object contextVal) {
+        state.push(stateVal);
+        context.push(contextVal);
     }
 
     private String injectType(String name, StructType type) {
