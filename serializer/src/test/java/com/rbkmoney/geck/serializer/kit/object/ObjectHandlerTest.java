@@ -13,9 +13,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.rbkmoney.geck.serializer.GeckUtil.getTestObject;
 import static org.junit.Assert.assertEquals;
@@ -45,7 +44,6 @@ public class ObjectHandlerTest {
         Geck geck = new Geck();
         TestObject testObject = GeckUtil.getTestObject();
         Object result = geck.write(testObject, new ObjectHandler());
-        System.out.println("Test:"+JsonUtils.toJsonString(result));
         TestObject restoredTestObject = new ObjectProcessor().process(result, new TBaseHandler<>(TestObject.class));
         assertEquals(testObject, restoredTestObject);
         System.out.println(result);
@@ -61,7 +59,7 @@ public class ObjectHandlerTest {
     }
 
     @Test
-    public void test2() throws IOException {
+    public void objectTest() throws IOException {
         TestObject testObject1 = getTestObject();
         Object src = new TBaseProcessor().process(testObject1, new ObjectHandler());
         System.out.println(JsonUtils.toJsonString(src));

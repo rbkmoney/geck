@@ -51,6 +51,7 @@ public class ObjectHandler implements StructHandler<Object> {
     @Override
     public void endSet() throws IOException {
         checkState(startSet, state.pop());
+        context.pop();
     }
 
     @Override
@@ -114,7 +115,7 @@ public class ObjectHandler implements StructHandler<Object> {
 
     @Override
     public void value(String value) throws IOException {
-        internValue(value, nop, StructType.STRING);
+        internValue(escapeString(value), nop, StructType.STRING);
     }
 
     @Override
@@ -152,8 +153,6 @@ public class ObjectHandler implements StructHandler<Object> {
              /*   case SET:
                     ((List) value).add(SET_MARK);
                     break;*/
-                case STRING:
-                    value = escapeString((String) value);
                 default:
             }
         }
@@ -175,6 +174,7 @@ public class ObjectHandler implements StructHandler<Object> {
                 break;
             case startSet:
                 ((Set)context.peek()).add(value);
+                break;
             case startMapKey:
                 context.pop();//remove default key val
                 context.push(value);
