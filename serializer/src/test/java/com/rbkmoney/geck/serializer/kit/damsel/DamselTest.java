@@ -8,6 +8,7 @@ import com.rbkmoney.geck.serializer.kit.msgpack.MsgPackHandler;
 import com.rbkmoney.geck.serializer.kit.msgpack.MsgPackProcessor;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseProcessor;
+import com.rbkmoney.geck.serializer.test.Unknown;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -56,6 +57,28 @@ public class DamselTest {
                         new TBaseHandler<>(Event.class));
 
         Assert.assertEquals(event1, event2);
+    }
+
+    @Test
+    public void testUnknownTransform() throws IOException {
+        Unknown invoice1 = GeckUtil.getUnknown();
+        Unknown invoice2 =
+                MsgPackProcessor.newBinaryInstance().process(
+                        new TBaseProcessor().process(invoice1, MsgPackHandler.newBufferedInstance(true)),
+                        new TBaseHandler<>(Unknown.class));
+
+        String invoiceS1 = invoice1.toString();
+        String invoiceS2 = invoice2.toString();
+        System.out.println(invoiceS1);
+        System.out.println(invoiceS2);
+        //короче тут задница
+        for (int i = 0; i < invoiceS1.length(); ++i) {
+            if (invoiceS1.charAt(i) != invoiceS2.charAt(i)) {
+                throw new RuntimeException(i + " " + invoiceS1.charAt(i) + " " + invoiceS2.charAt(i));
+            }
+        }
+        Assert.assertEquals(invoice1, invoice2);
+        Assert.assertEquals(invoiceS1, invoiceS2);
     }
 
     @Test
