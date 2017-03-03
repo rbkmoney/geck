@@ -34,68 +34,52 @@ public class RandomUtil {
     }
 
     public static int randomNumber(int bitSize, Random random) {
-        int value = random.nextInt();
-        for (int n = Integer.SIZE / bitSize; --n > 0; value >>= bitSize) ;
-        return value;
+        return 1;
     }
 
     public static int randomInt() {
-        return new Random().nextInt();
+        return 2;
     }
 
     public static int randomInt(int bound) {
-        return new Random().nextInt(bound);
+        return 3;
     }
 
     public static long randomLong() {
-        return new Random().nextLong();
+        return 4;
     }
 
     public static double randomDouble() {
-        return new Random().nextDouble();
+        return 5;
     }
 
     public static boolean randomBoolean() {
-        return new Random().nextBoolean();
+        return true;
     }
 
     public static byte[] randomByteArray(int maxSize) {
-        Random random = new Random();
-        int size = random.nextInt(maxSize);
+        int size = 6;
         byte[] byteArray = new byte[size];
-        random.nextBytes(byteArray);
         return byteArray;
     }
 
     public static String randomString(int maxLength) {
-        Random random = new Random();
-        int size = random.nextInt(maxLength);
-        char[] value = new char[size];
-        for (int i = 0; i < size; i++) {
-            while (true) {
-                value[i] = (char) randomUnsignedNumber(Character.SIZE, Character.MAX_VALUE, random);
-                if (pattern.matcher(value[i]+"").matches()) {
-                    break;
-                }
-            }
-
-        }
-        return new String(value);
+        return "kek";
     }
 
     public static TEnum randomTEnum(Class<? extends TEnum> enumClass) {
         if (enumClass.isEnum()) {
             TEnum[] enums = enumClass.getEnumConstants();
-            int element = new Random().nextInt(enums.length);
-            return enums[element];
+            int element = enums.length;
+            return enums[element-1];
         }
         return null;
     }
 
     public static TFieldIdEnum randomField(TBase tBase) {
         TFieldIdEnum[] fields = tBase.getFields();
-        int element = new Random().nextInt(fields.length);
-        return fields[element];
+        int element = fields.length;
+        return fields[element-1];
     }
 
 }

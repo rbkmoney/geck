@@ -1,0 +1,27 @@
+[
+  {
+    "operation": "shift",
+    "spec": {
+      "payment": {
+        "status": {
+          "failed": {
+            "failure": "payment.status.failed.err"
+          }
+        },
+        "*" : "payment.&"
+      },
+      "*": {
+        "@" : "&"
+      }
+    }
+  },
+  {
+    "operation" : "remove",
+    "spec": {
+      "payment": {
+        "domain_revision" : ""
+      }
+    }
+  }
+]
+
