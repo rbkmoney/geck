@@ -23,6 +23,16 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>com.rbkmoney.geck</groupId>
+                <artifactId>migrator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rbkmoney.geck</groupId>
+                <artifactId>serializer</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.rbkmoney.thrift</groupId>
                 <artifactId>libthrift</artifactId>
                 <version>0.9.3-4</version>

@@ -16,7 +16,6 @@
         <dependency>
             <groupId>com.rbkmoney.geck</groupId>
             <artifactId>serializer</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
