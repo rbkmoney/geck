@@ -145,7 +145,7 @@ struct InvoicePaymentStarted {
     /** Выбранный маршрут обработки платежа. */
     2: optional domain.InvoicePaymentRoute route
     /** Данные финансового взаимодействия. */
-    3: optional domain.FinalCashFlow cash_flow
+//    3: optional domain.FinalCashFlow cash_flow
 }
 
 /**

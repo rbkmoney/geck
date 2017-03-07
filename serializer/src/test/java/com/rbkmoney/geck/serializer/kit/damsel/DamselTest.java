@@ -17,11 +17,10 @@ import com.rbkmoney.geck.serializer.kit.tbase.TBaseProcessor;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by inalarsanukaev on 22.02.17.
@@ -89,8 +88,47 @@ public class DamselTest {
                 new MockTBaseProcessor(MockMode.ALL, new FixedValueGenerator()).process(new com.rbkmoney.damsel_v133.payment_processing.InvoicePaymentStarted(), new TBaseHandler<>(com.rbkmoney.damsel_v133.payment_processing.InvoicePaymentStarted.class));
         String json_v133 = new TBaseProcessor().process(invoice_v133, new JsonHandler()).toString();
         Object inputJSON_v133 = JsonUtils.jsonToObject(json_v133);
+        System.out.println(json_v133);
 
-        //TODO сейчас не работает, надо подумать
-        //Assert.assertEquals(transformedOutput, inputJSON_v133);
+        LinkedHashMap ltransformedInvoice = (LinkedHashMap) transformedOutput;
+        LinkedHashMap ljson_v133 = (LinkedHashMap) inputJSON_v133;
+
+        Set s1 = new HashSet();
+        fillSetFromLinkedHashMap(ltransformedInvoice, s1);
+
+        Set s2 = new HashSet();
+        fillSetFromLinkedHashMap(ljson_v133, s2);
+
+        Assert.assertEquals(s1,s2);
     }
+
+    /**
+     * Создает сет на основе мэпы, рекусривно, с учетом вложенности
+     * TODO надо сделать для массивов корректную обработку
+     * @param map
+     * @param set
+     */
+    private void fillSetFromLinkedHashMap(LinkedHashMap map, Set set){
+        for (Object k1 : map.keySet()) {
+            Object o1 = map.get(k1);
+           // System.out.println(o1.getClass());
+            if (o1 instanceof LinkedHashMap) {
+                Set dest = new HashSet();
+                fillSetFromLinkedHashMap((LinkedHashMap)o1, dest);
+                addAll((String)k1, set, dest);
+            } else if (o1 instanceof ArrayList){
+                //TODO надо делать
+                set.add(k1);
+            } else {
+                set.add(k1);
+            }
+        }
+    }
+
+    private void addAll(String k1, Set source, Set dest){
+        for (Object o : dest) {
+            source.add(k1 + "."+o);
+        }
+    }
+
 }
