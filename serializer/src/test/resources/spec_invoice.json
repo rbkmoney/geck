@@ -19,7 +19,25 @@
     "operation" : "remove",
     "spec": {
       "payment": {
-        "domain_revision" : ""
+        "domain_revision" : "",
+        "cost": {
+          "currency": ""
+        }
+      }
+    }
+  },
+  {
+    "operation": "default",
+    "spec": {
+      "payment": {
+        "cost": {
+          "currency": {
+            "name": "kek",
+            "symbolic_code":"kek",
+            "numeric_code":1,
+            "exponent":1
+          }
+        }
       }
     }
   }
