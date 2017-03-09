@@ -37,7 +37,6 @@ public class RandomValueGenerator implements ValueGenerator {
         return (short) randomNumber(Short.SIZE);
     }
 
-    @Override
     public int getNumber(int bitSize) {
         return randomNumber(bitSize, new Random());
     }

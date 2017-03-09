@@ -19,11 +19,6 @@ public class FixedValueGenerator implements ValueGenerator {
     }
 
     @Override
-    public int getNumber(int bitSize) {
-        return 2;
-    }
-
-    @Override
     public int getInt() {
         return 3;
     }

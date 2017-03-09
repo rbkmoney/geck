@@ -12,8 +12,6 @@ public interface ValueGenerator {
 
     short getShort();
 
-    int getNumber(int bitSize);
-
     int getInt();
 
     int getInt(int bound);

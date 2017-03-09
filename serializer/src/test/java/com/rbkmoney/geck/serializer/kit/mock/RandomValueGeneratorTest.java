@@ -4,7 +4,6 @@ import com.rbkmoney.geck.serializer.test.Kek;
 import com.rbkmoney.geck.serializer.test.Status;
 import org.apache.thrift.TEnum;
 import org.apache.thrift.TFieldIdEnum;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -16,7 +15,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by tolkonepiu on 12/02/2017.
  */
-public class RandomUtilTest {
+public class RandomValueGeneratorTest {
 
     RandomValueGenerator randomValueGenerator = new RandomValueGenerator();
 

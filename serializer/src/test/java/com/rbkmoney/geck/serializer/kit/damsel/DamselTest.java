@@ -90,16 +90,7 @@ public class DamselTest {
         Object inputJSON_v133 = JsonUtils.jsonToObject(json_v133);
         System.out.println(json_v133);
 
-        LinkedHashMap ltransformedInvoice = (LinkedHashMap) transformedOutput;
-        LinkedHashMap ljson_v133 = (LinkedHashMap) inputJSON_v133;
-
-        Set s1 = new HashSet();
-        fillSetFromLinkedHashMap(ltransformedInvoice, s1);
-
-        Set s2 = new HashSet();
-        fillSetFromLinkedHashMap(ljson_v133, s2);
-
-        Assert.assertEquals(s1,s2);
+        Assert.assertEquals(inputJSON_v133,transformedOutput);
     }
 
     /**
