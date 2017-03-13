@@ -1,0 +1,43 @@
+[
+  {
+    "operation": "shift",
+    "spec": {
+      "payload": {
+        "invoice_event": {
+          "invoice_created": {
+            "invoice": {
+              "product": "payload.invoice_event.invoice_created.invoice.details.product",
+              "description": "payload.invoice_event.invoice_created.invoice.details.description",
+              "*": "payload.invoice_event.invoice_created.invoice.&"
+            }
+          }
+        },
+        "*": "payload.&"
+      },
+      "*": {
+        "@": "&"
+      }
+    }
+  },
+  {
+    "operation": "remove",
+    "spec": {
+      "payload": {
+        "invoice_event": {
+          "invoice_created": {
+            "invoice": {
+              "cost": {
+                "currency": {
+                  "name": "",
+                  "numeric_code": "",
+                  "exponent": ""
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+]
+
