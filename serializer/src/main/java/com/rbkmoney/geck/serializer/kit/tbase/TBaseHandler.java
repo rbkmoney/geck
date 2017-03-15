@@ -294,7 +294,6 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
     private void value(Object value, FieldValueMetaData valueMetaData, ThriftType actualType) throws IOException {
         checkType(valueMetaData, actualType);
-
         saveValue(value, elementStack.peek());
     }
 
