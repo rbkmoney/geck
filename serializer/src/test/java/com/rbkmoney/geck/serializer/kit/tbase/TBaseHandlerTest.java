@@ -48,11 +48,11 @@ public class TBaseHandlerTest {
 
         //when is not a map
         assertThatThrownBy(() -> handler.beginMap(2))
-                .hasMessage("incorrect type of value: expected 'INTEGER', actual 'MAP'");
+                .hasMessageContaining("incorrect type of value: expected 'INTEGER', actual 'MAP'");
 
         //when is not a struct
         assertThatThrownBy(() -> handler.beginStruct(2))
-                .hasMessage("incorrect type of value: expected 'INTEGER', actual 'STRUCT'");
+                .hasMessageContaining("incorrect type of value: expected 'INTEGER', actual 'STRUCT'");
 
         handler.value(5);
 
@@ -65,13 +65,13 @@ public class TBaseHandlerTest {
 
         //check collection value
         assertThatThrownBy(() -> handler.value(Long.MAX_VALUE))
-                .hasMessage("incorrect type of value: expected 'STRING', actual 'LONG'");
+                .hasMessageContaining("incorrect type of value: expected 'STRING', actual 'LONG'");
         assertThatThrownBy(() -> handler.beginStruct(2))
-                .hasMessage("incorrect type of value: expected 'STRING', actual 'STRUCT'");
+                .hasMessageContaining("incorrect type of value: expected 'STRING', actual 'STRUCT'");
         assertThatThrownBy(() -> handler.beginList(3))
-                .hasMessage("incorrect type of value: expected 'STRING', actual 'LIST'");
+                .hasMessageContaining("incorrect type of value: expected 'STRING', actual 'LIST'");
         assertThatThrownBy(() -> handler.beginMap(4))
-                .hasMessage("incorrect type of value: expected 'STRING', actual 'MAP'");
+                .hasMessageContaining("incorrect type of value: expected 'STRING', actual 'MAP'");
 
         handler.value("kek");
 

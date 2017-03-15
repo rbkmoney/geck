@@ -16,6 +16,8 @@ import com.rbkmoney.geck.serializer.kit.object.ObjectHandler;
 import com.rbkmoney.geck.serializer.kit.object.ObjectProcessor;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseProcessor;
+import com.rbkmoney.geck.serializer.test.MapListTest;
+import com.rbkmoney.geck.serializer.test.Unknown;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
