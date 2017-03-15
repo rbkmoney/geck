@@ -1,7 +1,7 @@
 package com.rbkmoney.geck.serializer.kit.damsel;
 
-import com.bazaarvoice.jolt.*;
-import com.bazaarvoice.jolt.utils.JoltUtils;
+import com.bazaarvoice.jolt.Chainr;
+import com.bazaarvoice.jolt.JsonUtils;
 import com.rbkmoney.damsel_v133.domain.Invoice;
 import com.rbkmoney.damsel_v133.payment_processing.*;
 import com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted;
@@ -22,7 +22,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by inalarsanukaev on 22.02.17.
@@ -95,10 +96,14 @@ public class DamselTest {
             Object event133Jolt = new TBaseProcessor().process(event133Thrift, new ObjectHandler());
             List chainrSpecJSON = JsonUtils.jsonToList(this.getClass().getResourceAsStream("/spec_event.json"));
             Chainr chainr = Chainr.fromSpec(chainrSpecJSON);
-            System.out.println("v133: " + JsonUtils.toPrettyJsonString(event133Jolt));
             Object event136Jolt = chainr.transform(event133Jolt);
-            System.out.println("v136: " + JsonUtils.toPrettyJsonString(event136Jolt));
-            new ObjectProcessor().process(event136Jolt, new TBaseHandler<>(com.rbkmoney.damsel_v136.payment_processing.Event.class));
+            try {
+                new ObjectProcessor().process(event136Jolt, new TBaseHandler<>(com.rbkmoney.damsel_v136.payment_processing.Event.class));
+            } catch (IOException ex) {
+                System.out.println("v133:\n" + JsonUtils.toPrettyJsonString(event133Jolt));
+                System.out.println("v136:\n" + JsonUtils.toPrettyJsonString(event136Jolt));
+                throw ex;
+            }
         }
     }
 
