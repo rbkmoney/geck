@@ -28,7 +28,7 @@ public class TBaseHandlerTest {
 
         // when value has incorrect type
         assertThatThrownBy(() -> handler.value(true))
-                .hasMessage("incorrect type of value: expected 'STRING', actual 'BOOLEAN'");
+                .hasMessageContaining("incorrect type of value: expected 'STRING', actual 'BOOLEAN'");
 
         handler.value("kek");
 
@@ -91,7 +91,7 @@ public class TBaseHandlerTest {
         handler.name("idsSet");
 
         assertThatThrownBy(() -> handler.beginList(2))
-                .hasMessage("incorrect type of value: expected 'SET', actual 'LIST'");
+                .hasMessageContaining("incorrect type of value: expected 'SET', actual 'LIST'");
 
         handler.beginSet(2);
 

@@ -1,7 +1,7 @@
 package com.rbkmoney.geck.serializer.kit.damsel;
 
-import com.bazaarvoice.jolt.Chainr;
-import com.bazaarvoice.jolt.JsonUtils;
+import com.bazaarvoice.jolt.*;
+import com.bazaarvoice.jolt.utils.JoltUtils;
 import com.rbkmoney.damsel_v133.domain.Invoice;
 import com.rbkmoney.damsel_v133.payment_processing.*;
 import com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted;
@@ -83,6 +83,13 @@ public class DamselTest {
 
         //generated 10 "invoice payment started" events
         addV133InvoiceEvents(eventV133List, 10, EventPayload.invoice_event(InvoiceEvent.invoice_payment_event(InvoicePaymentEvent.invoice_payment_started(new com.rbkmoney.damsel_v133.payment_processing.InvoicePaymentStarted()))));
+
+        //generated 10 "invoice status changed" events
+        addV133InvoiceEvents(eventV133List, 10, EventPayload.invoice_event(InvoiceEvent.invoice_status_changed(new InvoiceStatusChanged())));
+
+        //generated 10 "invoice payment status changed" events
+        addV133InvoiceEvents(eventV133List, 10, EventPayload.invoice_event(InvoiceEvent.invoice_payment_event(InvoicePaymentEvent.invoice_payment_status_changed(new com.rbkmoney.damsel_v133.payment_processing.InvoicePaymentStatusChanged()))));
+
 
         for (com.rbkmoney.damsel_v133.payment_processing.Event event133Thrift : eventV133List) {
             Object event133Jolt = new TBaseProcessor().process(event133Thrift, new ObjectHandler());

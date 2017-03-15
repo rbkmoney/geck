@@ -21,8 +21,19 @@
                   "*": "payload.invoice_event.invoice_payment_event.invoice_payment_started.payment.status.&"
                 },
                 "*": "payload.invoice_event.invoice_payment_event.invoice_payment_started.payment.&"
-              }
-            }
+              },
+              "*": "payload.invoice_event.invoice_payment_event.invoice_payment_started.&"
+            },
+            "invoice_payment_status_changed": {
+              "status": {
+                "failed": {
+                  "err": "payload.invoice_event.invoice_payment_event.invoice_payment_status_changed.status.failed.failure"
+                },
+                "*": "payload.invoice_event.invoice_payment_event.invoice_payment_status_changed.status.&"
+              },
+              "*": "payload.invoice_event.invoice_payment_event.invoice_payment_status_changed.&"
+            },
+            "*": "payload.invoice_event.invoice_payment_event.&"
           },
           "*": "payload.invoice_event.&"
         }
