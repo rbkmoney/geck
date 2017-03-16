@@ -24,8 +24,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.*;
 
-import static com.rbkmoney.geck.serializer.GeckUtil.getTestObject;
-
 /**
  * Created by inalarsanukaev on 22.02.17.
  */
@@ -41,16 +39,15 @@ public class DamselTest {
     @Test
     public void xmlKebabTest() throws Exception {
         TestObject invoice = new MockTBaseProcessor(MockMode.ALL, new FixedValueGenerator()).process(new TestObject(), new TBaseHandler<>(TestObject.class));
-        String json = new TBaseProcessor().process(invoice, new JsonHandler()).toString();
-        System.out.println(json);
-        String xml = new TBaseProcessor().process(invoice, new XMLHandler()).toString();
+        XMLHandler handler = new XMLHandler();
+        String xml = new TBaseProcessor().process(invoice, handler).toString();
+        //test re-use handler
+        new TBaseProcessor().process(invoice, handler);
         System.out.println(xml);
     }
     @Test
     public void xmlInvoiceTest() throws Exception {
         com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted invoice = new MockTBaseProcessor(MockMode.ALL, new FixedValueGenerator()).process(new com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted(), new TBaseHandler<>(com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted.class));
-        String json = new TBaseProcessor().process(invoice, new JsonHandler()).toString();
-        System.out.println(json);
         String xml = new TBaseProcessor().process(invoice, new XMLHandler()).toString();
         System.out.println(xml);
     }

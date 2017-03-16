@@ -2,29 +2,38 @@ package com.rbkmoney.geck.serializer.kit.xml;
 
 import com.rbkmoney.geck.serializer.ByteStack;
 import com.rbkmoney.geck.serializer.StructHandler;
+import com.rbkmoney.geck.serializer.kit.EventFlags;
+import com.rbkmoney.geck.serializer.kit.StructType;
 import static com.rbkmoney.geck.serializer.kit.xml.XMLConstants.*;
-
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import javax.xml.transform.dom.DOMResult;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.Base64;
 
 /**
  * Created by inalarsanukaev on 14.03.17.
  */
-public class XMLHandler implements StructHandler<Writer> {
+public class XMLHandler implements StructHandler<DOMResult> {
 
     private ByteStack stack = new ByteStack();
-    private Writer writer = new StringWriter();
+    private DOMResult result;
     private XMLStreamWriter out;
-    private boolean isClosed;
+    private DocumentBuilder documentBuilder;
+    private XMLOutputFactory xmlOutputFactory;
 
     {
+        init();
+    }
+
+    private void init() {
         try {
-            out = XMLOutputFactory.newInstance().createXMLStreamWriter(writer);
+            result = new DOMResult(getDocumentBuilder().newDocument());
+            out = getXmlOutputFactory().createXMLStreamWriter(result);
             out.writeStartDocument();
             out.writeStartElement(ROOT);
         } catch (XMLStreamException e) {
@@ -32,11 +41,29 @@ public class XMLHandler implements StructHandler<Writer> {
         }
     }
 
+    private XMLOutputFactory getXmlOutputFactory() {
+        if (xmlOutputFactory == null) {
+            xmlOutputFactory = XMLOutputFactory.newInstance();
+        }
+        return xmlOutputFactory;
+    }
+
+    private DocumentBuilder getDocumentBuilder() {
+        if (documentBuilder == null) {
+            try {
+                documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            } catch (ParserConfigurationException e) {
+                throw new RuntimeException("Unknown error", e);
+            }
+        }
+        return documentBuilder;
+    }
+
     private void writeStartElement(String type) {
         try {
             if (!stack.isEmpty()) {
                 byte x = stack.peek();
-                if (x == NONEMPTY_LIST || x == NONEMPTY_SET) {
+                if (x == EventFlags.startList || x == EventFlags.startSet) {
                     out.writeStartElement(ELEMENT);
                 }
             }
@@ -67,7 +94,7 @@ public class XMLHandler implements StructHandler<Writer> {
     @Override
     public void beginStruct(int size) throws IOException {
         writeStartElement(null);
-        stack.push(NONEMPTY_STRUCT);
+        stack.push(EventFlags.startStruct);
     }
 
     @Override
@@ -78,8 +105,8 @@ public class XMLHandler implements StructHandler<Writer> {
 
     @Override
     public void beginList(int size) throws IOException {
-        writeStartElement(LIST);
-        stack.push(NONEMPTY_LIST);
+        writeStartElement(StructType.LIST.getKey());
+        stack.push(EventFlags.startList);
     }
 
     @Override
@@ -90,8 +117,8 @@ public class XMLHandler implements StructHandler<Writer> {
 
     @Override
     public void beginSet(int size) throws IOException {
-        writeStartElement(SET);
-        stack.push(NONEMPTY_SET);
+        writeStartElement(StructType.SET.getKey());
+        stack.push(EventFlags.startSet);
     }
 
     @Override
@@ -102,9 +129,9 @@ public class XMLHandler implements StructHandler<Writer> {
 
     @Override
     public void beginMap(int size) throws IOException {
-        stack.push(NONEMPTY_MAP);
+        stack.push(EventFlags.startMap);
         try {
-            out.writeAttribute(ATTRIBUTE_TYPE, MAP);
+            out.writeAttribute(ATTRIBUTE_TYPE, StructType.MAP.getKey());
         } catch (XMLStreamException e) {
             throw new RuntimeException("Unknown error", e);
         }
@@ -176,19 +203,26 @@ public class XMLHandler implements StructHandler<Writer> {
 
     @Override
     public void nullValue() throws IOException {
-        writeValue(NULL, null);
+        System.out.println("nullValue");
+        writeStartElement( null);
+        try {
+            out.writeAttribute("xsi", "http://www.w3.org/2001/XMLSchema-instance", "nil", "true");
+            out.writeEndElement();
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
-    public Writer getResult() throws IOException {
+    public DOMResult getResult() throws IOException {
         try {
-            if (!isClosed) {
-                out.writeEndDocument();
-                isClosed = true;
-            }
+            out.writeEndDocument();
+            out.flush();
         } catch (XMLStreamException e) {
             throw new RuntimeException("Unknown error", e);
         }
-        return writer;
+        DOMResult readyResult = result;
+        init();
+        return readyResult;
     }
 }
