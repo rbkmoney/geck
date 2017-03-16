@@ -17,206 +17,137 @@ import java.util.Base64;
 public class XMLHandler implements StructHandler<Writer> {
 
     static final byte NONEMPTY_STRUCT = 2;
-
     static final byte NONEMPTY_LIST = 4;
-
     static final byte NONEMPTY_SET = 6;
-
     static final byte NONEMPTY_MAP = 8;
+    public static final String KEY = "key";
+    public static final String VALUE = "value";
+    public static final String ROOT = "root";
+    public static final String ELEMENT = "element";
 
     private ByteStack stack = new ByteStack();
 
     private Writer writer = new StringWriter();
-    private XMLStreamWriter out = XMLOutputFactory.newInstance().createXMLStreamWriter(writer);
+    private XMLStreamWriter out;
     private boolean isClosed;
-    private int i;
 
     {
-        out.writeStartDocument();
-        System.out.println("balance = "+(++i));
-        out.writeStartElement("root");
+        try {
+            out = XMLOutputFactory.newInstance().createXMLStreamWriter(writer);
+            out.writeStartDocument();
+            out.writeStartElement(ROOT);
+        } catch (XMLStreamException e) {
+            throw new RuntimeException("Unknown error", e);
+        }
     }
 
-    public XMLHandler() throws Exception {
+    private void writeStartElement() {
+        if (!stack.isEmpty()) {
+            byte x = stack.peek();
+            if (x == NONEMPTY_LIST || x == NONEMPTY_SET) {
+                try {
+                    out.writeStartElement(ELEMENT);
+                } catch (XMLStreamException e) {
+                    throw new RuntimeException("Unknown error", e);
+                }
+            }
+        }
+    }
+    private void writeValue(String value){
+        try {
+            writeStartElement();
+            out.writeCharacters(value.toString());
+            out.writeEndElement();
+        } catch (XMLStreamException e) {
+            throw new RuntimeException("Unknown error", e);
+        }
+    }
+    private void writeEndElement() {
+        try {
+            out.writeEndElement();
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void beginStruct(int size) throws IOException {
-        if (!stack.isEmpty()) {
-            byte x = stack.peek();
-            if (x == NONEMPTY_LIST || x == NONEMPTY_SET) {
-                System.out.println("balance = " + (++i));
-                try {
-                    out.writeStartElement("element");
-                } catch (XMLStreamException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-       // writeStartElement("struct");
-        System.out.println("beginStruct");
+        writeStartElement();
         stack.push(NONEMPTY_STRUCT);
     }
 
     @Override
     public void endStruct() throws IOException {
-        //writeEndElement();
-        System.out.println("endStruct");
         stack.pop();
-
-        try {
-            System.out.println("balance = " + (--i));
-            out.writeEndElement();
-        } catch (XMLStreamException e) {
-            e.printStackTrace();
-        }
+        writeEndElement();
     }
 
     @Override
     public void beginList(int size) throws IOException {
-        if (!stack.isEmpty()) {
-            byte x = stack.peek();
-            if (x == NONEMPTY_LIST || x == NONEMPTY_SET) {
-                System.out.println("balance = " + (++i));
-                try {
-                    out.writeStartElement("element");
-                } catch (XMLStreamException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        //writeStartElement("list");
-        System.out.println("beginList");
+        writeStartElement();
         stack.push(NONEMPTY_LIST);
     }
 
     @Override
     public void endList() throws IOException {
-        //writeEndElement();
-        System.out.println("endList");
         stack.pop();
-        try {
-            System.out.println("balance = "+(--i));
-            out.writeEndElement();
-        } catch (XMLStreamException e) {
-            e.printStackTrace();
-        }
+        writeEndElement();
     }
 
     @Override
     public void beginSet(int size) throws IOException {
-        if (!stack.isEmpty()) {
-            byte x = stack.peek();
-            if (x == NONEMPTY_LIST || x == NONEMPTY_SET) {
-                System.out.println("balance = " + (++i));
-                try {
-                    out.writeStartElement("element");
-                } catch (XMLStreamException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        //writeStartElement("set");
-        System.out.println("beginSet");
+        writeStartElement();
         stack.push(NONEMPTY_SET);
     }
 
     @Override
     public void endSet() throws IOException {
-       // writeEndElement();
-        System.out.println("endSet");
         stack.pop();
-        try {
-            System.out.println("balance = "+(--i));
-            out.writeEndElement();
-        } catch (XMLStreamException e) {
-            e.printStackTrace();
-        }
+        writeEndElement();
     }
 
     @Override
     public void beginMap(int size) throws IOException {
-       // writeStartElement("map");
-        System.out.println("beginMap");
         stack.push(NONEMPTY_MAP);
     }
 
     @Override
     public void endMap() throws IOException {
-        //writeEndElement();
-        System.out.println("endMap");
         stack.pop();
-        try {
-            System.out.println("balance = "+(--i));
-            out.writeEndElement();
-        } catch (XMLStreamException e) {
-            e.printStackTrace();
-        }
+        writeEndElement();
     }
 
     @Override
     public void beginKey() throws IOException {
-        System.out.println("beginKey");
-        System.out.println("balance = "+(++i));
         try {
-            out.writeStartElement("element");
+            out.writeStartElement(ELEMENT);
         } catch (XMLStreamException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Unknown error", e);
         }
-        name("key");
+        name(KEY);
     }
 
     @Override
     public void endKey() throws IOException {
-        System.out.println("endKey");
     }
 
     @Override
     public void beginValue() throws IOException {
-        System.out.println("beginValue");
-        name("value");
+        name(VALUE);
     }
 
     @Override
     public void endValue() throws IOException {
-        System.out.println("endValue");
-        try {
-            System.out.println("balance = "+(--i));
-            out.writeEndElement();
-        } catch (XMLStreamException e) {
-            e.printStackTrace();
-        }
+        writeEndElement();
     }
 
     @Override
     public void name(String name) throws IOException {
-        System.out.println("name " +name);
         try {
-            System.out.println("balance = "+(++i));
             out.writeStartElement(name);
         } catch (XMLStreamException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Unknown error", e);
         }
-    }
-
-    private void writeValue(String value){
-        System.out.println("value "+value);
-       // System.out.println("end Value "+value);
-        try {
-            if (!stack.isEmpty()) {
-                byte x = stack.peek();
-                if (x == NONEMPTY_LIST || x == NONEMPTY_SET) {
-                    System.out.println("balance = " + (++i));
-                    out.writeStartElement("element");
-                }
-            }
-            out.writeCharacters(value.toString());
-            System.out.println("balance = "+(--i));
-            out.writeEndElement();
-        } catch (XMLStreamException e) {
-            e.printStackTrace();
-        }
-
     }
 
     @Override
@@ -253,21 +184,12 @@ public class XMLHandler implements StructHandler<Writer> {
     public Writer getResult() throws IOException {
         try {
             if (!isClosed) {
-                System.out.println("balance = "+(--i));
                 out.writeEndDocument();
                 isClosed = true;
             }
         } catch (XMLStreamException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Unknown error", e);
         }
         return writer;
-    }
-
-    public static void main(String[] args) throws Exception {
-        XMLHandler x = new XMLHandler();
-        x.out.writeStartDocument();
-        x.out.writeStartElement("root");
-        x.out.writeEndElement();
-        x.out.writeEndDocument();
     }
 }

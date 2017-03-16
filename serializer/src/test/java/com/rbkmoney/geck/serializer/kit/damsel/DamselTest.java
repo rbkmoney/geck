@@ -14,6 +14,8 @@ import com.rbkmoney.geck.serializer.kit.object.ObjectHandler;
 import com.rbkmoney.geck.serializer.kit.object.ObjectProcessor;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseProcessor;
+import com.rbkmoney.geck.serializer.kit.xml.XMLHandler;
+import com.rbkmoney.geck.serializer.test.TestObject;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -21,6 +23,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.*;
+
+import static com.rbkmoney.geck.serializer.GeckUtil.getTestObject;
 
 /**
  * Created by inalarsanukaev on 22.02.17.
@@ -33,6 +37,14 @@ public class DamselTest {
         String json = new TBaseProcessor().process(invoice, new JsonHandler()).toString();
         System.out.println(json);
         new JSONObject(json);
+    }
+    @Test
+    public void xmlInvoiceTest() throws Exception {
+        com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted invoice = new MockTBaseProcessor(MockMode.ALL, new FixedValueGenerator()).process(new com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted(), new TBaseHandler<>(com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted.class));
+        String json = new TBaseProcessor().process(invoice, new JsonHandler()).toString();
+        System.out.println(json);
+        String xml = new TBaseProcessor().process(invoice, new XMLHandler()).toString();
+        System.out.println(xml);
     }
     @Test
     public void testInvoiceMsgPack() throws IOException {
