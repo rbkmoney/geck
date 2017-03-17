@@ -102,8 +102,4 @@ public class XMLProcessor implements StructProcessor<DOMResult> {
             }
         }
     }
-
-    public static void main(String[] args) {
-        System.out.println(Arrays.toString(StructType.values()));
-    }
 }
