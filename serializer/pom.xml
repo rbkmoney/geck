@@ -15,6 +15,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.rbkmoney.geck</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.rbkmoney.thrift</groupId>
             <artifactId>libthrift</artifactId>
         </dependency>
@@ -52,7 +56,15 @@
         <dependency>
             <groupId>com.rbkmoney</groupId>
             <artifactId>damsel</artifactId>
-            <version>1.133-d98b7f8</version>
+            <version>1.113-bfed187</version>
+            <classifier>v113</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.rbkmoney</groupId>
+            <artifactId>damsel</artifactId>
+            <version>1.130-4e4e214</version>
+            <classifier>v130</classifier>
             <scope>test</scope>
         </dependency>
     </dependencies>

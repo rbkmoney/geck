@@ -10,19 +10,13 @@
         <version>0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>migrator</artifactId>
+    <artifactId>common</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>com.rbkmoney.geck</groupId>
-            <artifactId>serializer</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
+            <groupId>com.rbkmoney.thrift</groupId>
+            <artifactId>libthrift</artifactId>
         </dependency>
     </dependencies>
-
-
+    
 </project>
