@@ -15,13 +15,16 @@ import com.rbkmoney.geck.serializer.kit.object.ObjectProcessor;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseProcessor;
 import com.rbkmoney.geck.serializer.kit.xml.XMLHandler;
+import com.rbkmoney.geck.serializer.kit.xml.XMLProcessor;
 import com.rbkmoney.geck.serializer.test.TestObject;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
+import javax.xml.transform.dom.DOMResult;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.*;
 
 /**
@@ -35,15 +38,6 @@ public class DamselTest {
         String json = new TBaseProcessor().process(invoice, new JsonHandler()).toString();
         System.out.println(json);
         new JSONObject(json);
-    }
-    @Test
-    public void xmlKebabTest() throws Exception {
-        TestObject invoice = new MockTBaseProcessor(MockMode.ALL, new FixedValueGenerator()).process(new TestObject(), new TBaseHandler<>(TestObject.class));
-        XMLHandler handler = new XMLHandler();
-        String xml = new TBaseProcessor().process(invoice, handler).toString();
-        //test re-use handler
-        new TBaseProcessor().process(invoice, handler);
-        System.out.println(xml);
     }
     @Test
     public void xmlInvoiceTest() throws Exception {

@@ -59,7 +59,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
         return documentBuilder;
     }
 
-    private void writeStartElement(String type) {
+    private void writeStartElement(String type, int size) {
         try {
             if (!stack.isEmpty()) {
                 byte x = stack.peek();
@@ -70,14 +70,23 @@ public class XMLHandler implements StructHandler<DOMResult> {
             if (type != null) {
                 out.writeAttribute(ATTRIBUTE_TYPE, type);
             }
+            if (size >= 0) {
+                out.writeAttribute(ATTRIBUTE_SIZE, String.valueOf(size));
+            }
         } catch (XMLStreamException e) {
             throw new RuntimeException("Unknown error", e);
         }
     }
+
+    private void writeStartElement(String type) {
+        writeStartElement(type, -1);
+    }
     private void writeValue(String value, String type){
         try {
             writeStartElement(type);
-            out.writeCharacters(value.toString());
+            if (value != null) {
+                out.writeCharacters(value.toString());
+            }
             out.writeEndElement();
         } catch (XMLStreamException e) {
             throw new RuntimeException("Unknown error", e);
@@ -93,7 +102,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
 
     @Override
     public void beginStruct(int size) throws IOException {
-        writeStartElement(null);
+        writeStartElement(StructType.STRUCT.getKey(), size);
         stack.push(EventFlags.startStruct);
     }
 
@@ -105,7 +114,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
 
     @Override
     public void beginList(int size) throws IOException {
-        writeStartElement(StructType.LIST.getKey());
+        writeStartElement(StructType.LIST.getKey(), size);
         stack.push(EventFlags.startList);
     }
 
@@ -117,7 +126,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
 
     @Override
     public void beginSet(int size) throws IOException {
-        writeStartElement(StructType.SET.getKey());
+        writeStartElement(StructType.SET.getKey(), size);
         stack.push(EventFlags.startSet);
     }
 
@@ -132,6 +141,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
         stack.push(EventFlags.startMap);
         try {
             out.writeAttribute(ATTRIBUTE_TYPE, StructType.MAP.getKey());
+            out.writeAttribute(ATTRIBUTE_SIZE, String.valueOf(size));
         } catch (XMLStreamException e) {
             throw new RuntimeException("Unknown error", e);
         }
@@ -147,6 +157,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
     public void beginKey() throws IOException {
         try {
             out.writeStartElement(ELEMENT);
+            out.writeAttribute(ATTRIBUTE_TYPE, MAP_ENTRY);
         } catch (XMLStreamException e) {
             throw new RuntimeException("Unknown error", e);
         }
@@ -183,7 +194,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
 
     @Override
     public void value(String value) throws IOException {
-        writeValue(value, null);
+        writeValue(value, StructType.STRING.getKey());
     }
 
     @Override
@@ -203,14 +214,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
 
     @Override
     public void nullValue() throws IOException {
-        System.out.println("nullValue");
-        writeStartElement( null);
-        try {
-            out.writeAttribute("xsi", "http://www.w3.org/2001/XMLSchema-instance", "nil", "true");
-            out.writeEndElement();
-        } catch (XMLStreamException e) {
-            e.printStackTrace();
-        }
+        writeValue(null, NULL);
     }
 
     @Override
