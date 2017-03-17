@@ -1,6 +1,6 @@
 package com.rbkmoney.geck.serializer;
 
-import com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted;
+import com.rbkmoney.damsel.v130.payment_processing.InvoicePaymentStarted;
 import com.rbkmoney.geck.serializer.test.Status;
 import com.rbkmoney.geck.serializer.test.TestObject;
 import com.rbkmoney.geck.serializer.kit.mock.MockTBaseProcessor;
@@ -14,7 +14,7 @@ import java.util.stream.IntStream;
 /**
  * Created by vpankrashkin on 08.02.17.
  */
-public class GeckUtil {
+public class GeckTestUtil {
     public static TestObject getTestObject(int statusCount, IntFunction<Status> statusGen) throws IOException {
         TestObject testObject = getTestObject();
         List<Status> lists = IntStream.range(0, statusCount).mapToObj(statusGen::apply).collect(Collectors.toList());

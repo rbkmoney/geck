@@ -1,7 +1,7 @@
 package com.rbkmoney.geck.serializer.kit.xml;
 
-import com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted;
-import com.rbkmoney.geck.serializer.GeckUtil;
+import com.rbkmoney.damsel.v130.payment_processing.InvoicePaymentStarted;
+import com.rbkmoney.geck.serializer.GeckTestUtil;
 import com.rbkmoney.geck.serializer.kit.mock.FixedValueGenerator;
 import com.rbkmoney.geck.serializer.kit.mock.MockMode;
 import com.rbkmoney.geck.serializer.kit.mock.MockTBaseProcessor;
@@ -19,7 +19,7 @@ import java.io.IOException;
 public class XMLTest {
     @Test
     public void testInvoiceBackTransform1() throws IOException {
-        InvoicePaymentStarted invoice1 = GeckUtil.getInvoicePaymentStarted();
+        InvoicePaymentStarted invoice1 = GeckTestUtil.getInvoicePaymentStarted();
         InvoicePaymentStarted invoice2 =
                 new XMLProcessor().process(
                         new TBaseProcessor().process(invoice1, new XMLHandler()),

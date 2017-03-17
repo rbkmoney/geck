@@ -2,8 +2,10 @@ package com.rbkmoney.geck.serializer.kit.damsel;
 
 import com.bazaarvoice.jolt.Chainr;
 import com.bazaarvoice.jolt.JsonUtils;
-import com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted;
-import com.rbkmoney.geck.serializer.GeckUtil;
+import com.rbkmoney.damsel.v113.domain.Invoice;
+import com.rbkmoney.damsel.v113.payment_processing.*;
+import com.rbkmoney.damsel.v130.payment_processing.InvoicePaymentStarted;
+import com.rbkmoney.geck.serializer.GeckTestUtil;
 import com.rbkmoney.geck.serializer.kit.json.JsonHandler;
 import com.rbkmoney.geck.serializer.kit.mock.FixedValueGenerator;
 import com.rbkmoney.geck.serializer.kit.mock.MockMode;
@@ -15,16 +17,12 @@ import com.rbkmoney.geck.serializer.kit.object.ObjectProcessor;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseProcessor;
 import com.rbkmoney.geck.serializer.kit.xml.XMLHandler;
-import com.rbkmoney.geck.serializer.kit.xml.XMLProcessor;
-import com.rbkmoney.geck.serializer.test.TestObject;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.xml.transform.dom.DOMResult;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.*;
 
 /**
@@ -33,21 +31,21 @@ import java.util.*;
 public class DamselTest {
     @Test
     public void jsonInvoiceTest() throws JSONException, IOException {
-        //com.rbkmoney.damsel_v133.payment_processing.InvoicePaymentStarted invoice = new MockTBaseProcessor().process(new com.rbkmoney.damsel_v133.payment_processing.InvoicePaymentStarted(), new TBaseHandler<>(com.rbkmoney.damsel_v133.payment_processing.InvoicePaymentStarted.class));
-        com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted invoice = new MockTBaseProcessor().process(new com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted(), new TBaseHandler<>(com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted.class));
+        //com.rbkmoney.damsel.v113.payment_processing.InvoicePaymentStarted invoice = new MockTBaseProcessor().process(new com.rbkmoney.damsel.v113.payment_processing.InvoicePaymentStarted(), new TBaseHandler<>(com.rbkmoney.damsel.v113.payment_processing.InvoicePaymentStarted.class));
+        com.rbkmoney.damsel.v130.payment_processing.InvoicePaymentStarted invoice = new MockTBaseProcessor().process(new com.rbkmoney.damsel.v130.payment_processing.InvoicePaymentStarted(), new TBaseHandler<>(com.rbkmoney.damsel.v130.payment_processing.InvoicePaymentStarted.class));
         String json = new TBaseProcessor().process(invoice, new JsonHandler()).toString();
         System.out.println(json);
         new JSONObject(json);
     }
     @Test
     public void xmlInvoiceTest() throws Exception {
-        com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted invoice = new MockTBaseProcessor(MockMode.ALL, new FixedValueGenerator()).process(new com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted(), new TBaseHandler<>(com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted.class));
+        com.rbkmoney.damsel.v130.payment_processing.InvoicePaymentStarted invoice = new MockTBaseProcessor(MockMode.ALL, new FixedValueGenerator()).process(new com.rbkmoney.damsel.v130.payment_processing.InvoicePaymentStarted(), new TBaseHandler<>(com.rbkmoney.damsel.v130.payment_processing.InvoicePaymentStarted.class));
         String xml = new TBaseProcessor().process(invoice, new XMLHandler()).toString();
         System.out.println(xml);
     }
     @Test
     public void testInvoiceMsgPack() throws IOException {
-        InvoicePaymentStarted invoice = GeckUtil.getInvoicePaymentStarted();
+        InvoicePaymentStarted invoice = GeckTestUtil.getInvoicePaymentStarted();
         byte[] serializedData = new TBaseProcessor().process(invoice, MsgPackHandler.newBufferedInstance(true));
         byte[] doubleSerialized = MsgPackProcessor.newBinaryInstance().process(serializedData, MsgPackHandler.newBufferedInstance(true));
         Assert.assertArrayEquals(serializedData, doubleSerialized);
@@ -55,7 +53,7 @@ public class DamselTest {
 
     @Test
     public void testInvoiceBackTransform1() throws IOException {
-        InvoicePaymentStarted invoice1 = GeckUtil.getInvoicePaymentStarted();
+        InvoicePaymentStarted invoice1 = GeckTestUtil.getInvoicePaymentStarted();
         InvoicePaymentStarted invoice2 =
                 new ObjectProcessor().process(
                         MsgPackProcessor.newBinaryInstance().process(
@@ -68,7 +66,7 @@ public class DamselTest {
     }
     @Test
     public void testInvoiceBackTransform2() throws IOException {
-        InvoicePaymentStarted invoice1 = GeckUtil.getInvoicePaymentStarted();
+        InvoicePaymentStarted invoice1 = GeckTestUtil.getInvoicePaymentStarted();
         InvoicePaymentStarted invoice2 =
                 MsgPackProcessor.newBinaryInstance().process(
                         new ObjectProcessor().process(
@@ -80,57 +78,74 @@ public class DamselTest {
                 );
         Assert.assertEquals(invoice1, invoice2);
     }
+
     @Test
-    public void test() throws IOException {
-        com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted invoice_v136 =
-                new MockTBaseProcessor(MockMode.ALL, new FixedValueGenerator()).process(new com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted(), new TBaseHandler<>(com.rbkmoney.damsel_v136.payment_processing.InvoicePaymentStarted.class));
-        String json_v136 = new TBaseProcessor().process(invoice_v136, new JsonHandler()).toString();
-        System.out.println(json_v136);
-        Object inputJSON_v136 = JsonUtils.jsonToObject(json_v136);
+    public void pathMatchingTest() throws IOException {
+        List<com.rbkmoney.damsel.v113.payment_processing.Event> eventV113List = new ArrayList<>();
 
-        List chainrSpecJSON = JsonUtils.jsonToList(this.getClass().getResourceAsStream( "/spec_invoice.json" ));
-        Chainr chainr = Chainr.fromSpec( chainrSpecJSON );
+        //generated 10 "invoice created" events
+        addV113InvoiceEvents(eventV113List, 10, EventPayload.invoice_event(InvoiceEvent.invoice_created(new InvoiceCreated(new Invoice()))));
 
-        Object transformedOutput = chainr.transform(inputJSON_v136);
-        String transformedInvoice = JsonUtils.toJsonString( transformedOutput );
-        System.out.println(transformedInvoice);
+        //generated 10 "invoice payment started" events
+        addV113InvoiceEvents(eventV113List, 10, EventPayload.invoice_event(InvoiceEvent.invoice_payment_event(InvoicePaymentEvent.invoice_payment_started(new com.rbkmoney.damsel.v113.payment_processing.InvoicePaymentStarted()))));
 
-        com.rbkmoney.damsel_v133.payment_processing.InvoicePaymentStarted invoice_v133 =
-                new MockTBaseProcessor(MockMode.ALL, new FixedValueGenerator()).process(new com.rbkmoney.damsel_v133.payment_processing.InvoicePaymentStarted(), new TBaseHandler<>(com.rbkmoney.damsel_v133.payment_processing.InvoicePaymentStarted.class));
-        String json_v133 = new TBaseProcessor().process(invoice_v133, new JsonHandler()).toString();
-        Object inputJSON_v133 = JsonUtils.jsonToObject(json_v133);
-        System.out.println(json_v133);
+        //generated 10 "invoice status changed" events
+        addV113InvoiceEvents(eventV113List, 10, EventPayload.invoice_event(InvoiceEvent.invoice_status_changed(new InvoiceStatusChanged())));
 
-        Assert.assertEquals(inputJSON_v133,transformedOutput);
-    }
+        //generated 10 "invoice payment status changed" events
+        addV113InvoiceEvents(eventV113List, 10, EventPayload.invoice_event(InvoiceEvent.invoice_payment_event(InvoicePaymentEvent.invoice_payment_status_changed(new com.rbkmoney.damsel.v113.payment_processing.InvoicePaymentStatusChanged()))));
 
-    /**
-     * Создает сет на основе мэпы, рекурсивно, с учетом вложенности
-     * TODO надо сделать для массивов корректную обработку
-     * @param map
-     * @param set
-     */
-    private void fillSetFromLinkedHashMap(LinkedHashMap map, Set set){
-        for (Object k1 : map.keySet()) {
-            Object o1 = map.get(k1);
-           // System.out.println(o1.getClass());
-            if (o1 instanceof LinkedHashMap) {
-                Set dest = new HashSet();
-                fillSetFromLinkedHashMap((LinkedHashMap)o1, dest);
-                addAll((String)k1, set, dest);
-            } else if (o1 instanceof ArrayList){
-                //TODO надо делать
-                set.add(k1);
-            } else {
-                set.add(k1);
+
+        for (com.rbkmoney.damsel.v113.payment_processing.Event event113Thrift : eventV113List) {
+            Object event113Jolt = new TBaseProcessor().process(event113Thrift, new ObjectHandler());
+            List chainrSpecJSON = JsonUtils.jsonToList(this.getClass().getResourceAsStream("/spec_event.json"));
+            Chainr chainr = Chainr.fromSpec(chainrSpecJSON);
+            Object event130Jolt = chainr.transform(event113Jolt);
+            try {
+                new ObjectProcessor().process(event130Jolt, new TBaseHandler<>(com.rbkmoney.damsel.v130.payment_processing.Event.class));
+            } catch (IOException ex) {
+                System.out.println("v113:\n" + JsonUtils.toPrettyJsonString(event113Jolt));
+                System.out.println("v130:\n" + JsonUtils.toPrettyJsonString(event130Jolt));
+                throw ex;
             }
         }
     }
 
-    private void addAll(String k1, Set source, Set dest){
-        for (Object o : dest) {
-            source.add(k1 + "."+o);
+    private void addV113InvoiceEvents(List<com.rbkmoney.damsel.v113.payment_processing.Event> events, int count, EventPayload eventPayload) throws IOException {
+        for (int i = 0; i < count; i++) {
+            com.rbkmoney.damsel.v113.payment_processing.Event event113 = new com.rbkmoney.damsel.v113.payment_processing.Event();
+            event113.setPayload(eventPayload);
+
+            events.add(new MockTBaseProcessor(MockMode.REQUIRED_ONLY)
+                    .process(event113,
+                            new TBaseHandler<>(com.rbkmoney.damsel.v113.payment_processing.Event.class)));
         }
     }
 
+    @Test
+    public void test() throws IOException {
+        com.rbkmoney.damsel.v130.payment_processing.InvoicePaymentStarted invoice_v130 =
+                new MockTBaseProcessor(MockMode.ALL, new FixedValueGenerator()).process(new com.rbkmoney.damsel.v130.payment_processing.InvoicePaymentStarted(), new TBaseHandler<>(com.rbkmoney.damsel.v130.payment_processing.InvoicePaymentStarted.class));
+        invoice_v130.cash_flow = null;
+        invoice_v130.payment.trx.extra = new HashMap<>();
+        String json_v130 = new TBaseProcessor().process(invoice_v130, new JsonHandler()).toString();
+        System.out.println(json_v130);
+        Object inputJSON_v130 = JsonUtils.jsonToObject(json_v130);
+
+        List chainrSpecJSON = JsonUtils.jsonToList(this.getClass().getResourceAsStream("/spec_invoice.json"));
+        Chainr chainr = Chainr.fromSpec(chainrSpecJSON);
+
+        Object transformedOutput = chainr.transform(inputJSON_v130);
+        String transformedInvoice = JsonUtils.toJsonString(transformedOutput);
+        System.out.println(transformedInvoice);
+
+        com.rbkmoney.damsel.v113.payment_processing.InvoicePaymentStarted invoice_v113 =
+                new MockTBaseProcessor(MockMode.ALL, new FixedValueGenerator()).process(new com.rbkmoney.damsel.v113.payment_processing.InvoicePaymentStarted(), new TBaseHandler<>(com.rbkmoney.damsel.v113.payment_processing.InvoicePaymentStarted.class));
+        invoice_v113.cash_flow = null;
+        String json_v113 = new TBaseProcessor().process(invoice_v113, new JsonHandler()).toString();
+        Object inputJSON_v113 = JsonUtils.jsonToObject(json_v113);
+        System.out.println(json_v113);
+
+        Assert.assertEquals(inputJSON_v113,transformedOutput);
+    }
 }

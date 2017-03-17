@@ -1,8 +1,8 @@
 package com.rbkmoney.geck.serializer.kit.object;
 
 import com.rbkmoney.geck.serializer.exception.BadFormatException;
-import com.rbkmoney.geck.serializer.ByteStack;
-import com.rbkmoney.geck.serializer.ObjectStack;
+import com.rbkmoney.geck.common.stack.ByteStack;
+import com.rbkmoney.geck.common.stack.ObjectStack;
 import com.rbkmoney.geck.serializer.StructHandler;
 import com.rbkmoney.geck.serializer.kit.StructType;
 
@@ -144,7 +144,10 @@ public class ObjectHandler implements StructHandler<Object> {
     @Override
     public Object getResult() throws IOException {
         checkState(nop, state.peek());
-        return result;
+        checkState(nop, context.size() == 0 ? nop : pointValue);
+        Object readyResult = result;
+        result = null;
+        return readyResult;
     }
 
     private void addValue(Object value) throws BadFormatException {
@@ -199,17 +202,12 @@ public class ObjectHandler implements StructHandler<Object> {
         if (i < string.length()) {
             StringBuilder sb = new StringBuilder(string.length() + 1);
             sb.append(string, 0, i);
-            boolean escape = false;
             for (; i < string.length(); ++i) {
                 char c = string.charAt(i);
-                if (escape) {
-                    sb.append(c);
-                    escape = false;
-                } else if (c == ESCAPE_CHAR) {
-                    escape = true;
-                } else {
-                    sb.append(c);
+                if (c == ESCAPE_CHAR || c == TYPE_DELIMITER) {
+                    sb.append(ESCAPE_CHAR);
                 }
+                    sb.append(c);
             }
             return sb.toString();
         } else {
