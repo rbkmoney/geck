@@ -3,6 +3,7 @@ package com.rbkmoney.geck.serializer.kit.xml;
 import com.rbkmoney.geck.serializer.StructHandler;
 import com.rbkmoney.geck.serializer.StructProcessor;
 import com.rbkmoney.geck.serializer.exception.BadFormatException;
+import com.rbkmoney.geck.serializer.kit.StructType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -32,47 +33,47 @@ public class XMLProcessor implements StructProcessor<DOMResult> {
             if (printName) {
                 handler.name(nodeName);
             }
-            String type = node.getAttribute(XMLConstants.ATTRIBUTE_TYPE);
+            StructType type = StructType.valueOfKey(node.getAttribute(XMLConstants.ATTRIBUTE_TYPE));
             switch (type) {
-                case XMLConstants.STRING:
+                case STRING:
                     handler.value(node.getTextContent());
                     break;
-                case XMLConstants.BOOL:
+                case BOOL:
                     handler.value(Boolean.valueOf(node.getTextContent()));
                     break;
-                case XMLConstants.BYTEARRAY:
+                case BYTEARRAY:
                     handler.value(Base64.getDecoder().decode(node.getTextContent()));
                     break;
-                case XMLConstants.DOUBLE:
+                case DOUBLE:
                     handler.value(Double.valueOf(node.getTextContent()));
                     break;
-                case XMLConstants.LONG:
+                case LONG:
                     handler.value(Long.valueOf(node.getTextContent()));
                     break;
-                case XMLConstants.NULL:
+                case NULL:
                     handler.nullValue();
                     break;
-                case "struct" :
+                case STRUCT:
                     handler.beginStruct(Integer.parseInt(node.getAttribute(XMLConstants.ATTRIBUTE_SIZE)));
                     processChildNodes(node, handler, true);
                     handler.endStruct();
                     break;
-                case "list" :
+                case LIST:
                     handler.beginList(Integer.parseInt(node.getAttribute(XMLConstants.ATTRIBUTE_SIZE)));
                     processChildNodes(node, handler, false);
                     handler.endList();
                     break;
-                case "set" :
+                case SET:
                     handler.beginSet(Integer.parseInt(node.getAttribute(XMLConstants.ATTRIBUTE_SIZE)));
                     processChildNodes(node, handler, false);
                     handler.endSet();
                     break;
-                case "map" :
+                case MAP:
                     handler.beginMap(Integer.parseInt(node.getAttribute(XMLConstants.ATTRIBUTE_SIZE)));
                     processChildNodes(node, handler, false);
                     handler.endMap();
                     break;
-                case XMLConstants.MAP_ENTRY :
+                case MAP_ENTRY :
                     handler.beginKey();
                     processNode((Element) node.getFirstChild(), handler, false);
                     handler.endKey();

@@ -157,7 +157,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
     public void beginKey() throws IOException {
         try {
             out.writeStartElement(ELEMENT);
-            out.writeAttribute(ATTRIBUTE_TYPE, MAP_ENTRY);
+            out.writeAttribute(ATTRIBUTE_TYPE, StructType.MAP_ENTRY.getKey());
         } catch (XMLStreamException e) {
             throw new RuntimeException("Unknown error", e);
         }
@@ -189,7 +189,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
 
     @Override
     public void value(boolean value) throws IOException {
-        writeValue(String.valueOf(value), BOOL);
+        writeValue(String.valueOf(value), StructType.BOOL.getKey());
     }
 
     @Override
@@ -199,22 +199,22 @@ public class XMLHandler implements StructHandler<DOMResult> {
 
     @Override
     public void value(double value) throws IOException {
-        writeValue(String.valueOf(value), DOUBLE);
+        writeValue(String.valueOf(value), StructType.DOUBLE.getKey());
     }
 
     @Override
     public void value(long value) throws IOException {
-        writeValue(String.valueOf(value), LONG);
+        writeValue(String.valueOf(value), StructType.LONG.getKey());
     }
 
     @Override
     public void value(byte[] value) throws IOException {
-        writeValue(Base64.getEncoder().encodeToString(value), BYTEARRAY);
+        writeValue(Base64.getEncoder().encodeToString(value), StructType.BYTEARRAY.getKey());
     }
 
     @Override
     public void nullValue() throws IOException {
-        writeValue(null, NULL);
+        writeValue(null, StructType.NULL.getKey());
     }
 
     @Override
