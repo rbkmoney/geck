@@ -10,6 +10,8 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.transform.dom.DOMResult;
 import java.io.IOException;
+import java.sql.Struct;
+import java.util.Arrays;
 import java.util.Base64;
 
 /**
@@ -21,7 +23,7 @@ public class XMLProcessor implements StructProcessor<DOMResult> {
         Node document = value.getNode().getFirstChild();
         String nodeName = document.getNodeName();
         if (!nodeName.equals(XMLConstants.ROOT)) {
-            throw new BadFormatException("Root element must have name '"+XMLConstants.ROOT+"'");
+            throw new BadFormatException("Wrong root element name. Expected '"+XMLConstants.ROOT+"', actual '"+nodeName+"'");
         }
         processNode((Element) document, handler, false);
         return handler.getResult();
@@ -34,6 +36,9 @@ public class XMLProcessor implements StructProcessor<DOMResult> {
                 handler.name(nodeName);
             }
             StructType type = StructType.valueOfKey(node.getAttribute(XMLConstants.ATTRIBUTE_TYPE));
+            if (type == null) {
+                throw new BadFormatException("Attribute 'type' must not be null. Node name: "+nodeName);
+            }
             switch (type) {
                 case STRING:
                     handler.value(node.getTextContent());
@@ -82,7 +87,7 @@ public class XMLProcessor implements StructProcessor<DOMResult> {
                     handler.endValue();
                     break;
                 default:
-                    new BadFormatException("Unknown type of node: "+type);
+                    new BadFormatException("Unknown type of node: "+type+". Must be on of them : "+ Arrays.toString(StructType.values()));
             }
         }
     }
@@ -92,7 +97,13 @@ public class XMLProcessor implements StructProcessor<DOMResult> {
             Node item = nodeList.item(i);
             if (item.getNodeType() == Node.ELEMENT_NODE) {
                 processNode((Element) item, handler, printName);
+            } else {
+                throw new BadFormatException("Wrong type of node. Expected - "+Node.ELEMENT_NODE+", actual - "+item.getNodeType());
             }
         }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Arrays.toString(StructType.values()));
     }
 }
