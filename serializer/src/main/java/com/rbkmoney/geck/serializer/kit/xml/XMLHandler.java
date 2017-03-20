@@ -2,6 +2,7 @@ package com.rbkmoney.geck.serializer.kit.xml;
 
 import com.rbkmoney.geck.common.stack.ByteStack;
 import com.rbkmoney.geck.serializer.StructHandler;
+import com.rbkmoney.geck.serializer.exception.BadFormatException;
 import com.rbkmoney.geck.serializer.kit.EventFlags;
 import com.rbkmoney.geck.serializer.kit.StructType;
 import static com.rbkmoney.geck.serializer.kit.xml.XMLConstants.*;
@@ -13,6 +14,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.dom.DOMResult;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Base64;
 
 /**
@@ -27,17 +30,22 @@ public class XMLHandler implements StructHandler<DOMResult> {
     private XMLOutputFactory xmlOutputFactory;
 
     {
-        init();
+        try {
+            init();
+        } catch (BadFormatException e) {
+            e.printStackTrace(); // shit
+        }
     }
 
-    private void init() {
+    private void init() throws BadFormatException {
         try {
+            getDocumentBuilder().reset();
             result = new DOMResult(getDocumentBuilder().newDocument());
             out = getXmlOutputFactory().createXMLStreamWriter(result);
             out.writeStartDocument();
             out.writeStartElement(ROOT);
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Unknown error when init", e);
+            throw new BadFormatException("Unknown error when init", e);
         }
     }
 
@@ -48,18 +56,18 @@ public class XMLHandler implements StructHandler<DOMResult> {
         return xmlOutputFactory;
     }
 
-    private DocumentBuilder getDocumentBuilder() {
+    private DocumentBuilder getDocumentBuilder() throws BadFormatException {
         if (documentBuilder == null) {
             try {
                 documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             } catch (ParserConfigurationException e) {
-                throw new RuntimeException("Unknown error when getDocumentBuilder", e);
+                throw new BadFormatException("Unknown error when getDocumentBuilder", e);
             }
         }
         return documentBuilder;
     }
 
-    private void writeStartElement(String type, int size) {
+    private void writeStartElement(String type, int size) throws BadFormatException {
         try {
             if (!stack.isEmpty()) {
                 byte x = stack.peek();
@@ -74,14 +82,14 @@ public class XMLHandler implements StructHandler<DOMResult> {
                 out.writeAttribute(ATTRIBUTE_SIZE, String.valueOf(size));
             }
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Unknown error when writeStartElement", e);
+            throw new BadFormatException("Unknown error when writeStartElement", e);
         }
     }
 
-    private void writeStartElement(String type) {
+    private void writeStartElement(String type) throws BadFormatException {
         writeStartElement(type, -1);
     }
-    private void writeValue(String value, String type){
+    private void writeValue(String value, String type) throws BadFormatException {
         try {
             writeStartElement(type);
             if (value != null) {
@@ -89,7 +97,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
             }
             out.writeEndElement();
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Unknown error when writeValue", e);
+            throw new BadFormatException("Unknown error when writeValue", e);
         }
     }
     private void writeEndElement() {
@@ -143,7 +151,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
             out.writeAttribute(ATTRIBUTE_TYPE, StructType.MAP.getKey());
             out.writeAttribute(ATTRIBUTE_SIZE, String.valueOf(size));
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Unknown error when beginMap", e);
+            throw new BadFormatException("Unknown error when beginMap", e);
         }
     }
 
@@ -159,7 +167,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
             out.writeStartElement(ELEMENT);
             out.writeAttribute(ATTRIBUTE_TYPE, StructType.MAP_ENTRY.getKey());
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Unknown error when beginKey", e);
+            throw new BadFormatException("Unknown error when beginKey", e);
         }
         name(KEY);
     }
@@ -183,7 +191,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
         try {
             out.writeStartElement(name);
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Unknown error when name", e);
+            throw new BadFormatException("Unknown error when name", e);
         }
     }
 
@@ -223,10 +231,22 @@ public class XMLHandler implements StructHandler<DOMResult> {
             out.writeEndDocument();
             out.flush();
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Unknown error when getResult", e);
+            throw new BadFormatException("Unknown error when getResult", e);
         }
         DOMResult readyResult = result;
         init();
         return readyResult;
+    }
+
+    public static void main(String[] args) throws XMLStreamException {
+        Writer writer = new StringWriter();
+        XMLStreamWriter out = XMLOutputFactory.newInstance().createXMLStreamWriter(writer);
+        out.writeStartDocument();
+        out.writeStartElement(ROOT);
+        out.writeEmptyElement("petooh");
+        out.writeAttribute("dd", "fff");
+        out.writeEndElement();
+        out.writeEndDocument();
+        System.out.println(writer);
     }
 }
