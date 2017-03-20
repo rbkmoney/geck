@@ -100,11 +100,11 @@ public class XMLHandler implements StructHandler<DOMResult> {
             throw new BadFormatException("Unknown error when writeValue", e);
         }
     }
-    private void writeEndElement() {
+    private void writeEndElement() throws BadFormatException {
         try {
             out.writeEndElement();
         } catch (XMLStreamException e) {
-            e.printStackTrace();
+            throw new BadFormatException("Unknown error when writeEndElement", e);
         }
     }
 
