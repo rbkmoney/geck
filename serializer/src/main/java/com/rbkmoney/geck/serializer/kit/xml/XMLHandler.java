@@ -37,7 +37,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
             out.writeStartDocument();
             out.writeStartElement(ROOT);
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Unknown error", e);
+            throw new RuntimeException("Unknown error when init", e);
         }
     }
 
@@ -53,7 +53,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
             try {
                 documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             } catch (ParserConfigurationException e) {
-                throw new RuntimeException("Unknown error", e);
+                throw new RuntimeException("Unknown error when getDocumentBuilder", e);
             }
         }
         return documentBuilder;
@@ -74,7 +74,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
                 out.writeAttribute(ATTRIBUTE_SIZE, String.valueOf(size));
             }
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Unknown error", e);
+            throw new RuntimeException("Unknown error when writeStartElement", e);
         }
     }
 
@@ -89,7 +89,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
             }
             out.writeEndElement();
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Unknown error", e);
+            throw new RuntimeException("Unknown error when writeValue", e);
         }
     }
     private void writeEndElement() {
@@ -143,7 +143,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
             out.writeAttribute(ATTRIBUTE_TYPE, StructType.MAP.getKey());
             out.writeAttribute(ATTRIBUTE_SIZE, String.valueOf(size));
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Unknown error", e);
+            throw new RuntimeException("Unknown error when beginMap", e);
         }
     }
 
@@ -159,7 +159,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
             out.writeStartElement(ELEMENT);
             out.writeAttribute(ATTRIBUTE_TYPE, StructType.MAP_ENTRY.getKey());
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Unknown error", e);
+            throw new RuntimeException("Unknown error when beginKey", e);
         }
         name(KEY);
     }
@@ -183,7 +183,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
         try {
             out.writeStartElement(name);
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Unknown error", e);
+            throw new RuntimeException("Unknown error when name", e);
         }
     }
 
@@ -223,7 +223,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
             out.writeEndDocument();
             out.flush();
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Unknown error", e);
+            throw new RuntimeException("Unknown error when getResult", e);
         }
         DOMResult readyResult = result;
         init();
