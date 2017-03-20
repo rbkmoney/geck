@@ -237,16 +237,4 @@ public class XMLHandler implements StructHandler<DOMResult> {
         init();
         return readyResult;
     }
-
-    public static void main(String[] args) throws XMLStreamException {
-        Writer writer = new StringWriter();
-        XMLStreamWriter out = XMLOutputFactory.newInstance().createXMLStreamWriter(writer);
-        out.writeStartDocument();
-        out.writeStartElement(ROOT);
-        out.writeEmptyElement("petooh");
-        out.writeAttribute("dd", "fff");
-        out.writeEndElement();
-        out.writeEndDocument();
-        System.out.println(writer);
-    }
 }
