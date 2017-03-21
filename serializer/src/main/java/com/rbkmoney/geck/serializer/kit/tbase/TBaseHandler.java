@@ -232,7 +232,12 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
         checkState(startStruct);
         TBase tBase = (TBase) elementStack.peek();
 
-        fieldStack.push(TBaseUtil.getField(name, tBase));
+        TFieldIdEnum tFieldIdEnum = TBaseUtil.getField(name, tBase);
+        if (tFieldIdEnum == null) {
+            throw new IllegalArgumentException(String.format("Field '%s' not found", name));
+        }
+
+        fieldStack.push(tFieldIdEnum);
         stateStack.push(pointName);
     }
 
@@ -334,7 +339,19 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
     @Override
     public R getResult() throws IOException {
-        return result;
+        if (result == null) {
+            throw new BadFormatException("result is null");
+        }
+
+        if (!(stateStack.isEmpty()
+                && fieldStack.isEmpty()
+                && elementStack.isEmpty()
+                && valueMetaDataStack.isEmpty())) {
+            throw new BadFormatException("stack is not empty");
+        }
+        R tBase = result;
+        result = null;
+        return tBase;
     }
 
 }
