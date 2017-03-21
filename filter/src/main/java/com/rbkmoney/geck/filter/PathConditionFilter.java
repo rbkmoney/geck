@@ -20,8 +20,6 @@ public class PathConditionFilter implements Filter<TBase> {
 
     @Override
     public boolean match(TBase object) {
-        boolean result = true;
-
         for (PathConditionRule rule : rules) {
             Object value = object;
             Parser parser = rule.getParser();
@@ -34,11 +32,13 @@ public class PathConditionFilter implements Filter<TBase> {
             }
 
             for (Condition condition : rule.getConditions()) {
-                result &= condition.accept(value);
+                if(!condition.accept(value)) {
+                    return false;
+                }
             }
         }
 
-        return result;
+        return true;
     }
 
     private Object getFieldValue(String path, TBase tBase) {
