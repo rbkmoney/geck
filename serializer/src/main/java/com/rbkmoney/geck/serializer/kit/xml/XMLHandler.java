@@ -33,7 +33,7 @@ public class XMLHandler implements StructHandler<DOMResult> {
         try {
             init();
         } catch (BadFormatException e) {
-            e.printStackTrace(); // shit
+            throw new RuntimeException(e);//TODO
         }
     }
 
