@@ -16,10 +16,5 @@
             <exponent type="long">1</exponent>
         </xsl:copy>
     </xsl:template>
-    <xsl:template match="root/payment/cost/currency/@size">
-        <xsl:attribute name="{name(.)}">
-            <xsl:value-of select=". + 3"/>
-        </xsl:attribute>
-    </xsl:template>
     <xsl:template match="root/payment/domain_revision"/>
 </xsl:stylesheet>
