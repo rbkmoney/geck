@@ -59,22 +59,22 @@ public class XMLProcessor implements StructProcessor<DOMResult> {
                     handler.nullValue();
                     break;
                 case STRUCT:
-                    handler.beginStruct(Integer.parseInt(node.getAttribute(XMLConstants.ATTRIBUTE_SIZE)));
+                    handler.beginStruct(node.getChildNodes() == null ? 0 : node.getChildNodes().getLength());
                     processChildNodes(node, handler, true);
                     handler.endStruct();
                     break;
                 case LIST:
-                    handler.beginList(Integer.parseInt(node.getAttribute(XMLConstants.ATTRIBUTE_SIZE)));
+                    handler.beginList(node.getChildNodes() == null ? 0 : node.getChildNodes().getLength());
                     processChildNodes(node, handler, false);
                     handler.endList();
                     break;
                 case SET:
-                    handler.beginSet(Integer.parseInt(node.getAttribute(XMLConstants.ATTRIBUTE_SIZE)));
+                    handler.beginSet(node.getChildNodes() == null ? 0 : node.getChildNodes().getLength());
                     processChildNodes(node, handler, false);
                     handler.endSet();
                     break;
                 case MAP:
-                    handler.beginMap(Integer.parseInt(node.getAttribute(XMLConstants.ATTRIBUTE_SIZE)));
+                    handler.beginMap(node.getChildNodes() == null ? 0 : node.getChildNodes().getLength());
                     processChildNodes(node, handler, false);
                     handler.endMap();
                     break;
