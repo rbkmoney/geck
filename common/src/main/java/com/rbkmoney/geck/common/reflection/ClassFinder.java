@@ -1,13 +1,14 @@
 package com.rbkmoney.geck.common.reflection;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.reflect.ClassPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by vpankrashkin on 22.03.17.
@@ -66,6 +67,38 @@ public class ClassFinder {
                 }
             } catch (ClassNotFoundException ignore) {
             }
+        }
+        return classes;
+    }
+
+    public static <T> Collection<Class<T>> gFind(Collection<String> scannedPackages, String classNameSuffix, Class<T> classType) {
+        List<Class<T>> classes = new ArrayList<>();
+        for (String scannedPackage: scannedPackages) {
+            classes.addAll(gFind(scannedPackage, classNameSuffix, classType));
+        }
+        return classes;
+    }
+
+        public static <T> Collection<Class<T>> gFind(String scannedPackage, String classSuffix, Class<T> classType) {
+        Set<Class<T>> classes = new HashSet<>();
+        try {
+            ClassPath classPath = ClassPath.from(Thread.currentThread().getContextClassLoader());
+            ImmutableSet<ClassPath.ClassInfo> classesInfo = classPath.getTopLevelClassesRecursive(scannedPackage);
+
+            for (ClassPath.ClassInfo classInfo: classesInfo) {
+                if (classInfo.getName().endsWith(classSuffix)) {
+                    try {
+                        Class cl = classInfo.load();
+                        if (classType.isAssignableFrom(cl)) {
+                            classes.add(cl);
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed to load class "+ classInfo, e);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            log.warn("Failed to get classes list for package "+ scannedPackage, e);
         }
         return classes;
     }
