@@ -1,8 +1,12 @@
 package com.rbkmoney.geck.common.reflection;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -11,7 +15,8 @@ import java.util.List;
  */
 
 
- public class ClassFinder {
+public class ClassFinder {
+    private static final Logger log = LoggerFactory.getLogger(ClassFinder.class);
 
     private static final char PKG_SEPARATOR = '.';
 
@@ -21,17 +26,20 @@ import java.util.List;
 
     private static final String BAD_PACKAGE_ERROR = "Unable to get resources from path '%s'. Are you sure the package '%s' exists?";
 
-    public static <T> List<Class<T>> find(String scannedPackage, String classNameSuffix, Class<T> classType) {
-        String scannedPath = scannedPackage.replace(PKG_SEPARATOR, DIR_SEPARATOR);
-        final String fullClassNameSuffix = classNameSuffix + CLASS_FILE_SUFFIX;
-        URL scannedUrl = Thread.currentThread().getContextClassLoader().getResource(scannedPath);
-        if (scannedUrl == null) {
-            throw new IllegalArgumentException(String.format(BAD_PACKAGE_ERROR, scannedPath, scannedPackage));
-        }
-        File scannedDir = new File(scannedUrl.getFile());
+    public static <T> List<Class<T>> find(Collection<String> scannedPackages, String classNameSuffix, Class<T> classType) {
         List<Class<T>> classes = new ArrayList<>();
-        for (File file : scannedDir.listFiles()) {
-            classes.addAll(find(file, scannedPackage, fullClassNameSuffix, classType));
+        for (String scannedPackage : scannedPackages) {
+            String scannedPath = scannedPackage.replace(PKG_SEPARATOR, DIR_SEPARATOR);
+            final String fullClassNameSuffix = classNameSuffix + CLASS_FILE_SUFFIX;
+            URL scannedUrl = Thread.currentThread().getContextClassLoader().getResource(scannedPath);
+            if (scannedUrl == null) {
+                log.warn(String.format(BAD_PACKAGE_ERROR, scannedPath, scannedPackage));
+                continue;
+            }
+            File scannedDir = new File(scannedUrl.getFile());
+            for (File file : scannedDir.listFiles()) {
+                classes.addAll(find(file, scannedPackage, fullClassNameSuffix, classType));
+            }
         }
         return classes;
     }
