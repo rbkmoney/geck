@@ -37,8 +37,9 @@ public class ClassFinder {
                 continue;
             }
             File scannedDir = new File(scannedUrl.getFile());
-            if (scannedDir != null) {
-                for (File file : scannedDir.listFiles()) {
+            File[] filesList = scannedDir.listFiles();
+            if (filesList != null) {
+                for (File file : filesList) {
                     classes.addAll(find(file, scannedPackage, fullClassNameSuffix, classType));
                 }
             }
