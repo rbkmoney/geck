@@ -36,6 +36,7 @@ public class ClassFinder {
                 log.warn(String.format(BAD_PACKAGE_ERROR, scannedPath, scannedPackage));
                 continue;
             }
+            System.out.println("Scanned URL "+scannedUrl);
             File scannedDir = new File(scannedUrl.getFile());
             File[] filesList = scannedDir.listFiles();
             if (filesList != null) {
