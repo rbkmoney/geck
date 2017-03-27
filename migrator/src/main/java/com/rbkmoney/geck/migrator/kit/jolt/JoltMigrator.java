@@ -13,7 +13,7 @@ public class JoltMigrator extends AbstractMigrator {
     @Override
     public <I, O> O migrate(I data, MigrationPoint mPoint, SerializerSpec<I, O> serializerSpec) throws MigrationException {
         Object inData = serialize(data, serializerSpec.getInDef(), SERIALIZER_DEF, mPoint.getThriftSpec());
-        Chainr chainr = Chainr.fromSpec(mPoint.getMigrationSpec().getSpec());
+        Chainr chainr = (Chainr) mPoint.getMigrationSpec().getSpec();
         Object outData = chainr.transform(inData);
         return serialize(outData, SERIALIZER_DEF, serializerSpec.getOutDef(), mPoint.getThriftSpec());
     }

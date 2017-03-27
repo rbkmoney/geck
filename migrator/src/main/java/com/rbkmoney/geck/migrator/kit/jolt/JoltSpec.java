@@ -1,5 +1,6 @@
 package com.rbkmoney.geck.migrator.kit.jolt;
 
+import com.bazaarvoice.jolt.Chainr;
 import com.rbkmoney.geck.migrator.ThriftSpec;
 
 /**
@@ -8,18 +9,18 @@ import com.rbkmoney.geck.migrator.ThriftSpec;
 public class JoltSpec {
 
     private final ThriftSpec thriftSpec;
-    private final Object joltSpec;
+    private final Chainr chainr;
 
-    public JoltSpec(ThriftSpec thriftSpec, Object joltSpec) {
+    public JoltSpec(ThriftSpec thriftSpec, Chainr chainr) {
         this.thriftSpec = thriftSpec;
-        this.joltSpec = joltSpec;
+        this.chainr = chainr;
     }
 
     public ThriftSpec getThriftSpec() {
         return thriftSpec;
     }
 
-    public Object getJoltSpec() {
-        return joltSpec;
+    public Chainr getChainr() {
+        return chainr;
     }
 }

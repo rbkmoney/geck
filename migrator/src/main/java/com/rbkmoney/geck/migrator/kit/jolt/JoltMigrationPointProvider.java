@@ -1,5 +1,6 @@
 package com.rbkmoney.geck.migrator.kit.jolt;
 
+import com.bazaarvoice.jolt.Chainr;
 import com.bazaarvoice.jolt.JsonUtils;
 import com.rbkmoney.geck.migrator.*;
 import com.rbkmoney.geck.migrator.kit.BaseMigrationSpec;
@@ -54,7 +55,8 @@ public class JoltMigrationPointProvider extends SimpleMigrationPointProvider {
         if (joltSpecMap.containsKey("thriftSpec")
                 && joltSpecMap.containsKey("joltSpec")) {
             ThriftSpec thriftSpec = createThriftSpec((Map) joltSpecMap.get("thriftSpec"));
-            return new JoltSpec(thriftSpec, joltSpecMap.get("joltSpec"));
+            Chainr chainr = Chainr.fromSpec(joltSpecMap.get("joltSpec"));
+            return new JoltSpec(thriftSpec, chainr);
         }
         throw new IllegalArgumentException("Incorrect jolt spec format");
     }
@@ -88,7 +90,7 @@ public class JoltMigrationPointProvider extends SimpleMigrationPointProvider {
                         counter.incrementAndGet(),
                         spec.getThriftSpec(),
                         JoltMigrator.SERIALIZER_DEF,
-                        new BaseMigrationSpec(spec.getJoltSpec(), MigrationType.JOLT.getKey())
+                        new BaseMigrationSpec(spec.getChainr(), MigrationType.JOLT.getKey())
                 )).collect(Collectors.toList());
     }
 
