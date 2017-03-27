@@ -7,7 +7,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -37,13 +39,25 @@ public class ClassFinder {
                 log.warn(String.format(BAD_PACKAGE_ERROR, scannedPath, scannedPackage));
                 continue;
             }
-            System.out.println("Scanned URL "+scannedUrl);
-            File scannedDir = new File(scannedUrl.getFile());
-            File[] filesList = scannedDir.listFiles();
-            if (filesList != null) {
-                for (File file : filesList) {
-                    classes.addAll(find(file, scannedPackage, fullClassNameSuffix, classType));
+
+            try {
+                System.out.println("ClassFinder:Scanned URL "+scannedUrl);
+                File scannedDir = Paths.get(scannedUrl.toURI()).toFile();
+                //File scannedDir = new File(scannedUrl.getFile());
+                System.out.println("Absolute Path:"+scannedDir.getAbsolutePath());
+                System.out.println("Exists:"+scannedDir.exists());
+                System.out.println("Is directory:"+scannedDir.isDirectory());
+                System.out.println("Can read:"+scannedDir.canRead());
+                System.out.println("Can write:"+scannedDir.canWrite());
+                System.out.println("Can execute:"+scannedDir.canExecute());
+                File[] filesList = scannedDir.listFiles();
+                if (filesList != null) {
+                    for (File file : filesList) {
+                        classes.addAll(find(file, scannedPackage, fullClassNameSuffix, classType));
+                    }
                 }
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
             }
         }
         return classes;

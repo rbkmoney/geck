@@ -30,7 +30,7 @@ public class ObjectMigrationPointProvider extends SimpleMigrationPointProvider {
     public static ObjectMigrationPointProvider newInstance(Collection<String> migrationSpecPkg) throws MigrationException {
         try {
             List<String> searchSpecPkgs = new ArrayList<>(migrationSpecPkg);
-            List<Class<ObjectSpec>> specClList = new ArrayList<>(ClassFinder.gFind(searchSpecPkgs, CLASS_NAME_SUFFIX, ObjectSpec.class));
+            List<Class<ObjectSpec>> specClList = new ArrayList<>(ClassFinder.find(searchSpecPkgs, CLASS_NAME_SUFFIX, ObjectSpec.class));
             return new ObjectMigrationPointProvider(instantiateObjectSpecs(specClList));
         } catch (Exception e) {
             throw new MigrationException("Cannot create ObjectSpec list", e);
