@@ -77,7 +77,7 @@ public class ObjectHandlerTest {
 
         List<String> listMapString = new ArrayList<>();
         listMapString.add("@map");
-        listMapString.add("kek_jolt.json");
+        listMapString.add("kek");
         mapListTest.setListMapString(listMapString);
 
         MapListTest mapListTest2 = new ObjectProcessor().process(
@@ -90,7 +90,7 @@ public class ObjectHandlerTest {
     @Test
     public void backslashTest() throws IOException {
         Unknown unknown = new Unknown();
-        unknown.setDescription("\\b\\kek_jolt.json\\peka");
+        unknown.setDescription("\\b\\kek\\peka");
 
         Unknown unknown2 = new ObjectProcessor().process(
                 new TBaseProcessor().process(unknown, new ObjectHandler()),
