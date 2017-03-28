@@ -8,7 +8,7 @@ import com.rbkmoney.geck.migrator.kit.AbstractMigrator;
  * Created by tolkonepiu on 22/03/2017.
  */
 public class JoltMigrator extends AbstractMigrator {
-    static final SerializerDef<Object> SERIALIZER_DEF = new SerializerDef<>(MigrationType.JOLT.getKey());
+    public static final SerializerDef<Object> SERIALIZER_DEF = new SerializerDef<>(MigrationType.JOLT.getKey());
 
     @Override
     public <I, O> O migrate(I data, MigrationPoint mPoint, SerializerSpec<I, O> serializerSpec) throws MigrationException {

@@ -1,12 +1,12 @@
 package com.rbkmoney.geck.common.reflection;
 
 import org.reflections.Reflections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.reflections.scanners.ResourcesScanner;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -16,10 +16,9 @@ import java.util.stream.Collectors;
 
 
 public class ClassFinder {
-    private static final Logger log = LoggerFactory.getLogger(ClassFinder.class);
 
     public static <T> Collection<Class<? extends T>> find(Collection<String> scannedPackages, String classNameSuffix, Class<T> classType) {
-        List<Class<? extends T>> classes = new ArrayList<>();
+        Set<Class<? extends T>> classes = new HashSet<>();
         for (String scannedPackage : scannedPackages) {
             classes.addAll(find(scannedPackage, classNameSuffix, classType));
         }
@@ -31,6 +30,10 @@ public class ClassFinder {
                 .getSubTypesOf(classType).stream()
                 .filter(t -> t.getSimpleName().endsWith(classSuffix))
                 .collect(Collectors.toSet());
+    }
+
+    public static Set<String> findResources(String pattern) {
+        return new Reflections(new ResourcesScanner()).getResources(Pattern.compile(pattern));
     }
 
 }

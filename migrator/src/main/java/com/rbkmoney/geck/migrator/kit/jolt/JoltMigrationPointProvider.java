@@ -2,6 +2,7 @@ package com.rbkmoney.geck.migrator.kit.jolt;
 
 import com.bazaarvoice.jolt.Chainr;
 import com.bazaarvoice.jolt.JsonUtils;
+import com.rbkmoney.geck.common.reflection.ClassFinder;
 import com.rbkmoney.geck.migrator.*;
 import com.rbkmoney.geck.migrator.kit.BaseMigrationSpec;
 import com.rbkmoney.geck.migrator.kit.SimpleMigrationPointProvider;
@@ -20,15 +21,22 @@ import java.util.stream.Collectors;
  */
 public class JoltMigrationPointProvider extends SimpleMigrationPointProvider {
 
+    public static String DEFAULT_REGEX = ".*_spec\\.json";
+
     public JoltMigrationPointProvider(Collection<JoltSpec> specs) {
         super(createMigrationPoints(specs));
     }
 
-    public static JoltMigrationPointProvider fromClasspath(String... files) throws MigrationException {
+    public static JoltMigrationPointProvider fromClasspath() throws MigrationException {
+        return fromClasspath(DEFAULT_REGEX);
+    }
+
+    public static JoltMigrationPointProvider fromClasspath(String regex) throws MigrationException {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         List<JoltSpec> joltSpecs = new ArrayList<>();
         try {
-            for (String file : files) {
-                Map joltSpecMap = JsonUtils.classpathToMap(file);
+            for (String file : ClassFinder.findResources(regex)) {
+                Map joltSpecMap = JsonUtils.jsonToMap(classLoader.getResourceAsStream(file));
                 joltSpecs.add(createJoltSpec(joltSpecMap));
             }
             return new JoltMigrationPointProvider(joltSpecs);
@@ -37,10 +45,14 @@ public class JoltMigrationPointProvider extends SimpleMigrationPointProvider {
         }
     }
 
-    public static JoltMigrationPointProvider fromFileSystem(Path dir) throws MigrationException {
+    public static JoltMigrationPointProvider fromFileSystem(Path file) throws MigrationException {
+        return fromFileSystem(file, DEFAULT_REGEX);
+    }
+
+    public static JoltMigrationPointProvider fromFileSystem(Path file, String regex) throws MigrationException {
         try {
-            List<JoltSpec> joltSpecs = Files.walk(dir)
-                    .filter(path -> !Files.isDirectory(path))
+            List<JoltSpec> joltSpecs = Files.walk(file)
+                    .filter(path -> !Files.isDirectory(path) && path.toString().matches(regex))
                     .map(path -> JsonUtils.filepathToMap(path.toAbsolutePath().toString()))
                     .map(map -> createJoltSpec(map))
                     .collect(Collectors.toList());
