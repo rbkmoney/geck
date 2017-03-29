@@ -1,7 +1,9 @@
 package com.rbkmoney.geck.common.reflection;
 
+import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
+import org.reflections.util.ConfigurationBuilder;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -32,8 +34,11 @@ public class ClassFinder {
                 .collect(Collectors.toSet());
     }
 
-    public static Set<String> findResources(String pattern) {
-        return new Reflections(new ResourcesScanner()).getResources(Pattern.compile(pattern));
+    public static Set<String> findResources(String regex) {
+        Configuration configuration = new ConfigurationBuilder()
+                .setScanners(new ResourcesScanner())
+                .forPackages("/");
+        return new Reflections(configuration).getResources(Pattern.compile(regex));
     }
 
 }

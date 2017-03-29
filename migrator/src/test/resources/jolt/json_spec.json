@@ -2,11 +2,11 @@
   "thriftSpec": {
     "inDef": {
       "type": null,
-      "version": 4
+      "version": 0
     },
     "outDef": {
       "type": null,
-      "version": 5
+      "version": 1
     }
   },
   "joltSpec": [

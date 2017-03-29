@@ -6,8 +6,6 @@ import com.rbkmoney.geck.migrator.kit.jolt.JoltMigrator;
 import com.rbkmoney.geck.migrator.kit.object.ObjectMigrator;
 import com.rbkmoney.geck.serializer.StructHandler;
 import com.rbkmoney.geck.serializer.StructProcessor;
-import com.rbkmoney.geck.serializer.kit.msgpack.MsgPackHandler;
-import com.rbkmoney.geck.serializer.kit.msgpack.MsgPackProcessor;
 import com.rbkmoney.geck.serializer.kit.object.ObjectHandler;
 import com.rbkmoney.geck.serializer.kit.object.ObjectProcessor;
 
