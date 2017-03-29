@@ -32,12 +32,7 @@ public class JoltMigratorTest {
                 .build();
         Map inputMap = JsonUtils.classpathToMap("/jolt/json_input.json");
         Map migrationMap = (Map) migrationManager.migrate(inputMap, new ThriftDef(0), JoltMigrator.SERIALIZER_DEF);
-        //fuck!
-        migrationMap.put("Rating", 3);
-        Map qualityMap = (Map) ((Map) migrationMap.get("SecondaryRatings")).get("quality");
-        qualityMap.put("Range", 5);
-        qualityMap.put("Value", 3);
-        //fuck end
+
         InputStream outResource = this.getClass().getResourceAsStream("/jolt/json_output.json");
         assertEquals(new BufferedReader(new InputStreamReader(outResource))
                 .lines().collect(Collectors.joining("\n")), JsonUtils.toPrettyJsonString(migrationMap));
