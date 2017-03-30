@@ -34,10 +34,10 @@ public class ClassFinder {
                 .collect(Collectors.toSet());
     }
 
-    public static Set<String> findResources(String regex) {
+    public static Set<String> findResources(String path, String regex) {
         Configuration configuration = new ConfigurationBuilder()
                 .setScanners(new ResourcesScanner())
-                .forPackages("/");
+                .forPackages(path);
         return new Reflections(configuration).getResources(Pattern.compile(regex));
     }
 

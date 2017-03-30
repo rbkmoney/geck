@@ -7,9 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Created by tolkonepiu on 27/03/2017.
@@ -18,7 +16,7 @@ public class ClassFinderTest {
 
     @Test
     public void findResourcesTest() throws IOException {
-        Set<String> resources = ClassFinder.findResources(".*_jolt\\.json");
+        Set<String> resources = ClassFinder.findResources("/", ".*_jolt\\.json");
         assertNotNull(resources);
         assertTrue(resources.size() == 2);
         for (String resource : resources) {

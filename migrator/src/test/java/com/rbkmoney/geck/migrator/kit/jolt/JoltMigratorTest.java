@@ -5,15 +5,12 @@ import com.rbkmoney.geck.migrator.MigrationException;
 import com.rbkmoney.geck.migrator.MigrationManager;
 import com.rbkmoney.geck.migrator.MigrationManagerBuilder;
 import com.rbkmoney.geck.migrator.ThriftDef;
-import com.rbkmoney.geck.migrator.kit.object.ObjectMigrationPointProvider;
-import com.rbkmoney.geck.migrator.kit.object.ObjectMigrator;
-import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 

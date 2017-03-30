@@ -23,19 +23,21 @@ public class JoltMigrationPointProvider extends SimpleMigrationPointProvider {
 
     public static String DEFAULT_REGEX = ".*_spec\\.json";
 
+    public static String DEFAULT_PATH = "/jolt/";
+
     public JoltMigrationPointProvider(Collection<JoltSpec> specs) {
         super(createMigrationPoints(specs));
     }
 
     public static JoltMigrationPointProvider fromClasspath() throws MigrationException {
-        return fromClasspath(DEFAULT_REGEX);
+        return fromClasspath(DEFAULT_PATH, DEFAULT_REGEX);
     }
 
-    public static JoltMigrationPointProvider fromClasspath(String regex) throws MigrationException {
+    public static JoltMigrationPointProvider fromClasspath(String path, String regex) throws MigrationException {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         List<JoltSpec> joltSpecs = new ArrayList<>();
         try {
-            for (String file : ClassFinder.findResources(regex)) {
+            for (String file : ClassFinder.findResources(path, regex)) {
                 Map joltSpecMap = JsonUtils.jsonToMap(classLoader.getResourceAsStream(file));
                 joltSpecs.add(createJoltSpec(joltSpecMap));
             }
