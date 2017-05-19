@@ -19,8 +19,8 @@ public class JsonHandler implements StructHandler<Writer> {
 
     public static final String KEY = "key";
     public static final String VALUE = "value";
-    public static final String BINARY = "b:";
-    public static final String STRING = "s:";
+    public static final String BINARY = "b@";
+    public static final String ESC_SYMBOL = "@";
     private Writer out;
     private JsonGenerator jGenerator;
     private JsonFactory jfactory = new JsonFactory();
@@ -117,7 +117,10 @@ public class JsonHandler implements StructHandler<Writer> {
 
     @Override
     public void value(String value) throws IOException {
-        jGenerator.writeString(STRING+value);
+        if (value.startsWith(BINARY)) {
+            value = ESC_SYMBOL+value;
+        }
+        jGenerator.writeString(value);
     }
 
     @Override

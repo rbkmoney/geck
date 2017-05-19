@@ -21,7 +21,6 @@ public class JsonProcessor implements StructProcessor<Writer> {
     public <R> R process(Writer value, StructHandler<R> handler) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = mapper.readTree(value.toString());
-        System.out.println(jsonNode.size());
         processNode(jsonNode, null, handler);
         return handler.getResult();
     }
@@ -41,14 +40,16 @@ public class JsonProcessor implements StructProcessor<Writer> {
                 handler.value(jsonNode.doubleValue());
             } else if (jsonNode.isTextual()) {
                 String value = jsonNode.textValue();
-                int length = JsonHandler.BINARY.length();
-                String data = value.substring(length);
                 if (value.startsWith(JsonHandler.BINARY)) {
-                    handler.value(Base64.getDecoder().decode(data));
-                } else if (value.startsWith(JsonHandler.STRING)) {
-                    handler.value(data);
+                    try {
+                        handler.value(Base64.getDecoder().decode(value.substring(JsonHandler.BINARY.length())));
+                    } catch (IllegalArgumentException e) {
+                        throw new BadFormatException("Error when decode base64 field " + (name == null ? "" : name), e);
+                    }
+                } else if (value.startsWith(JsonHandler.ESC_SYMBOL+JsonHandler.BINARY)) {
+                    handler.value(value.substring(1));
                 } else {
-                    throw new BadFormatException("Incorrect text value. Must be starts with one of them: "+JsonHandler.STRING+", "+JsonHandler.BINARY);
+                    handler.value(value);
                 }
             } else if (jsonNode.isObject()) {
                 handler.beginStruct(jsonNode.size());
@@ -61,19 +62,20 @@ public class JsonProcessor implements StructProcessor<Writer> {
                 }
                 String arrCode = elements.next().textValue();
                 StructType arrType = StructType.valueOfKey(arrCode);
+                int size = jsonNode.size() - 1;
                 switch (arrType) {
                     case LIST:
-                        handler.beginList(jsonNode.size());
+                        handler.beginList(size);
                         processChildArrNodes(elements, handler);
                         handler.endList();
                         break;
                     case SET:
-                        handler.beginSet(jsonNode.size());
+                        handler.beginSet(size);
                         processChildArrNodes(elements, handler);
                         handler.endSet();
                         break;
                     case MAP:
-                        handler.beginMap(jsonNode.size());
+                        handler.beginMap(size);
                         while (elements.hasNext()) {
                             JsonNode mapEntry = elements.next();
                             handler.beginKey();

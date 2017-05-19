@@ -33,8 +33,8 @@
       "payment": {
         "cost": {
           "currency": {
-            "name": "s:kek",
-            "symbolic_code":"s:kek",
+            "name": "kek",
+            "symbolic_code":"kek",
             "numeric_code":1,
             "exponent":1
           }
