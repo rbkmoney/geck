@@ -11,7 +11,7 @@ import java.io.Writer;
 import java.util.Base64;
 
 /**
- * Created by inalarsanukaev on 14.03.17.
+ * Created by tolkonepiu on 27/01/2017.
  */
 //TODO replace Writer to JsonNode or similar
 //TODO pretty out (without type identifiers into staructure)
