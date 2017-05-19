@@ -34,12 +34,12 @@ public class JsonTest {
     public void testInvoiceBackTransform1() throws IOException {
         InvoicePaymentStarted invoice1 = GeckTestUtil.getInvoicePaymentStarted();
         InvoicePaymentStarted invoice2 =
-                new JsonProcessor().process(
-                        MsgPackProcessor.newBinaryInstance().process(
+                MsgPackProcessor.newBinaryInstance().process(
+                        new JsonProcessor().process(
                                 new TBaseProcessor().process(
                                         invoice1,
-                                        MsgPackHandler.newBufferedInstance(true)),
-                                new JsonHandler()),
+                                       new JsonHandler()),
+                                MsgPackHandler.newBufferedInstance(true)),
                         new TBaseHandler<>(InvoicePaymentStarted.class));
         Assert.assertEquals(invoice1, invoice2);
     }
