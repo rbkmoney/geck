@@ -33,8 +33,8 @@ public class JsonTest {
         String json1 = new TBaseProcessor().process(testObject, handler).toString();
         System.out.println(json1);
         //test re-use handler
-/*        String json2 = new TBaseProcessor().process(testObject, handler).toString();
+        String json2 = new TBaseProcessor().process(testObject, handler).toString();
         System.out.println(json2);
-        Assert.assertEquals(json1, json2);*/
+        Assert.assertEquals(json1, json2);
     }
 }

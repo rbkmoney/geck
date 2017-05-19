@@ -13,7 +13,6 @@ import java.util.Base64;
 /**
  * Created by inalarsanukaev on 14.03.17.
  */
-//TODO Re-usable handler
 //TODO replace Writer to JsonNode or similar
 //TODO pretty out (without type identifiers into staructure)
 public class JsonHandler implements StructHandler<Writer> {
@@ -24,7 +23,7 @@ public class JsonHandler implements StructHandler<Writer> {
     public static final String STRING = "s:";
     private Writer out;
     private JsonGenerator jGenerator;
-    private JsonFactory jfactory;
+    private JsonFactory jfactory = new JsonFactory();
 
     {
         try {
@@ -37,7 +36,6 @@ public class JsonHandler implements StructHandler<Writer> {
     private void init() throws BadFormatException {
         try {
             out = new StringWriter();
-            jfactory = new JsonFactory();
             jGenerator = jfactory.createGenerator(out);
         } catch (IOException e) {
             throw new BadFormatException("Unknown error when init", e);
@@ -146,7 +144,8 @@ public class JsonHandler implements StructHandler<Writer> {
     public Writer getResult() throws IOException {
         jGenerator.close();
         out.flush();
-//init();
-        return out;
+        Writer resultOut = out;
+        init();
+        return resultOut;
     }
 }
