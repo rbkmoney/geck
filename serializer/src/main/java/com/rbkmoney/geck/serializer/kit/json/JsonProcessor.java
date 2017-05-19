@@ -42,7 +42,7 @@ public class JsonProcessor implements StructProcessor<Writer> {
                 String value = jsonNode.textValue();
                 if (value.startsWith(JsonHandler.ESC_SYMBOL)) {
                     String data = value.substring(1);
-                    if (value.startsWith(JsonHandler.ESC_SYMBOL + JsonHandler.ESC_SYMBOL)) {
+                    if (data.startsWith(JsonHandler.ESC_SYMBOL)) {
                         handler.value(data);
                     } else {
                         try {
