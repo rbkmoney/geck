@@ -40,14 +40,17 @@ public class JsonProcessor implements StructProcessor<Writer> {
                 handler.value(jsonNode.doubleValue());
             } else if (jsonNode.isTextual()) {
                 String value = jsonNode.textValue();
-                if (value.startsWith(JsonHandler.BINARY)) {
-                    try {
-                        handler.value(Base64.getDecoder().decode(value.substring(JsonHandler.BINARY.length())));
-                    } catch (IllegalArgumentException e) {
-                        throw new BadFormatException("Error when decode base64 field " + (name == null ? "" : name), e);
+                if (value.startsWith(JsonHandler.ESC_SYMBOL)) {
+                    String data = value.substring(1);
+                    if (value.startsWith(JsonHandler.ESC_SYMBOL + JsonHandler.ESC_SYMBOL)) {
+                        handler.value(data);
+                    } else {
+                        try {
+                            handler.value(Base64.getDecoder().decode(data));
+                        } catch (IllegalArgumentException e) {
+                            throw new BadFormatException("Error when decode base64 field " + (name == null ? "" : name), e);
+                        }
                     }
-                } else if (value.startsWith(JsonHandler.ESC_SYMBOL+JsonHandler.BINARY)) {
-                    handler.value(value.substring(1));
                 } else {
                     handler.value(value);
                 }

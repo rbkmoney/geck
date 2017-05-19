@@ -19,7 +19,6 @@ public class JsonHandler implements StructHandler<Writer> {
 
     public static final String KEY = "key";
     public static final String VALUE = "value";
-    public static final String BINARY = "b@";
     public static final String ESC_SYMBOL = "@";
     private Writer out;
     private JsonGenerator jGenerator;
@@ -117,7 +116,7 @@ public class JsonHandler implements StructHandler<Writer> {
 
     @Override
     public void value(String value) throws IOException {
-        if (value.startsWith(BINARY)) {
+        if (value.startsWith(ESC_SYMBOL)) {
             value = ESC_SYMBOL+value;
         }
         jGenerator.writeString(value);
@@ -135,7 +134,7 @@ public class JsonHandler implements StructHandler<Writer> {
 
     @Override
     public void value(byte[] value) throws IOException {
-        jGenerator.writeString(BINARY+Base64.getEncoder().encodeToString(value));
+        jGenerator.writeString(ESC_SYMBOL+Base64.getEncoder().encodeToString(value));
     }
 
     @Override
