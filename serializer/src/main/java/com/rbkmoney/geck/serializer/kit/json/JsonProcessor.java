@@ -16,11 +16,24 @@ import java.util.Map;
 /**
  * Created by inalarsanukaev on 16.03.17.
  */
-public class JsonProcessor implements StructProcessor<Writer> {
+public abstract class JsonProcessor<S> implements StructProcessor<S> {
+
+    protected abstract JsonNode parseJson(S value) throws IOException;
+
+    public static JsonProcessor<Writer> newWriterInstance(){
+        return new JsonProcessor<Writer>() {
+            @Override
+            protected JsonNode parseJson(Writer value) throws IOException {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode jsonNode = mapper.readTree(value.toString());
+                return jsonNode;
+            }
+        };
+    }
+
     @Override
-    public <R> R process(Writer value, StructHandler<R> handler) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonNode = mapper.readTree(value.toString());
+    public <R> R process(S value, StructHandler<R> handler) throws IOException {
+        JsonNode jsonNode = parseJson(value);
         processNode(jsonNode, null, handler);
         return handler.getResult();
     }

@@ -5,24 +5,23 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.rbkmoney.geck.serializer.StructHandler;
 import com.rbkmoney.geck.serializer.exception.BadFormatException;
 import com.rbkmoney.geck.serializer.kit.StructType;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
+
+import java.io.*;
 import java.util.Base64;
 
 /**
  * Created by tolkonepiu on 27/01/2017.
  */
-//TODO replace Writer to JsonNode or similar
-//TODO pretty out (without type identifiers into staructure)
-public class JsonHandler implements StructHandler<Writer> {
+public abstract class JsonHandler<R> implements StructHandler<R> {
 
     public static final String KEY = "key";
     public static final String VALUE = "value";
     public static final String ESC_SYMBOL = "@";
-    private Writer out;
-    private JsonGenerator jGenerator;
-    private JsonFactory jfactory = new JsonFactory();
+    //use 'true' value only for print, not for json-processor
+    protected boolean pretty;
+    protected R out;
+    protected JsonGenerator jGenerator;
+    protected JsonFactory jfactory = new JsonFactory();
 
     {
         try {
@@ -32,13 +31,27 @@ public class JsonHandler implements StructHandler<Writer> {
         }
     }
 
-    private void init() throws BadFormatException {
-        try {
-            out = new StringWriter();
-            jGenerator = jfactory.createGenerator(out);
-        } catch (IOException e) {
-            throw new BadFormatException("Unknown error when init", e);
-        }
+    protected abstract void init() throws BadFormatException;
+
+    public static JsonHandler<Writer> newWriterInstance() {
+        return newWriterInstance(false);
+    }
+    public static JsonHandler<Writer> newWriterInstance(boolean isPretty) {
+        return new JsonHandler<Writer>() {
+            @Override
+            protected void init() throws BadFormatException {
+                try {
+                    this.pretty = isPretty;
+                    if (out != null) {
+                        out.close();
+                    }
+                    out = new StringWriter();
+                    this.jGenerator = jfactory.createGenerator(out);
+                } catch (IOException e) {
+                    throw new BadFormatException("Unknown error when init", e);
+                }
+            }
+        };
     }
 
     @Override
@@ -54,7 +67,7 @@ public class JsonHandler implements StructHandler<Writer> {
     @Override
     public void beginList(int size) throws IOException {
         jGenerator.writeStartArray();
-        jGenerator.writeString(StructType.LIST.getKey());
+        if (!pretty) jGenerator.writeString(StructType.LIST.getKey());
     }
 
     @Override
@@ -65,7 +78,7 @@ public class JsonHandler implements StructHandler<Writer> {
     @Override
     public void beginSet(int size) throws IOException {
         jGenerator.writeStartArray();
-        jGenerator.writeString(StructType.SET.getKey());
+        if (!pretty) jGenerator.writeString(StructType.SET.getKey());
     }
 
     @Override
@@ -76,7 +89,7 @@ public class JsonHandler implements StructHandler<Writer> {
     @Override
     public void beginMap(int size) throws IOException {
         jGenerator.writeStartArray();
-        jGenerator.writeString(StructType.MAP.getKey());
+        if (!pretty) jGenerator.writeString(StructType.MAP.getKey());
     }
 
     @Override
@@ -116,7 +129,7 @@ public class JsonHandler implements StructHandler<Writer> {
 
     @Override
     public void value(String value) throws IOException {
-        if (value.startsWith(ESC_SYMBOL)) {
+        if ((!pretty) && value.startsWith(ESC_SYMBOL)) {
             value = ESC_SYMBOL+value;
         }
         jGenerator.writeString(value);
@@ -134,7 +147,7 @@ public class JsonHandler implements StructHandler<Writer> {
 
     @Override
     public void value(byte[] value) throws IOException {
-        jGenerator.writeString(ESC_SYMBOL+Base64.getEncoder().encodeToString(value));
+        jGenerator.writeString((pretty ? "" : ESC_SYMBOL) + Base64.getEncoder().encodeToString(value));
     }
 
     @Override
@@ -143,10 +156,9 @@ public class JsonHandler implements StructHandler<Writer> {
     }
 
     @Override
-    public Writer getResult() throws IOException {
+    public R getResult() throws IOException {
         jGenerator.close();
-        out.flush();
-        Writer resultOut = out;
+        R resultOut = out;
         init();
         return resultOut;
     }
