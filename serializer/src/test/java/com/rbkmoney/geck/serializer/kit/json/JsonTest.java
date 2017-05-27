@@ -2,6 +2,8 @@ package com.rbkmoney.geck.serializer.kit.json;
 
 import com.rbkmoney.damsel.v130.payment_processing.InvoicePaymentStarted;
 import com.rbkmoney.geck.serializer.GeckTestUtil;
+import com.rbkmoney.geck.serializer.kit.mock.FixedValueGenerator;
+import com.rbkmoney.geck.serializer.kit.mock.MockMode;
 import com.rbkmoney.geck.serializer.kit.mock.MockTBaseProcessor;
 import com.rbkmoney.geck.serializer.kit.msgpack.MsgPackHandler;
 import com.rbkmoney.geck.serializer.kit.msgpack.MsgPackProcessor;
@@ -22,8 +24,8 @@ public class JsonTest {
     public void testInvoiceBackTransform() throws IOException {
         InvoicePaymentStarted invoice1 = GeckTestUtil.getInvoicePaymentStarted();
         InvoicePaymentStarted invoice2 =
-                JsonProcessor.newWriterInstance().process(
-                        new TBaseProcessor().process(invoice1, JsonHandler.newWriterInstance()),
+                new JsonProcessor().process(
+                        new TBaseProcessor().process(invoice1, new JsonHandler1()),
                         new TBaseHandler<>(InvoicePaymentStarted.class));
         Assert.assertEquals(invoice1, invoice2);
     }
@@ -33,10 +35,10 @@ public class JsonTest {
         InvoicePaymentStarted invoice1 = GeckTestUtil.getInvoicePaymentStarted();
         InvoicePaymentStarted invoice2 =
                 MsgPackProcessor.newBinaryInstance().process(
-                        JsonProcessor.newWriterInstance().process(
+                        new JsonProcessor().process(
                                 new TBaseProcessor().process(
                                         invoice1,
-                                        JsonHandler.newWriterInstance()),
+                                        new JsonHandler1()),
                                 MsgPackHandler.newBufferedInstance(true)),
                         new TBaseHandler<>(InvoicePaymentStarted.class));
         Assert.assertEquals(invoice1, invoice2);
@@ -44,8 +46,8 @@ public class JsonTest {
 
     @Test
     public void jsonKebabTest() throws Exception {
-        TestObject testObject = new MockTBaseProcessor().process(new TestObject(), new TBaseHandler<>( TestObject.class));
-        JsonHandler handler = JsonHandler.newWriterInstance();
+        TestObject testObject = new MockTBaseProcessor(MockMode.ALL, new FixedValueGenerator()).process(new TestObject(), new TBaseHandler<>( TestObject.class));
+        JsonHandler1 handler =  new JsonHandler1();
         String json1 = new TBaseProcessor().process(testObject, handler).toString();
         System.out.println(json1);
         //test re-use handler
@@ -56,8 +58,8 @@ public class JsonTest {
 
     @Test
     public void testPretty() throws IOException {
-        TestObject testObject = new MockTBaseProcessor().process(new TestObject(), new TBaseHandler<>( TestObject.class));
-        JsonHandler handler = JsonHandler.newWriterInstance(true);
+        TestObject testObject = new MockTBaseProcessor(MockMode.ALL, new FixedValueGenerator()).process(new TestObject(), new TBaseHandler<>( TestObject.class));
+        JsonHandler1 handler = JsonHandler1.newPrettyJsonInstance();
         String json1 = new TBaseProcessor().process(testObject, handler).toString();
         System.out.println(json1);
     }

@@ -1,14 +1,12 @@
 package com.rbkmoney.geck.serializer.kit.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.geck.serializer.StructHandler;
 import com.rbkmoney.geck.serializer.StructProcessor;
 import com.rbkmoney.geck.serializer.exception.BadFormatException;
 import com.rbkmoney.geck.serializer.kit.StructType;
 
 import java.io.IOException;
-import java.io.Writer;
 import java.util.Base64;
 import java.util.Iterator;
 import java.util.Map;
@@ -16,25 +14,11 @@ import java.util.Map;
 /**
  * Created by inalarsanukaev on 16.03.17.
  */
-public abstract class JsonProcessor<S> implements StructProcessor<S> {
-
-    protected abstract JsonNode parseJson(S value) throws IOException;
-
-    public static JsonProcessor<Writer> newWriterInstance(){
-        return new JsonProcessor<Writer>() {
-            @Override
-            protected JsonNode parseJson(Writer value) throws IOException {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode jsonNode = mapper.readTree(value.toString());
-                return jsonNode;
-            }
-        };
-    }
+public class JsonProcessor implements StructProcessor<JsonNode> {
 
     @Override
-    public <R> R process(S value, StructHandler<R> handler) throws IOException {
-        JsonNode jsonNode = parseJson(value);
-        processNode(jsonNode, null, handler);
+    public <R> R process(JsonNode value, StructHandler<R> handler) throws IOException {
+        processNode(value, null, handler);
         return handler.getResult();
     }
 

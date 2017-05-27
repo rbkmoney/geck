@@ -1,6 +1,7 @@
 package com.rbkmoney.geck.serializer;
 
 import com.rbkmoney.geck.serializer.kit.json.JsonHandler;
+import com.rbkmoney.geck.serializer.kit.json.JsonHandler1;
 import com.rbkmoney.geck.serializer.kit.msgpack.MsgPackHandler;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseProcessor;
 import org.apache.thrift.TBase;
@@ -15,7 +16,7 @@ public class Geck {
     public String toJson(TBase src) {
         try {
             TBaseProcessor structProcessor = new TBaseProcessor();
-            JsonHandler jsonHandler = JsonHandler.newWriterInstance();
+            JsonHandler1 jsonHandler = new JsonHandler1();
             return  structProcessor.process(src, jsonHandler).toString();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
