@@ -46,7 +46,7 @@ public class JsonTest {
 
     @Test
     public void jsonKebabTest() throws Exception {
-        TestObject testObject = new MockTBaseProcessor(MockMode.ALL, new FixedValueGenerator()).process(new TestObject(), new TBaseHandler<>( TestObject.class));
+        TestObject testObject = new MockTBaseProcessor().process(new TestObject(), new TBaseHandler<>( TestObject.class));
         JsonHandler1 handler =  new JsonHandler1();
         String json1 = new TBaseProcessor().process(testObject, handler).toString();
         System.out.println(json1);

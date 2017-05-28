@@ -2,7 +2,6 @@ package com.rbkmoney.geck.serializer.kit.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rbkmoney.geck.common.stack.ObjectStack;
 import com.rbkmoney.geck.serializer.StructHandler;
@@ -20,9 +19,10 @@ public class JsonHandler1 implements StructHandler<JsonNode> {
     public static final String VALUE = "value";
     public static final String ESC_SYMBOL = "@";
     protected ObjectStack<String> names = new ObjectStack<>();
-    protected ObjectStack<JsonNode> nodes = new ObjectStack<>();
+    protected ObjectStack<JsonNodeWrapper> nodes = new ObjectStack<>();
     protected boolean pretty;
-    protected JsonNode rootNode;
+    protected ObjectNode rootNode;
+    protected JsonNodeWrapper currNode;
     protected ObjectMapper mapper = new ObjectMapper();
 
     protected void setPretty(boolean pretty) {
@@ -40,21 +40,19 @@ public class JsonHandler1 implements StructHandler<JsonNode> {
     }
 
     private void beginArray(StructType type) {
-        JsonNode jNode = nodes.peek();
-        ArrayNode item  = jNode.isArray() ? ((ArrayNode) jNode).addArray() : ((ObjectNode) jNode).putArray(names.pop());
+        ArrayNodeWrapper item = nodes.peek().addArray();
         nodes.push(item);
         if (!pretty) item.add(type.getKey());
     }
 
     @Override
     public void beginStruct(int size) throws IOException {
-        if (nodes.isEmpty()) { // start handling
+        if (currNode == null) { // start handling
             rootNode = mapper.createObjectNode();
-            nodes.push(rootNode);
+            currNode = new ObjectNodeWrapper(names, rootNode);
+            nodes.push(currNode);
         } else {
-            JsonNode jNode = nodes.peek();
-            ObjectNode item = jNode.isArray() ? ((ArrayNode) jNode).addObject() : ((ObjectNode) jNode).putObject(names.pop());
-            nodes.push(item);
+            nodes.push(nodes.peek().addObject(names));
         }
     }
 
@@ -95,9 +93,7 @@ public class JsonHandler1 implements StructHandler<JsonNode> {
 
     @Override
     public void beginKey() throws IOException {
-        JsonNode jNode = nodes.peek();
-        ObjectNode item = ((ArrayNode) jNode).addObject();
-        nodes.push(item);
+        nodes.push(nodes.peek().addObject(names));
         name(KEY);
     }
 
@@ -122,12 +118,7 @@ public class JsonHandler1 implements StructHandler<JsonNode> {
 
     @Override
     public void value(boolean value) throws IOException {
-        JsonNode peek = nodes.peek();
-        if (peek.isArray()) {
-            ((ArrayNode) peek).add(value);
-        } else if (peek.isObject()){
-            ((ObjectNode) peek).put(names.pop(), value);
-        }
+        nodes.peek().add(value);
     }
 
     @Override
@@ -135,57 +126,33 @@ public class JsonHandler1 implements StructHandler<JsonNode> {
         if ((!pretty) && value.startsWith(ESC_SYMBOL)) {
             value = ESC_SYMBOL+value;
         }
-        JsonNode peek = nodes.peek();
-        if (peek.isArray()) {
-            ((ArrayNode) peek).add(value);
-        } else if (peek.isObject()){
-            ((ObjectNode) peek).put(names.pop(), value);
-        }
+        nodes.peek().add(value);
     }
 
     @Override
     public void value(double value) throws IOException {
-        JsonNode peek = nodes.peek();
-        if (peek.isArray()) {
-            ((ArrayNode) peek).add(value);
-        } else if (peek.isObject()){
-            ((ObjectNode) peek).put(names.pop(), value);
-        }
+        nodes.peek().add(value);
     }
 
     @Override
     public void value(long value) throws IOException {
-        JsonNode peek = nodes.peek();
-        if (peek.isArray()) {
-            ((ArrayNode) peek).add(value);
-        } else if (peek.isObject()){
-            ((ObjectNode) peek).put(names.pop(), value);
-        }
+        nodes.peek().add(value);
     }
 
     @Override
     public void value(byte[] value) throws IOException {
         String s = (pretty ? "" : ESC_SYMBOL) + Base64.getEncoder().encodeToString(value);
-        JsonNode peek = nodes.peek();
-        if (peek.isArray()) {
-            ((ArrayNode) peek).add(s);
-        } else if (peek.isObject()){
-            ((ObjectNode) peek).put(names.pop(), s);
-        }
+        nodes.peek().add(s);
     }
 
     @Override
     public void nullValue() throws IOException {
-        JsonNode peek = nodes.peek();
-        if (peek.isArray()) {
-            ((ArrayNode) peek).addNull();
-        } else if (peek.isObject()){
-            ((ObjectNode) peek).putNull(names.pop());
-        }
+        nodes.peek().addNull();
     }
 
     @Override
     public JsonNode getResult() throws IOException {
+        currNode = null;
         return rootNode;
     }
 }
