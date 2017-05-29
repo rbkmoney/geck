@@ -1,7 +1,5 @@
 package com.rbkmoney.geck.common.stack;
 
-import java.util.Arrays;
-
 /**
  * Created by vpankrashkin on 31.01.17.
  */
@@ -83,12 +81,6 @@ public final class ObjectStack<E> {
         return size == 0;
     }
 
-    @Override
-    public String toString() {
-        return "ObjectStack{" +
-                "stack=" + Arrays.toString(stack) +
-                ", size=" + size;
-    }
 }
 
 
