@@ -2,6 +2,7 @@ package com.rbkmoney.geck.serializer.kit.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rbkmoney.geck.common.stack.ObjectStack;
 import com.rbkmoney.geck.serializer.StructHandler;
@@ -151,5 +152,114 @@ public class JsonHandler implements StructHandler<JsonNode> {
             throw new BadFormatException("Something went wrong: stacks is not empty!");
         }
         return rootNode;
+    }
+
+    interface JsonNodeWrapper {
+        ArrayNodeWrapper addArray();
+        ObjectNodeWrapper addObject(ObjectStack<String> names);
+        void add(boolean value);
+        void add(String value);
+        void add(double value);
+        void add(long value);
+        void add(byte[] value);
+        void addNull();
+    }
+
+    class ObjectNodeWrapper implements JsonNodeWrapper {
+        private ObjectStack<String> names;
+        private ObjectNode node;
+
+        public ObjectNodeWrapper(ObjectStack<String> names, ObjectNode node) {
+            this.names = names;
+            this.node = node;
+        }
+
+        @Override
+        public ArrayNodeWrapper addArray() {
+            return new ArrayNodeWrapper(node.putArray(names.pop()));
+        }
+
+        @Override
+        public ObjectNodeWrapper addObject(ObjectStack<String> names) {
+            return new ObjectNodeWrapper(names, node.putObject(names.pop()));
+        }
+
+        @Override
+        public void add(boolean value) {
+            node.put(names.pop(), value);
+        }
+
+        @Override
+        public void add(String value) {
+            node.put(names.pop(), value);
+        }
+
+        @Override
+        public void add(double value) {
+            node.put(names.pop(), value);
+        }
+
+        @Override
+        public void add(long value) {
+            node.put(names.pop(), value);
+        }
+
+        @Override
+        public void add(byte[] value) {
+            node.put(names.pop(), value);
+        }
+
+        @Override
+        public void addNull() {
+            node.putNull(names.pop());
+        }
+    }
+
+    class ArrayNodeWrapper implements JsonNodeWrapper {
+        private ArrayNode node;
+
+        public ArrayNodeWrapper(ArrayNode node) {
+            this.node = node;
+        }
+
+        @Override
+        public ArrayNodeWrapper addArray() {
+            return new ArrayNodeWrapper(node.addArray());
+        }
+
+        @Override
+        public ObjectNodeWrapper addObject(ObjectStack<String> names) {
+            return new ObjectNodeWrapper(names, node.addObject());
+        }
+
+        @Override
+        public void add(boolean value) {
+            node.add(value);
+        }
+
+        @Override
+        public void add(String value) {
+            node.add(value);
+        }
+
+        @Override
+        public void add(double value) {
+            node.add(value);
+        }
+
+        @Override
+        public void add(long value) {
+            node.add(value);
+        }
+
+        @Override
+        public void add(byte[] value) {
+            node.add(value);
+        }
+
+        @Override
+        public void addNull() {
+            node.addNull();
+        }
     }
 }
