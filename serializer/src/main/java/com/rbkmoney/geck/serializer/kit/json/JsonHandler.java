@@ -22,17 +22,24 @@ public class JsonHandler implements StructHandler<JsonNode> {
     public static final String ESC_SYMBOL = "@";
     protected ObjectStack<String> names = new ObjectStack<>();
     protected ObjectStack<JsonNodeWrapper> nodes = new ObjectStack<>();
-    private boolean pretty;
+    private final boolean pretty;
     protected ObjectNode rootNode;
     protected ObjectMapper mapper = new ObjectMapper();
+
+    public JsonHandler() {
+        pretty = false;
+    }
+
+    public JsonHandler(boolean pretty) {
+        this.pretty = pretty;
+    }
 
     /**
      * Use only for print, not for json-processor
      * @return
      */
     public static JsonHandler newPrettyJsonInstance() {
-        JsonHandler jsonHandler = new JsonHandler();
-        jsonHandler.pretty = true;
+        JsonHandler jsonHandler = new JsonHandler(true);
         return jsonHandler;
     }
 
