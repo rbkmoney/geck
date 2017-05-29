@@ -47,7 +47,7 @@ public class JsonTest {
     @Test
     public void jsonKebabTest() throws Exception {
         TestObject testObject = new MockTBaseProcessor().process(new TestObject(), new TBaseHandler<>( TestObject.class));
-        JsonHandler handler =  new JsonHandler();
+        JsonHandler handler = new JsonHandler();
         String json1 = new TBaseProcessor().process(testObject, handler).toString();
         System.out.println(json1);
         //test re-use handler
