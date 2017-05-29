@@ -172,7 +172,7 @@ public class JsonHandler implements StructHandler<JsonNode> {
         void addNull();
     }
 
-    private class ObjectNodeWrapper implements JsonNodeWrapper {
+    private static class ObjectNodeWrapper implements JsonNodeWrapper {
         private ObjectStack<String> names;
         private ObjectNode node;
 
@@ -222,7 +222,7 @@ public class JsonHandler implements StructHandler<JsonNode> {
         }
     }
 
-    private class ArrayNodeWrapper implements JsonNodeWrapper {
+    private static class ArrayNodeWrapper implements JsonNodeWrapper {
         private ArrayNode node;
 
         public ArrayNodeWrapper(ArrayNode node) {
