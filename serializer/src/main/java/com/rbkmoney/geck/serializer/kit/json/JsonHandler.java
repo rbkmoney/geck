@@ -1,105 +1,96 @@
 package com.rbkmoney.geck.serializer.kit.json;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.rbkmoney.geck.common.stack.ObjectStack;
 import com.rbkmoney.geck.serializer.StructHandler;
 import com.rbkmoney.geck.serializer.exception.BadFormatException;
 import com.rbkmoney.geck.serializer.kit.StructType;
 
-import java.io.*;
+import java.io.IOException;
 import java.util.Base64;
 
 /**
  * Created by tolkonepiu on 27/01/2017.
  */
-public abstract class JsonHandler<R> implements StructHandler<R> {
+public class JsonHandler implements StructHandler<JsonNode> {
 
     public static final String KEY = "key";
     public static final String VALUE = "value";
     public static final String ESC_SYMBOL = "@";
-    //use 'true' value only for print, not for json-processor
-    protected boolean pretty;
-    protected R out;
-    protected JsonGenerator jGenerator;
-    protected JsonFactory jfactory = new JsonFactory();
+    protected ObjectStack<String> names = new ObjectStack<>();
+    protected ObjectStack<JsonNodeWrapper> nodes = new ObjectStack<>();
+    private final boolean pretty;
+    protected ObjectNode rootNode;
+    protected ObjectMapper mapper = new ObjectMapper();
 
-    {
-        try {
-            init();
-        } catch (BadFormatException e) {
-            throw new RuntimeException(e);//TODO
-        }
+    private JsonHandler(boolean pretty) {
+        this.pretty = pretty;
     }
 
-    protected abstract void init() throws BadFormatException;
-
-    public static JsonHandler<Writer> newWriterInstance() {
-        return newWriterInstance(false);
+    /**
+     * Use only for print, not for json-processor
+     * @return
+     */
+    public static JsonHandler newPrettyJsonInstance() {
+        return new JsonHandler(true);
     }
-    public static JsonHandler<Writer> newWriterInstance(boolean isPretty) {
-        return new JsonHandler<Writer>() {
-            @Override
-            protected void init() throws BadFormatException {
-                try {
-                    this.pretty = isPretty;
-                    if (out != null) {
-                        out.close();
-                    }
-                    out = new StringWriter();
-                    this.jGenerator = jfactory.createGenerator(out);
-                } catch (IOException e) {
-                    throw new BadFormatException("Unknown error when init", e);
-                }
-            }
-        };
+
+    private void beginArray(StructType type) {
+        ArrayNodeWrapper item = nodes.peek().addArray();
+        nodes.push(item);
+        if (!pretty) item.add(type.getKey());
     }
 
     @Override
     public void beginStruct(int size) throws IOException {
-        jGenerator.writeStartObject();
+        if (nodes.isEmpty()) { // start handling
+            rootNode = mapper.createObjectNode();
+            nodes.push(new ObjectNodeWrapper(names, rootNode));
+        } else {
+            nodes.push(nodes.peek().addObject(names));
+        }
     }
 
     @Override
     public void endStruct() throws IOException {
-        jGenerator.writeEndObject();
+        nodes.pop();
     }
 
     @Override
     public void beginList(int size) throws IOException {
-        jGenerator.writeStartArray();
-        if (!pretty) jGenerator.writeString(StructType.LIST.getKey());
+        beginArray(StructType.LIST);
     }
 
     @Override
     public void endList() throws IOException {
-        jGenerator.writeEndArray();
+        nodes.pop();
     }
 
     @Override
     public void beginSet(int size) throws IOException {
-        jGenerator.writeStartArray();
-        if (!pretty) jGenerator.writeString(StructType.SET.getKey());
+        beginArray(StructType.SET);
     }
 
     @Override
     public void endSet() throws IOException {
-        jGenerator.writeEndArray();
+        nodes.pop();
     }
 
     @Override
     public void beginMap(int size) throws IOException {
-        jGenerator.writeStartArray();
-        if (!pretty) jGenerator.writeString(StructType.MAP.getKey());
+        beginArray(StructType.MAP);
     }
 
     @Override
     public void endMap() throws IOException {
-        jGenerator.writeEndArray();
+        nodes.pop();
     }
 
     @Override
     public void beginKey() throws IOException {
-        jGenerator.writeStartObject();
+        nodes.push(nodes.peek().addObject(names));
         name(KEY);
     }
 
@@ -114,52 +105,53 @@ public abstract class JsonHandler<R> implements StructHandler<R> {
 
     @Override
     public void endValue() throws IOException {
-        jGenerator.writeEndObject();
+        nodes.pop();
     }
 
     @Override
     public void name(String name) throws IOException {
-        jGenerator.writeFieldName(name);
+        names.push(name);
     }
 
     @Override
     public void value(boolean value) throws IOException {
-        jGenerator.writeBoolean(value);
+        nodes.peek().add(value);
     }
 
     @Override
     public void value(String value) throws IOException {
         if ((!pretty) && value.startsWith(ESC_SYMBOL)) {
-            value = ESC_SYMBOL+value;
+            value = ESC_SYMBOL + value;
         }
-        jGenerator.writeString(value);
+        nodes.peek().add(value);
     }
 
     @Override
     public void value(double value) throws IOException {
-        jGenerator.writeNumber(value);
+        nodes.peek().add(value);
     }
 
     @Override
     public void value(long value) throws IOException {
-        jGenerator.writeNumber(value);
+        nodes.peek().add(value);
     }
 
     @Override
     public void value(byte[] value) throws IOException {
-        jGenerator.writeString((pretty ? "" : ESC_SYMBOL) + Base64.getEncoder().encodeToString(value));
+        String s = (pretty ? "" : ESC_SYMBOL) + Base64.getEncoder().encodeToString(value);
+        nodes.peek().add(s);
     }
 
     @Override
     public void nullValue() throws IOException {
-        jGenerator.writeNull();
+        nodes.peek().addNull();
     }
 
     @Override
-    public R getResult() throws IOException {
-        jGenerator.close();
-        R resultOut = out;
-        init();
-        return resultOut;
+    public JsonNode getResult() throws IOException {
+        if (!(nodes.isEmpty() && names.isEmpty())) {
+            throw new BadFormatException("Something went wrong: stacks is not empty!");
+        }
+        return rootNode;
     }
 }

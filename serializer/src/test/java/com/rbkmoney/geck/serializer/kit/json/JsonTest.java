@@ -25,7 +25,7 @@ public class JsonTest {
         InvoicePaymentStarted invoice1 = GeckTestUtil.getInvoicePaymentStarted();
         InvoicePaymentStarted invoice2 =
                 new JsonProcessor().process(
-                        new TBaseProcessor().process(invoice1, new JsonHandler1()),
+                        new TBaseProcessor().process(invoice1, new JsonHandler()),
                         new TBaseHandler<>(InvoicePaymentStarted.class));
         Assert.assertEquals(invoice1, invoice2);
     }
@@ -38,7 +38,7 @@ public class JsonTest {
                         new JsonProcessor().process(
                                 new TBaseProcessor().process(
                                         invoice1,
-                                        new JsonHandler1()),
+                                        new JsonHandler()),
                                 MsgPackHandler.newBufferedInstance(true)),
                         new TBaseHandler<>(InvoicePaymentStarted.class));
         Assert.assertEquals(invoice1, invoice2);
@@ -47,7 +47,7 @@ public class JsonTest {
     @Test
     public void jsonKebabTest() throws Exception {
         TestObject testObject = new MockTBaseProcessor().process(new TestObject(), new TBaseHandler<>( TestObject.class));
-        JsonHandler1 handler =  new JsonHandler1();
+        JsonHandler handler =  new JsonHandler();
         String json1 = new TBaseProcessor().process(testObject, handler).toString();
         System.out.println(json1);
         //test re-use handler
@@ -59,7 +59,7 @@ public class JsonTest {
     @Test
     public void testPretty() throws IOException {
         TestObject testObject = new MockTBaseProcessor(MockMode.ALL, new FixedValueGenerator()).process(new TestObject(), new TBaseHandler<>( TestObject.class));
-        JsonHandler1 handler = JsonHandler1.newPrettyJsonInstance();
+        JsonHandler handler = JsonHandler.newPrettyJsonInstance();
         String json1 = new TBaseProcessor().process(testObject, handler).toString();
         System.out.println(json1);
     }
