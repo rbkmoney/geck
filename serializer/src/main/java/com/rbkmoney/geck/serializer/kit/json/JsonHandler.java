@@ -154,7 +154,7 @@ public class JsonHandler implements StructHandler<JsonNode> {
         return rootNode;
     }
 
-    interface JsonNodeWrapper {
+    private interface JsonNodeWrapper {
         ArrayNodeWrapper addArray();
         ObjectNodeWrapper addObject(ObjectStack<String> names);
         void add(boolean value);
@@ -165,7 +165,7 @@ public class JsonHandler implements StructHandler<JsonNode> {
         void addNull();
     }
 
-    class ObjectNodeWrapper implements JsonNodeWrapper {
+    private class ObjectNodeWrapper implements JsonNodeWrapper {
         private ObjectStack<String> names;
         private ObjectNode node;
 
@@ -215,7 +215,7 @@ public class JsonHandler implements StructHandler<JsonNode> {
         }
     }
 
-    class ArrayNodeWrapper implements JsonNodeWrapper {
+    private class ArrayNodeWrapper implements JsonNodeWrapper {
         private ArrayNode node;
 
         public ArrayNodeWrapper(ArrayNode node) {
