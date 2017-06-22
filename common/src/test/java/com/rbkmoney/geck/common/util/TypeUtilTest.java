@@ -1,6 +1,5 @@
-package com.rbkmoney.geck.common.reflection;
+package com.rbkmoney.geck.common.util;
 
-import com.rbkmoney.geck.common.util.TypeUtil;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
