@@ -28,4 +28,13 @@ public class PathParserTest {
         assertEquals(parser.size(), 6);
     }
 
+    @Test
+    public void subParserTest() {
+        Parser parser = new PathParser("1.2.3.4.5");
+        assertEquals(5, parser.size());
+        parser = parser.getSubParser(2);
+        assertEquals(3, parser.size());
+        assertEquals("3.4.5", parser.getItemPath(parser.size() - 1));
+    }
+
 }

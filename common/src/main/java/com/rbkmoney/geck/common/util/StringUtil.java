@@ -1,6 +1,8 @@
 package com.rbkmoney.geck.common.util;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by vpankrashkin on 03.02.17.
@@ -83,6 +85,18 @@ public final class StringUtil {
             }
         }
         return true;
+    }
+
+    public static List<String> split(String value, String delimiter) {
+        List<String> items = new ArrayList<>();
+        int last = 0;
+        int next;
+        while ((next = value.indexOf(delimiter, last)) != -1) {
+            items.add(value.substring(last, next));
+            last = next + delimiter.length();
+        }
+        items.add(value.substring(last, value.length()));
+        return items;
     }
 
 

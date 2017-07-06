@@ -2,46 +2,31 @@ package com.rbkmoney.geck.filter.parser;
 
 import com.rbkmoney.geck.filter.Parser;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import static com.rbkmoney.geck.common.util.StringUtil.split;
 
 /**
  * Created by tolkonepiu on 16/03/2017.
  */
 public class PathParser implements Parser {
 
-    private String fieldPath;
-    private List<String> items;
-    private List<String> forNameItems;
+    private final List<String> items;
+    private final String delimiter;
 
     public static final String DEFAULT_DELIMITER = ".";
-    private String delimiter;
 
     public PathParser(String fieldPath) {
         this(fieldPath, DEFAULT_DELIMITER);
     }
 
     public PathParser(String fieldPath, String delimiter) {
-        this.fieldPath = fieldPath;
-        this.delimiter = delimiter;
-        init();
+        this(split(fieldPath, delimiter), delimiter);
     }
 
-    private void init() {
-        List<String> items = new ArrayList<>();
-        List<String> forNameItems = new ArrayList<>();
-        int last = 0;
-        int next;
-        while ((next = fieldPath.indexOf(delimiter, last)) != -1) {
-            items.add(fieldPath.substring(last, next));
-            forNameItems.add(fieldPath.substring(0, next));
-            last = next + delimiter.length();
-        }
-        forNameItems.add(fieldPath.substring(0, fieldPath.length()));
-        items.add(fieldPath.substring(last, fieldPath.length()));
-
+    public PathParser(List<String> items, String delimiter) {
         this.items = items;
-        this.forNameItems = forNameItems;
+        this.delimiter = delimiter;
     }
 
     @Override
@@ -51,7 +36,12 @@ public class PathParser implements Parser {
 
     @Override
     public String getItemPath(int item) {
-        return forNameItems.get(item);
+        return String.join(delimiter, items.subList(0, item + 1));
+    }
+
+    @Override
+    public Parser getSubParser(int from) {
+        return new PathParser(items.subList(from, size()), delimiter);
     }
 
     @Override
