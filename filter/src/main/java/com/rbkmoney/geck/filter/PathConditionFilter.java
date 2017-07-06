@@ -37,18 +37,19 @@ public class PathConditionFilter implements Filter<TBase> {
             if (value instanceof TBase) {
                 TBase tBase = TypeUtil.convertType(TBase.class, value);
                 TFieldIdEnum tFieldIdEnum = TBaseUtil.getField(parser.getItem(item), tBase);
-                if (tFieldIdEnum == null ||
-                        ((tBase instanceof TUnion) && !tBase.isSet(tFieldIdEnum))) {
+                if (tFieldIdEnum == null
+                        || ((tBase instanceof TUnion) && !tBase.isSet(tFieldIdEnum))) {
                     return false;
                 }
                 value = tBase.getFieldValue(tFieldIdEnum);
             } else if (value instanceof Collection) {
                 Collection collection = TypeUtil.convertType(Collection.class, value);
-                boolean result = false;
                 for (Object collectionItem : collection) {
-                    result |= match(collectionItem, parser.getSubParser(item), conditions);
+                    if (match(collectionItem, parser.getSubParser(item), conditions)) {
+                        return true;
+                    }
                 }
-                return result;
+                return false;
             }
         }
 
