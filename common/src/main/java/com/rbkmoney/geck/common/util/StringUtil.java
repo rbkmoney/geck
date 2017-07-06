@@ -1,8 +1,8 @@
 package com.rbkmoney.geck.common.util;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.StringTokenizer;
 
 /**
  * Created by vpankrashkin on 03.02.17.
@@ -87,15 +87,15 @@ public final class StringUtil {
         return true;
     }
 
-    public static List<String> split(String value, String delimiter) {
-        List<String> items = new ArrayList<>();
-        int last = 0;
-        int next;
-        while ((next = value.indexOf(delimiter, last)) != -1) {
-            items.add(value.substring(last, next));
-            last = next + delimiter.length();
+    public static String[] split(String value, String delimiter) {
+        StringTokenizer tokenizer = new StringTokenizer(value, delimiter);
+        String[] items = new String[tokenizer.countTokens()];
+
+        int itemId = 0;
+        while (tokenizer.hasMoreTokens()) {
+            items[itemId++] = tokenizer.nextToken();
         }
-        items.add(value.substring(last, value.length()));
+
         return items;
     }
 
