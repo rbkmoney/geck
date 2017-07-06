@@ -14,18 +14,18 @@ public class PathParserTest {
     public void parserInitTest() {
         Parser parser = new PathParser("kek.tsss.qwe");
 
-        assertEquals(parser.getItem(0), "kek");
-        assertEquals(parser.getItemPath(0), "kek");
-        assertEquals(parser.getItem(1), "tsss");
-        assertEquals(parser.getItemPath(1), "kek.tsss");
-        assertEquals(parser.getItem(2), "qwe");
-        assertEquals(parser.getItemPath(2), "kek.tsss.qwe");
-        assertEquals(parser.size(), 3);
+        assertEquals("kek", parser.getItem(0));
+        assertEquals("kek", parser.getItemPath(0));
+        assertEquals("tsss", parser.getItem(1));
+        assertEquals("kek.tsss", parser.getItemPath(1));
+        assertEquals("qwe", parser.getItem(2));
+        assertEquals("kek.tsss.qwe", parser.getItemPath(2));
+        assertEquals(3, parser.size());
 
         parser = new PathParser("kek..kek...");
-        assertEquals(parser.getItem(1), "");
-        assertEquals(parser.getItemPath(1), "kek.");
-        assertEquals(parser.size(), 6);
+        assertEquals("kek", parser.getItem(1));
+        assertEquals("kek.kek", parser.getItemPath(1));
+        assertEquals(2, parser.size());
     }
 
     @Test
