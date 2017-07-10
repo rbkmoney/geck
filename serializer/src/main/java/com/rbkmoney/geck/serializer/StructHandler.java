@@ -33,6 +33,10 @@ public interface StructHandler<R> {
 
     void name(String name) throws IOException;
 
+    default void name(int id, String name) throws IOException {
+        name(name);
+    }
+
     void value(boolean value) throws IOException;
 
     void value(String value) throws IOException;

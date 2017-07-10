@@ -22,8 +22,11 @@ import static com.rbkmoney.geck.serializer.kit.EventFlags.*;
  */
 public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
+    public final static int DEFAULT_FIELD_ID = Integer.MIN_VALUE;
+
     private final Class<R> parentClass;
     private final boolean checkRequiredFields;
+    private final boolean preferCheckById;
 
     private ByteStack stateStack = new ByteStack();
     private ObjectStack elementStack = new ObjectStack();
@@ -37,8 +40,13 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
     }
 
     public TBaseHandler(Class<R> parentClass, boolean checkRequiredFields) {
+        this(parentClass, checkRequiredFields, true);
+    }
+
+    public TBaseHandler(Class<R> parentClass, boolean checkRequiredFields, boolean preferCheckById) {
         this.parentClass = parentClass;
         this.checkRequiredFields = checkRequiredFields;
+        this.preferCheckById = preferCheckById;
     }
 
     @Override
@@ -235,12 +243,23 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
     @Override
     public void name(String name) throws IOException {
+        name(DEFAULT_FIELD_ID, name);
+    }
+
+    @Override
+    public void name(int id, String name) throws IOException {
         Objects.requireNonNull(name, "name must not be null");
 
         checkState(startStruct);
         TBase tBase = (TBase) elementStack.peek();
 
-        TFieldIdEnum tFieldIdEnum = TBaseUtil.getField(name, tBase);
+        TFieldIdEnum tFieldIdEnum;
+        if (preferCheckById) {
+            tFieldIdEnum = TBaseUtil.getFieldById(id, tBase);
+        } else {
+            tFieldIdEnum = TBaseUtil.getField(name, tBase);
+        }
+
         if (tFieldIdEnum == null) {
             throw new IllegalArgumentException(String.format("Field '%s' not found", name));
         }
