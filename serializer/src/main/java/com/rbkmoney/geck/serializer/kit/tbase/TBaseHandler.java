@@ -23,8 +23,8 @@ import static com.rbkmoney.geck.serializer.kit.EventFlags.*;
 public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
     private final Class<R> parentClass;
+    private final Mode mode;
     private final boolean checkRequiredFields;
-    private final boolean checkFieldName;
 
     private ByteStack stateStack = new ByteStack();
     private ObjectStack elementStack = new ObjectStack();
@@ -34,17 +34,17 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
     private R result;
 
     public TBaseHandler(Class<R> parentClass) {
-        this(parentClass, true);
+        this(parentClass, Mode.PREFER_ID, true);
     }
 
-    public TBaseHandler(Class<R> parentClass, boolean checkRequiredFields) {
-        this(parentClass, checkRequiredFields, true);
+    public TBaseHandler(Class<R> parentClass, Mode mode) {
+        this(parentClass, mode, true);
     }
 
-    public TBaseHandler(Class<R> parentClass, boolean checkRequiredFields, boolean checkFieldName) {
+    public TBaseHandler(Class<R> parentClass, Mode mode, boolean checkRequiredFields) {
         this.parentClass = parentClass;
+        this.mode = mode;
         this.checkRequiredFields = checkRequiredFields;
-        this.checkFieldName = checkFieldName;
     }
 
     @Override
@@ -245,35 +245,36 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
     }
 
     @Override
-    public void name(int id, String name) throws IOException {
+    public void name(byte id, String name) throws IOException {
         Objects.requireNonNull(name, "name must not be null");
 
         checkState(startStruct);
         TBase tBase = (TBase) elementStack.peek();
 
         TFieldIdEnum tFieldIdEnum;
-        if (id != DEFAULT_FIELD_ID) {
+        if (mode == Mode.ONLY_ID || mode == Mode.PREFER_ID) {
             tFieldIdEnum = TBaseUtil.getFieldById(id, tBase);
+
             if (tFieldIdEnum == null) {
-                throw new IllegalArgumentException(
-                        String.format("Field with id '%d' not found", id)
-                );
-            }
-            if (checkFieldName) {
-                if (!tFieldIdEnum.getFieldName().equals(name)) {
+                if (mode == Mode.ONLY_ID) {
                     throw new IllegalArgumentException(
-                            String.format(
-                                    "Incorrect field with id '%d', expected '%s', actual '%s'",
-                                    id, tFieldIdEnum.getFieldName(), name
-                            )
+                            String.format("Field with id '%d' not found", id)
                     );
+                } else {
+                    tFieldIdEnum = TBaseUtil.getField(name, tBase);
                 }
             }
         } else {
             tFieldIdEnum = TBaseUtil.getField(name, tBase);
             if (tFieldIdEnum == null) {
-                throw new IllegalArgumentException(String.format("Field '%s' not found", name));
+                tFieldIdEnum = TBaseUtil.getFieldById(id, tBase);
             }
+        }
+
+        if (tFieldIdEnum == null) {
+            throw new IllegalArgumentException(
+                    String.format("Field '%s' not found", name)
+            );
         }
 
         fieldStack.push(tFieldIdEnum);
@@ -391,6 +392,12 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
         R tBase = result;
         result = null;
         return tBase;
+    }
+
+    public enum Mode {
+        ONLY_ID,
+        PREFER_ID,
+        PREFER_NAME
     }
 
 }

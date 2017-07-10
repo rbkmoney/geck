@@ -23,7 +23,7 @@ public class TBaseUtil {
         return null;
     }
 
-    public static TFieldIdEnum getFieldById(int id, TBase tBase) {
+    public static TFieldIdEnum getFieldById(short id, TBase tBase) {
         for (TFieldIdEnum tFieldIdEnum : tBase.getFields()) {
             if (tFieldIdEnum.getThriftFieldId() == id) {
                 return tFieldIdEnum;
