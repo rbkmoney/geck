@@ -22,8 +22,6 @@ import static com.rbkmoney.geck.serializer.kit.EventFlags.*;
  */
 public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
-    public final static int DEFAULT_FIELD_ID = Integer.MIN_VALUE;
-
     private final Class<R> parentClass;
     private final boolean checkRequiredFields;
     private final boolean checkFieldName;

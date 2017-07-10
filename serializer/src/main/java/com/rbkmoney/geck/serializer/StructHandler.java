@@ -7,6 +7,8 @@ import java.io.IOException;
  */
 public interface StructHandler<R> {
 
+    int DEFAULT_FIELD_ID = Integer.MIN_VALUE;
+
     void beginStruct(int size) throws IOException;
 
     void endStruct() throws IOException;
