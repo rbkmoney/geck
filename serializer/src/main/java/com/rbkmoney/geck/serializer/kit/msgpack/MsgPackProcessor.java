@@ -74,7 +74,7 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
     private void processName(MessageUnpacker unpacker, StructHandler handler) throws IOException {
         MessageFormat format = unpacker.getNextFormat();
         String name;
-        int id = unpacker.unpackInt();
+        byte id = unpacker.unpackByte();
         switch (format.getValueType()) {
             case STRING:
                 name = unpacker.unpackString();

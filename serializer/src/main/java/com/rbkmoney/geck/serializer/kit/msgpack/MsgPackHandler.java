@@ -156,7 +156,7 @@ public abstract class MsgPackHandler<R> implements StructHandler<R> {
         if (length == 0) {
             throw new BadFormatException("Name cannot be empty");
         }
-        msgPacker.packInt(id);
+        msgPacker.packByte(id);
         if (useDictionary && length > 3) {
             char idx;
             if ((idx = dictionary.putIfAbsent(name, nextDictIdx)) == noDictEntryValue) {
