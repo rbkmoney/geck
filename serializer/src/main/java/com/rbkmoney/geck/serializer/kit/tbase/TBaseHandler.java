@@ -26,7 +26,7 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
 
     private final Class<R> parentClass;
     private final boolean checkRequiredFields;
-    private final boolean preferCheckById;
+    private final boolean checkFieldName;
 
     private ByteStack stateStack = new ByteStack();
     private ObjectStack elementStack = new ObjectStack();
@@ -43,10 +43,10 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
         this(parentClass, checkRequiredFields, true);
     }
 
-    public TBaseHandler(Class<R> parentClass, boolean checkRequiredFields, boolean preferCheckById) {
+    public TBaseHandler(Class<R> parentClass, boolean checkRequiredFields, boolean checkFieldName) {
         this.parentClass = parentClass;
         this.checkRequiredFields = checkRequiredFields;
-        this.preferCheckById = preferCheckById;
+        this.checkFieldName = checkFieldName;
     }
 
     @Override
@@ -254,14 +254,28 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
         TBase tBase = (TBase) elementStack.peek();
 
         TFieldIdEnum tFieldIdEnum;
-        if (preferCheckById) {
+        if (id != DEFAULT_FIELD_ID) {
             tFieldIdEnum = TBaseUtil.getFieldById(id, tBase);
+            if (tFieldIdEnum == null) {
+                throw new IllegalArgumentException(
+                        String.format("Field with id '%d' not found", id)
+                );
+            }
+            if (checkFieldName) {
+                if (!tFieldIdEnum.getFieldName().equals(name)) {
+                    throw new IllegalArgumentException(
+                            String.format(
+                                    "Incorrect field with id '%d', expected '%s', actual '%s'",
+                                    id, tFieldIdEnum.getFieldName(), name
+                            )
+                    );
+                }
+            }
         } else {
             tFieldIdEnum = TBaseUtil.getField(name, tBase);
-        }
-
-        if (tFieldIdEnum == null) {
-            throw new IllegalArgumentException(String.format("Field '%s' not found", name));
+            if (tFieldIdEnum == null) {
+                throw new IllegalArgumentException(String.format("Field '%s' not found", name));
+            }
         }
 
         fieldStack.push(tFieldIdEnum);
