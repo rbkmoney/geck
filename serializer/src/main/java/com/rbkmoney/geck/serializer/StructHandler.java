@@ -7,7 +7,7 @@ import java.io.IOException;
  */
 public interface StructHandler<R> {
 
-    int DEFAULT_FIELD_ID = Integer.MIN_VALUE;
+    byte DEFAULT_FIELD_ID = Byte.MIN_VALUE;
 
     void beginStruct(int size) throws IOException;
 
@@ -35,7 +35,7 @@ public interface StructHandler<R> {
 
     void name(String name) throws IOException;
 
-    default void name(int id, String name) throws IOException {
+    default void name(byte id, String name) throws IOException {
         name(name);
     }
 

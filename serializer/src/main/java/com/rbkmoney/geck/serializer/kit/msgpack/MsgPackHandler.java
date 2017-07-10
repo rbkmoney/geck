@@ -4,6 +4,7 @@ import com.rbkmoney.geck.common.util.StringUtil;
 import com.rbkmoney.geck.serializer.StructHandler;
 import com.rbkmoney.geck.serializer.exception.BadFormatException;
 import com.rbkmoney.geck.serializer.kit.EventFlags;
+import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
 import gnu.trove.map.hash.TObjectCharHashMap;
 import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessagePacker;
@@ -146,10 +147,16 @@ public abstract class MsgPackHandler<R> implements StructHandler<R> {
      */
     @Override
     public void name(String name) throws IOException {
+        name(StructHandler.DEFAULT_FIELD_ID, name);
+    }
+
+    @Override
+    public void name(byte id, String name) throws IOException {
         int length = name.length();
         if (length == 0) {
             throw new BadFormatException("Name cannot be empty");
         }
+        msgPacker.packInt(id);
         if (useDictionary && length > 3) {
             char idx;
             if ((idx = dictionary.putIfAbsent(name, nextDictIdx)) == noDictEntryValue) {
