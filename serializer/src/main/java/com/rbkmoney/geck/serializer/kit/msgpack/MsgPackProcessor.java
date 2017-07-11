@@ -72,9 +72,9 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
     }
 
     private void processName(MessageUnpacker unpacker, StructHandler handler) throws IOException {
+        byte id = unpacker.unpackByte();
         MessageFormat format = unpacker.getNextFormat();
         String name;
-        byte id = unpacker.unpackByte();
         switch (format.getValueType()) {
             case STRING:
                 name = unpacker.unpackString();
