@@ -42,6 +42,9 @@ public class TBaseHandler<R extends TBase> implements StructHandler<R> {
     }
 
     public TBaseHandler(Class<R> parentClass, Mode mode, boolean checkRequiredFields) {
+        Objects.requireNonNull(parentClass, "parent class must be set");
+        Objects.requireNonNull(mode, "mode must be set");
+
         this.parentClass = parentClass;
         this.mode = mode;
         this.checkRequiredFields = checkRequiredFields;
