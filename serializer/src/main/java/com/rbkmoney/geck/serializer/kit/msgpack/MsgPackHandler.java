@@ -219,8 +219,8 @@ public abstract class MsgPackHandler<R> implements StructHandler<R> {
     protected void reset() {
         if (useDictionary) {
             dictionary.clear();
+            nextDictIdx = 0;
         }
-        nextDictIdx = 0;
     }
 
     abstract protected MessagePacker createPacker(Object dataTarget);

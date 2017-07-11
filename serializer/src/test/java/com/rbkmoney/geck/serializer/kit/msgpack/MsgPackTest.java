@@ -42,7 +42,7 @@ public class MsgPackTest {
                 Assert.assertArrayEquals(doubleSerialized, msgPackProcessor.process(doubleSerialized, handler));
                 Assert.assertEquals(testObject, msgPackProcessor.process(doubleSerialized, new TBaseHandler<>(TestObject.class)));
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         });
 
