@@ -25,6 +25,10 @@ public abstract class MsgPackHandler<R> implements StructHandler<R> {
     protected final MessagePacker msgPacker;
     protected final Object dataTarget;
 
+    public static MsgPackHandler<OutputStream> newStreamedInstance(OutputStream stream, boolean autoClose) {
+            return newStreamedInstance(stream, autoClose, true);
+    }
+
     public static MsgPackHandler<OutputStream> newStreamedInstance(OutputStream stream, boolean autoClose, boolean useDictionary) {
         return new MsgPackHandler<OutputStream>(stream, useDictionary) {
             @Override
@@ -34,6 +38,7 @@ public abstract class MsgPackHandler<R> implements StructHandler<R> {
 
             @Override
             public OutputStream getResult() throws IOException {
+                reset();
                 if (autoClose) {
                     msgPacker.close();
                 } else {
@@ -42,6 +47,10 @@ public abstract class MsgPackHandler<R> implements StructHandler<R> {
                 return (OutputStream) dataTarget;
             }
         };
+    }
+
+    public static MsgPackHandler<byte[]> newBufferedInstance() {
+          return newBufferedInstance(true);
     }
 
     public static MsgPackHandler<byte[]> newBufferedInstance(boolean useDictionary) {
@@ -53,6 +62,7 @@ public abstract class MsgPackHandler<R> implements StructHandler<R> {
 
             @Override
             public byte[] getResult() throws IOException {
+                reset();
                 ArrayBufferOutput abo = ((ArrayBufferOutput) dataTarget);
                 msgPacker.flush();
                 byte[] result = abo.toByteArray();
@@ -204,6 +214,13 @@ public abstract class MsgPackHandler<R> implements StructHandler<R> {
     @Override
     public void nullValue() throws IOException {
         msgPacker.packNil();
+    }
+
+    protected void reset() {
+        if (useDictionary) {
+            dictionary.clear();
+        }
+        nextDictIdx = 0;
     }
 
     abstract protected MessagePacker createPacker(Object dataTarget);
