@@ -57,20 +57,6 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
         return handler.getResult();
     }
 
-    private boolean isTerminated(StructHandleResult handleResult) {
-        return handleResult == StructHandleResult.TERMINATE;
-    }
-
-    private boolean isSkipped(StructHandleResult handleResult) {
-        switch (handleResult) {
-            case SKIP_SUBTREE:
-            case SKIP_SIBLINGS:
-                return true;
-            default:
-                return false;
-        }
-    }
-
     private void processStart(MessageUnpacker unpacker, StructHandler handler) throws IOException {
         if (unpacker.hasNext()) {
             processStruct(unpacker, handler, getExtensionTypeHeader(startStruct, unpacker));
