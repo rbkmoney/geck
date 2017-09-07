@@ -16,7 +16,6 @@ import java.io.IOException;
 
 import static com.rbkmoney.geck.serializer.StructHandleResult.CONTINUE;
 import static com.rbkmoney.geck.serializer.StructHandleResult.SKIP_SIBLINGS;
-import static com.rbkmoney.geck.serializer.StructHandleResult.SKIP_SUBTREE;
 import static com.rbkmoney.geck.serializer.kit.EventFlags.*;
 
 /**
@@ -125,8 +124,9 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
                 ExtensionTypeHeader header = unpacker.unpackExtensionTypeHeader();
                 switch (header.getType()) {
                     case pointDictionary:
-                        unpacker.readPayload(header.getLength());//todo replace to private skipPayload
-                        unpacker.skipValue();//skip int key
+                        byte[] data = unpacker.readPayload(header.getLength());
+                        int key = unpacker.unpackInt();
+                        putInDictionary(key, data);
                         break;
                     case pointDictionaryRef:
                         unpacker.skipValue();//skip int key;
@@ -178,6 +178,7 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
             case NIL:
             case BINARY:
                 unpacker.skipValue();
+                break;
             case ARRAY:
                 skipList(unpacker, format);
                 break;
@@ -259,9 +260,9 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
                     StructHandleResult entryRes = CONTINUE;
                     for (int i = 0; i < length; ++i) {
                         entryRes = skipOrGo(entryRes,
-                                        () -> skipValue(unpacker, unpacker.getNextFormat()),
-                                        () -> processValue(unpacker, handler, unpacker.getNextFormat())
-                                );
+                                () -> skipValue(unpacker, unpacker.getNextFormat()),
+                                () -> processValue(unpacker, handler, unpacker.getNextFormat())
+                        );
                     }
                     handler.endList();
                     return handler.getLastHandleResult();
@@ -305,7 +306,9 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
         handler.beginKey();
         //handler.getLastHandleResult();// > /dev/null
         StructHandleResult handleResult = processValue(unpacker, handler, unpacker.getNextFormat());
-        handler.endKey();
+        if (handleResult == CONTINUE) {
+            handler.endKey();
+        }
         //handler.getLastHandleResult();// > /dev/null
         return handleResult;
     }
@@ -314,7 +317,9 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
         handler.beginValue();
         //handler.getLastHandleResult();// > /dev/null
         StructHandleResult handleResult = processValue(unpacker, handler, unpacker.getNextFormat());
-        handler.endValue();
+        if (handleResult == CONTINUE) {
+            handler.endValue();
+        }
         //handler.getLastHandleResult();// > /dev/null
         return handleResult;
     }
