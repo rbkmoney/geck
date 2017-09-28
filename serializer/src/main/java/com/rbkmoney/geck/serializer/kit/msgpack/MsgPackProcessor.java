@@ -16,6 +16,7 @@ import java.io.IOException;
 
 import static com.rbkmoney.geck.serializer.StructHandleResult.CONTINUE;
 import static com.rbkmoney.geck.serializer.StructHandleResult.SKIP_SIBLINGS;
+import static com.rbkmoney.geck.serializer.StructHandleResult.SKIP_SUBTREE;
 import static com.rbkmoney.geck.serializer.kit.EventFlags.*;
 
 /**
@@ -104,12 +105,17 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
                                 () -> skipOrGo(
                                         processName(unpacker, handler),
                                         () -> skipValue(unpacker, unpacker.getNextFormat()),
-                                        () -> processValue(unpacker, handler, unpacker.getNextFormat())
+                                        () -> {
+                                            StructHandleResult valRest = processValue(unpacker, handler, unpacker.getNextFormat());
+                                            return (valRest == SKIP_SIBLINGS | valRest == SKIP_SUBTREE) ? CONTINUE : valRest;
+                                        }
                                 )
                         );
                     }
-                    handler.endStruct();
-                    return handler.getLastHandleResult();
+                    return skipOrGo(entryRes, () -> {}, () -> {
+                        handler.endStruct();
+                        return handler.getLastHandleResult();
+                    });
                 });
     }
 
@@ -264,8 +270,10 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
                                 () -> processValue(unpacker, handler, unpacker.getNextFormat())
                         );
                     }
-                    handler.endList();
-                    return handler.getLastHandleResult();
+                    return skipOrGo(entryRes, () -> {}, () -> {
+                        handler.endList();
+                        return handler.getLastHandleResult();
+                    });
                 });
     }
 
@@ -297,8 +305,10 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
                                 )
                         );
                     }
-                    handler.endMap();
-                    return handler.getLastHandleResult();
+                    return skipOrGo(entryRes, () -> {}, () -> {
+                        handler.endMap();
+                        return handler.getLastHandleResult();
+                    });
                 });
     }
 
@@ -343,8 +353,10 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
                                 () -> skipValue(unpacker, unpacker.getNextFormat()),
                                 () -> processValue(unpacker, handler, unpacker.getNextFormat()));
                     }
-                    handler.endSet();
-                    return handler.getLastHandleResult();
+                    return skipOrGo(entryRes, () -> {}, () -> {
+                        handler.endSet();
+                        return handler.getLastHandleResult();
+                    });
                 });
 
     }
