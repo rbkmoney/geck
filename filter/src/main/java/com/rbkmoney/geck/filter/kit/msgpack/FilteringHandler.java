@@ -3,7 +3,6 @@ package com.rbkmoney.geck.filter.kit.msgpack;
 import com.rbkmoney.geck.filter.Rule;
 import com.rbkmoney.geck.serializer.StructHandleResult;
 import com.rbkmoney.geck.serializer.StructHandler;
-import com.rbkmoney.geck.serializer.kit.EventFlags;
 
 import java.io.IOException;
 import java.util.List;

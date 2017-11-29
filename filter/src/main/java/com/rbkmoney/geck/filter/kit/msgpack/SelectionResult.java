@@ -16,7 +16,7 @@ class SelectionResult {
     }
 
     enum SelectionType {
-        MATCH, MISMATCH, REUSE_LEVEL, PUSH_LEVEL, CONTINUE_POP_LEVEL, REPEAT_POP_LEVEL,
+        MATCH, MISMATCH, REUSE_LEVEL, PUSH_LEVEL,
     }
 
     static final class Match extends SelectionResult {
@@ -37,16 +37,18 @@ class SelectionResult {
         }
     }
     static final class ReuseLevel extends SelectionResult {
-        public ReuseLevel() {
+        final Selector.Config config;
+        public ReuseLevel(Selector.Config config) {
             super(SelectionType.REUSE_LEVEL);
+            this.config = config;
         }
     }
     static final class PushLevel extends SelectionResult {
-        final Selector pushedSelector;
+        final Selector.Config pushedConfig;
 
-        public PushLevel(Selector pushedSelector) {
+        public PushLevel(Selector.Config pushedConfig) {
             super(SelectionType.PUSH_LEVEL);
-            this.pushedSelector = pushedSelector;
+            this.pushedConfig = pushedConfig;
         }
     }
 }

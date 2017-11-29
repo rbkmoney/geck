@@ -11,64 +11,84 @@ import java.util.function.Supplier;
  * Created by vpankrashkin on 13.09.17.
  */
 class StructVisitor {
-    private static final int NO_REPEAT_BEHIND = -1;
-    private final Selector root;
-    private final Supplier<Selector.Context[]> ctxSupplier;
-    private Selector selector;
+    private final Supplier<Selector.Config[]> cnfSupplier;
+    private Selector.Config config;
     private List<Rule> selectedRules;
-    private Selector.Context[] contexts;
-    private int lastRepeatPos;
-    private int posOffset;
+    private Selector.Context lastRepeatCtx;
 
-    StructVisitor(Selector root, Supplier<Selector.Context[]> ctxSupplier) {
-        Objects.requireNonNull(root);
-        Objects.requireNonNull(ctxSupplier);
-        this.root = root;
-        this.ctxSupplier = ctxSupplier;
+    StructVisitor(Supplier<Selector.Config[]> cnfSupplier) {
+        Objects.requireNonNull(cnfSupplier);
+        this.cnfSupplier = cnfSupplier;
     }
 
     void init() {
-        this.selector = root;
         this.selectedRules = null;
-        this.contexts = ctxSupplier.get();
-        resetRepeatPos();
+        this.lastRepeatCtx = null;
+        this.config = cnfSupplier.get()[0];
     }
 
-    private Selector resetAndPullLevel() {
-        Selector.Context childContext = contexts[lastRepeatPos + posOffset--];
-        childContext.repeat();
-        return contexts[childContext.getSelector().getContextIndex() - (posOffset < 0 ? 0 : 1)].getSelector();
+    private Selector.Config resetAndPullLevel() {
+        if (config.context == lastRepeatCtx) {
+            lastRepeatCtx.repeat();
+            lastRepeatCtx = null;
+            return config;
+        } else {
+            config.context.reset();
+            return  config.prevConfig;
+        }
+
+        /*Selector.Context upLvlContext = contexts[selector.getContextIndex() - 1];//lastRepeatCtx--
+        if (upLvlContext.getSelector().getContextIndex() == lastRepeatCtx) {//reset all levels until lastRepeatCtx reached
+            //upLvlContext.repeat();
+            return upLvlContext.getSelector();
+        } else {
+            upLvlContext.reset();
+            Selector.Context context = contexts[upLvlContext.getSelector().getContextIndex() - 1];
+            if (lastRepeatCtx == context.getSelector().getContextIndex()) {
+                context.repeat();
+            }
+            return context.getSelector();
+        }*/
+
     }
 
     StructHandleResult visit(byte itemType, Object val) {
         StructHandleResult visitResult;
-        if (posOffset > 0) {
-            visitResult = selector.getSkipForReuseOp(contexts[selector.getContextIndex()]);
-            selector = resetAndPullLevel();
-            return visitResult;
+        if (lastRepeatCtx != null) {
+            Selector.Config pulledConfig = resetAndPullLevel();
+            if (pulledConfig != config) {
+                visitResult = pulledConfig.context.getSelector().getLowestSkipOp(config.context);
+                config = pulledConfig;
+                return visitResult;
+            }
         }
+        SelectionResult result;
+        do {
+            result = config.context.getSelector().select(itemType, val, config);
+            if (result.type == SelectionResult.SelectionType.REUSE_LEVEL) {
+                config = ((SelectionResult.ReuseLevel)result).config;
+            } else {
+                break;
+            }
+        } while (true);
 
-        SelectionResult result = selector.select(itemType, val, contexts);
-        contexts[selector.getContextIndex()].saveResult(result);
         switch (result.type) {
             case MATCH:
                 selectedRules = ((SelectionResult.Match) result).rules;
                 return StructHandleResult.TERMINATE;
             case MISMATCH:
-                lastRepeatPos = findLastRepeat(contexts, selector.getContextIndex());
-                if (lastRepeatPos != NO_REPEAT_BEHIND) {
-                    visitResult = selector.getSkipForReuseOp(contexts[selector.getContextIndex()]);
-                    posOffset = selector.getContextIndex() - lastRepeatPos;
-                    selector = resetAndPullLevel();
+                lastRepeatCtx = findLastRepeatPosition(config);
+                if (lastRepeatCtx != null) {
+                    visitResult = config.context.getSelector().getLowestSkipOp(config.context);
+                    config = resetAndPullLevel();
                     return visitResult;
                 } else {
                     return StructHandleResult.TERMINATE;
                 }
-
             case REUSE_LEVEL:
                 return StructHandleResult.SKIP_SUBTREE;
             case PUSH_LEVEL:
-                selector = ((SelectionResult.PushLevel) result).pushedSelector;
+                config = ((SelectionResult.PushLevel) result).pushedConfig;
                 return StructHandleResult.CONTINUE;
             default:
                 throw new IllegalStateException("Illegal return type: " + result.type);
@@ -79,17 +99,14 @@ class StructVisitor {
         return selectedRules;
     }
 
-    private void resetRepeatPos() {
-        lastRepeatPos = NO_REPEAT_BEHIND;
-        posOffset = 0;
-    }
-
-    private int findLastRepeat(Selector.Context[] contexts, int lastIdx) {
-        for (int i = lastIdx; i >= 0; --i) {
-            if (contexts[i].getSelector().getType() == Selector.Type.REPEATABLE) {
-                return i;
+    private Selector.Context findLastRepeatPosition(Selector.Config config) {
+        Selector.Config currConfig = config;
+        do {
+            if (!currConfig.context.isLevelConsumed() && currConfig.context.getSelector().getType() == Selector.Type.REPEATABLE) {
+                return currConfig.context;
             }
-        }
-        return NO_REPEAT_BEHIND;
+            currConfig = currConfig.prevConfig;
+        } while (currConfig != null);
+        return currConfig.context;
     }
 }

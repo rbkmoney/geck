@@ -112,10 +112,8 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
                                 )
                         );
                     }
-                    return skipOrGo(entryRes, () -> {}, () -> {
-                        handler.endStruct();
-                        return handler.getLastHandleResult();
-                    });
+                    handler.endStruct();
+                    return handler.getLastHandleResult();
                 });
     }
 
@@ -269,11 +267,12 @@ public abstract class MsgPackProcessor<S> implements StructProcessor<S> {
                                 () -> skipValue(unpacker, unpacker.getNextFormat()),
                                 () -> processValue(unpacker, handler, unpacker.getNextFormat())
                         );
+                        if (entryRes == SKIP_SUBTREE) {
+                            entryRes = CONTINUE;
+                        }
                     }
-                    return skipOrGo(entryRes, () -> {}, () -> {
-                        handler.endList();
-                        return handler.getLastHandleResult();
-                    });
+                    handler.endList();
+                    return handler.getLastHandleResult();
                 });
     }
 

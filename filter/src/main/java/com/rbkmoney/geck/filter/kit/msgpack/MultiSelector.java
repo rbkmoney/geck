@@ -1,47 +1,55 @@
 package com.rbkmoney.geck.filter.kit.msgpack;
 
-import com.rbkmoney.geck.serializer.StructHandleResult;
-
-import java.util.Arrays;
-import java.util.Objects;
-
 /**
  * Created by vpankrashkin on 20.09.17.
  */
 abstract class MultiSelector extends Selector {
 
-    public MultiSelector(Type type, StructHandleResult skipLevelOp, int contextIndex) {
-        super(type, skipLevelOp, contextIndex);
+    public MultiSelector(Type type) {
+        super(type);
     }
 
-    MultiSelector.Context initContext(Selector.Context context) {
-        Context tContext = (Context) context;
-        if (tContext.getResultsOffset() > 0) {
-            //results array already initialized
-        } else if (tContext.getResults() != null) {
-            Arrays.fill(tContext.getResults(), null);
-        } else {
-            throw new IllegalStateException("Context results must be at least initialized");
+    @Override
+    SelectionResult select(byte eventFlag, Object val, Config config) {
+        Context context = (Context) config.context;
+        if (context.isLevelConsumed()) {
+            return mismatchResult(config);//TODO remove this
         }
-        return tContext;
+
+        /*SelectionResult result = null;
+        for (int i = 0; i < context.children.length; ++i) {
+            Selector.Context chContext = context.children[i];
+            if (!chContext.isFinalResult()) {
+                SelectionResult chResult = chContext.getSelector().select(eventType, val, contexts);
+                result = nearestResult(result, chResult);
+            }
+        }*/
+        return null;
+
+    }
+
+    private SelectionResult nearestResult(SelectionResult prevResult, SelectionResult newResult) {
+        return null;
     }
 
     class Context extends Selector.Context {
-        private final SelectionResult[] results;
-        private final int resultsOffset;
+        private final Selector.Context[][] childrenLevels;
 
-        Context(SelectionResult[] results, int resultsOffset) {
-            Objects.requireNonNull(results);
-            this.results = results;
-            this.resultsOffset = resultsOffset;
+        Context(Selector.Context[][] childrenLevels) {
+            this.childrenLevels = childrenLevels;
         }
 
-        SelectionResult[] getResults() {
-            return results;
+        private boolean isSelectable(SelectionResult result) {
+            //if (result.type == SelectionResult.SelectionType.PUSH_LEVEL)
+            return false;
         }
 
-        public int getResultsOffset() {
-            return resultsOffset;
+        @Override
+        public Selector.Context init() {
+            /*for (int i = 0; i < childrenLevels[getContextIndex()].length; ++i) {
+                childrenLevels[getContextIndex()][i].init();
+            }*/
+            return super.init();
         }
     }
 }

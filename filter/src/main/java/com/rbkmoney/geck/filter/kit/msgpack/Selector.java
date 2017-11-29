@@ -10,51 +10,65 @@ import com.rbkmoney.geck.serializer.StructHandleResult;
  */
 abstract class Selector {
     private static final SelectionResult.Mismatch mismatchResult = new SelectionResult.Mismatch();
-    private static final SelectionResult.ReuseLevel reuseResult = new SelectionResult.ReuseLevel();
 
     private final Type type;
-    private final StructHandleResult skipLevelOp;
-    private final int contextIndex;
 
-    Selector(Type type, StructHandleResult skipLevelOp, int contextIndex) {
+    Selector(Type type) {
         this.type = type;
-        this.skipLevelOp = skipLevelOp;
-        this.contextIndex = contextIndex;
     }
 
     public Type getType() {
         return type;
     }
 
-    public StructHandleResult getSkipForReuseOp(Context context) {
+    public StructHandleResult getLowestSkipOp(Context context) {
         return (context.lastResult == null || context.lastResult.type == SelectionResult.SelectionType.MATCH) ? StructHandleResult.SKIP_SIBLINGS : StructHandleResult.SKIP_SUBTREE;
     }
 
-    int getContextIndex() {
-        return contextIndex;
+    SelectionResult.Match matchResult(Rule rule, Config config) {
+        config.context.lastResult = new SelectionResult.Match(rule);
+        return (SelectionResult.Match) config.context.lastResult;
     }
 
-    SelectionResult.Match matchResult(Rule rule) {
-        return new SelectionResult.Match(rule);
-    }
-
-    SelectionResult.Mismatch mismatchResult() {
+    SelectionResult.Mismatch mismatchResult(Config config) {
+        config.context.lastResult = mismatchResult;
         return mismatchResult;
     }
 
-    SelectionResult.ReuseLevel reuseResult() {
-        return reuseResult;
+    SelectionResult.ReuseLevel reuseResult(Config nextConfig, Config config) {
+        config.context.lastResult = new SelectionResult.ReuseLevel(nextConfig);
+        return (SelectionResult.ReuseLevel) config.context.lastResult;
     }
 
-    SelectionResult.PushLevel pushResult(Selector pushedSelector) {
-        return new SelectionResult.PushLevel(pushedSelector);
+    SelectionResult.PushLevel pushResult(Config nextConfig, Config config) {
+        config.context.lastResult = new SelectionResult.PushLevel(nextConfig);
+        return (SelectionResult.PushLevel) config.context.lastResult;
     }
 
-    SelectionResult selectResult(Object val, Rule rule, Selector nextSelector) {
+    SelectionResult selectPushResult(Object val, Rule rule, Config nextConfig, Config config) {
+        return selectResult(val, rule, nextConfig, config, SelectionResult.SelectionType.PUSH_LEVEL);
+    }
+
+    SelectionResult selectReuseResult(Object val, Rule rule, Config nextConfig, Config config) {
+        return selectResult(val, rule, nextConfig, config, SelectionResult.SelectionType.REUSE_LEVEL);
+    }
+
+    SelectionResult selectResult(Object val, Rule rule, Config nextConfig, Config config, SelectionResult.SelectionType notFinalMatchType) {
         if (match(rule, val)) {
-            return nextSelector != null ? pushResult(nextSelector) : matchResult(rule);
+            if (nextConfig == null) {
+                return matchResult(rule, config);
+            } else {
+                switch (notFinalMatchType) {
+                    case PUSH_LEVEL:
+                        return pushResult(nextConfig, config);
+                    case REUSE_LEVEL:
+                        return reuseResult(nextConfig, config);
+                    default:
+                        throw new IllegalStateException("Unsupported action type: " + notFinalMatchType);
+                }
+            }
         } else {
-            return mismatchResult();
+            return mismatchResult(config);
         }
     }
 
@@ -62,12 +76,11 @@ abstract class Selector {
         return new Context();
     }
 
-    Context tryInitContext(Context[] contexts) {
-        Context context = contexts[getContextIndex()];
+    Context tryInitContext(Selector.Context context) {
         return context.isInitialized() ? context : context.init();
     }
 
-    abstract SelectionResult select(byte eventType, Object val, Context[] contexts);
+    abstract SelectionResult select(byte eventFlag, Object val, Selector.Config config);
 
     boolean match(Rule rule, Object data) {
         Condition[] conditions = rule.getConditions();
@@ -79,17 +92,43 @@ abstract class Selector {
         return true;
     }
 
+    static class Config {
+        public final Context context;
+        public Config prevConfig;
+        public Config prevNativeConfig;
+        public Config nextConfig;
+        public Config nextNativeConfig;
+
+        public Config(Context context) {
+            this.context = context;
+        }
+    }
+
     class Context {
         private SelectionResult lastResult;
         private boolean initialized;
         private boolean levelSelected;
+        private boolean levelConsumed;
+
+        public Context init() {
+            initialized = true;
+            lastResult = null;
+            levelSelected = false;
+            levelConsumed = false;
+            return this;
+        }
 
         Selector getSelector() {
             return Selector.this;
         }
 
-        SelectionResult getLastResult() {
-            return lastResult;
+
+        public void reset() {
+            initialized = false;
+        }
+
+        public void repeat() {
+            lastResult = null;
         }
 
         public boolean isInitialized() {
@@ -100,21 +139,6 @@ abstract class Selector {
             this.initialized = initialized;
         }
 
-        public Context init() {
-            initialized = true;
-            lastResult = null;
-            levelSelected = false;
-            return this;
-        }
-
-        public void reset() {
-            initialized = false;
-        }
-
-        public void repeat() {
-            lastResult = null;
-        }
-
         boolean isLevelSelected() {
             return levelSelected;
         }
@@ -123,8 +147,20 @@ abstract class Selector {
             this.levelSelected = levelSelected;
         }
 
+        SelectionResult getLastResult() {
+            return lastResult;
+        }
+
         void setLastResult(SelectionResult lastResult) {
             this.lastResult = lastResult;
+        }
+
+        public boolean isLevelConsumed() {
+            return levelConsumed;
+        }
+
+        public void setLevelConsumed(boolean levelConsumed) {
+            this.levelConsumed = levelConsumed;
         }
 
         boolean isFinalResult() {
@@ -135,10 +171,6 @@ abstract class Selector {
             return result != null && (result.type == SelectionResult.SelectionType.MATCH || result.type == SelectionResult.SelectionType.MISMATCH);
         }
 
-        SelectionResult saveResult(SelectionResult result) {
-            this.lastResult = result;
-            return result;
-        }
     }
 
     static class SelectedData {
