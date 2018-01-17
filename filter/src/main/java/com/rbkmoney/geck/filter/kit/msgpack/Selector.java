@@ -12,13 +12,22 @@ abstract class Selector {
     private static final SelectionResult.Mismatch mismatchResult = new SelectionResult.Mismatch();
 
     private final Type type;
+    private final boolean pullable;
 
     Selector(Type type) {
+        this(type, true);
+    }
+    Selector(Type type, boolean pullable) {
         this.type = type;
+        this.pullable = pullable;
     }
 
     public Type getType() {
         return type;
+    }
+
+    public boolean isPullable() {
+        return pullable;
     }
 
     public StructHandleResult getLowestSkipOp(Context context) {
@@ -41,7 +50,11 @@ abstract class Selector {
     }
 
     SelectionResult.PushLevel pushResult(Config nextConfig, Config config) {
-        config.context.lastResult = new SelectionResult.PushLevel(nextConfig);
+        return pushResult(nextConfig, config, false);
+    }
+
+    SelectionResult.PushLevel pushResult(Config nextConfig, Config config, boolean jumpValue) {
+        config.context.lastResult = new SelectionResult.PushLevel(nextConfig, jumpValue);
         return (SelectionResult.PushLevel) config.context.lastResult;
     }
 
@@ -54,13 +67,16 @@ abstract class Selector {
     }
 
     SelectionResult selectResult(Object val, Rule rule, Config nextConfig, Config config, SelectionResult.SelectionType notFinalMatchType) {
+        return selectResult(val, rule, nextConfig, config, notFinalMatchType, false);
+    }
+    SelectionResult selectResult(Object val, Rule rule, Config nextConfig, Config config, SelectionResult.SelectionType notFinalMatchType, boolean jumpValue) {
         if (match(rule, val)) {
             if (nextConfig == null) {
                 return matchResult(rule, config);
             } else {
                 switch (notFinalMatchType) {
                     case PUSH_LEVEL:
-                        return pushResult(nextConfig, config);
+                        return pushResult(nextConfig, config, jumpValue);
                     case REUSE_LEVEL:
                         return reuseResult(nextConfig, config);
                     default:
@@ -74,6 +90,10 @@ abstract class Selector {
 
     Context createContext() {
         return new Context();
+    }
+
+    Config createConfig() {
+        return new Config(createContext());
     }
 
     Context tryInitContext(Selector.Context context) {

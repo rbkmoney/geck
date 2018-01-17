@@ -3,9 +3,12 @@ package com.rbkmoney.geck.filter.kit.msgpack;
 import com.rbkmoney.geck.filter.Rule;
 import com.rbkmoney.geck.serializer.StructHandleResult;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
+
+import static com.rbkmoney.geck.serializer.StructHandleResult.*;
 
 /**
  * Created by vpankrashkin on 13.09.17.
@@ -22,9 +25,10 @@ class StructVisitor {
     }
 
     void init() {
-        this.selectedRules = null;
-        this.lastRepeatCtx = null;
-        this.config = cnfSupplier.get()[0];
+        selectedRules = null;
+        lastRepeatCtx = null;
+        selectedRules = new ArrayList<>();
+        config = cnfSupplier.get()[0];
     }
 
     private Selector.Config resetAndPullLevel() {
@@ -33,8 +37,12 @@ class StructVisitor {
             lastRepeatCtx = null;
             return config;
         } else {
-            config.context.reset();
-            return  config.prevConfig;
+            Selector.Config pulledConfig = config;
+            do {
+                pulledConfig.context.reset();
+                pulledConfig = pulledConfig.prevConfig;
+            } while (!pulledConfig.context.getSelector().isPullable());
+            return pulledConfig;
         }
 
         /*Selector.Context upLvlContext = contexts[selector.getContextIndex() - 1];//lastRepeatCtx--
@@ -66,7 +74,7 @@ class StructVisitor {
         do {
             result = config.context.getSelector().select(itemType, val, config);
             if (result.type == SelectionResult.SelectionType.REUSE_LEVEL) {
-                config = ((SelectionResult.ReuseLevel)result).config;
+                config = ((SelectionResult.ReuseLevel) result).config;
             } else {
                 break;
             }
@@ -83,13 +91,14 @@ class StructVisitor {
                     config = resetAndPullLevel();
                     return visitResult;
                 } else {
-                    return StructHandleResult.TERMINATE;
+                    return TERMINATE;
                 }
             case REUSE_LEVEL:
-                return StructHandleResult.SKIP_SUBTREE;
+                return SKIP_SUBTREE;
             case PUSH_LEVEL:
-                config = ((SelectionResult.PushLevel) result).pushedConfig;
-                return StructHandleResult.CONTINUE;
+                SelectionResult.PushLevel push = (SelectionResult.PushLevel) result;
+                config = push.pushedConfig;
+                return push.jumpValue ? JUMP_VALUE : CONTINUE;
             default:
                 throw new IllegalStateException("Illegal return type: " + result.type);
         }
@@ -107,6 +116,6 @@ class StructVisitor {
             }
             currConfig = currConfig.prevConfig;
         } while (currConfig != null);
-        return currConfig.context;
+        return currConfig == null ? null : currConfig.context;
     }
 }

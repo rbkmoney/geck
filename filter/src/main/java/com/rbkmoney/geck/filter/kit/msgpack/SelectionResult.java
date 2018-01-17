@@ -45,10 +45,16 @@ class SelectionResult {
     }
     static final class PushLevel extends SelectionResult {
         final Selector.Config pushedConfig;
+        final boolean jumpValue;
 
         public PushLevel(Selector.Config pushedConfig) {
+            this(pushedConfig, false);
+        }
+
+        public PushLevel(Selector.Config pushedConfig, boolean jumpValue) {
             super(SelectionType.PUSH_LEVEL);
             this.pushedConfig = pushedConfig;
+            this.jumpValue = jumpValue;
         }
     }
 }

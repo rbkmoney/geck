@@ -29,7 +29,7 @@ class FieldSelector extends Selector {
             if (eventFlag == EventFlags.pointName) {
                 context.setRemainSelections(remains - 1);
                 return selectPushResult(val, rule, config.nextConfig, config);
-            } else if (eventFlag == EventFlags.endStruct){
+            } else if (eventFlag == EventFlags.endStruct) {
                 context.reset();
                 return reuseResult(config.prevConfig, config);
             }

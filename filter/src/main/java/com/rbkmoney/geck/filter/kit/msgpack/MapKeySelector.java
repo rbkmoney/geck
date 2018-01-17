@@ -3,6 +3,10 @@ package com.rbkmoney.geck.filter.kit.msgpack;
 import com.rbkmoney.geck.filter.Rule;
 import com.rbkmoney.geck.serializer.kit.EventFlags;
 
+import static com.rbkmoney.geck.serializer.kit.EventFlags.endMapKey;
+import static com.rbkmoney.geck.serializer.kit.EventFlags.startMap;
+import static com.rbkmoney.geck.serializer.kit.EventFlags.startMapKey;
+
 /**
  * Created by vpankrashkin on 13.09.17.
  */
@@ -14,7 +18,7 @@ class MapKeySelector extends Selector {
         this.rule = rule;
     }
 
-    @Override
+/*    @Override
     SelectionResult select(byte eventFlag, Object val, Selector.Config config) {
         Context context = (Context) tryInitContext(config.context);
         if (context.isLevelSelected()) {
@@ -32,6 +36,30 @@ class MapKeySelector extends Selector {
                 return mismatchResult(config);
             }
         }
+    }*/
+
+
+    @Override
+    SelectionResult select(byte eventFlag, Object val, Selector.Config config) {
+        Context context = (Context) tryInitContext(config.context);
+
+        if (eventFlag == startMapKey && !context.isLevelSelected()) {
+            MapSelector.Context mapContext = (MapSelector.Context) config.prevNativeConfig.context;
+            context.setLevelSelected(true);
+            context.setRemainSelections(mapContext.getMapSize());
+        }
+
+        int remains = context.getRemainSelections();
+        boolean keyConsumed = eventFlag == endMapKey;
+        if (!keyConsumed && remains > 0) {
+            context.setRemainSelections(remains - 1);
+            return selectPushResult(val, rule, config.nextConfig, config);
+        } else {
+            if (keyConsumed) {
+                context.setLevelConsumed(true);
+            }
+            return mismatchResult(config);
+        }
     }
 
     @Override
@@ -40,5 +68,20 @@ class MapKeySelector extends Selector {
     }
 
     class Context extends Selector.Context {
+        private int remainSelections;
+
+        @Override
+        public Selector.Context init() {
+            remainSelections = -1;
+            return super.init();
+        }
+
+        public int getRemainSelections() {
+            return remainSelections;
+        }
+
+        public void setRemainSelections(int remainSelections) {
+            this.remainSelections = remainSelections;
+        }
     }
 }

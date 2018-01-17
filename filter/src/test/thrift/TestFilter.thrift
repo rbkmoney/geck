@@ -40,4 +40,7 @@ struct Invoice {
 5: IData data
 6: ILvlData lvl_data
 7: optional string i_details
+8: optional map<i32, IData> i_map
+9: optional map<InvoiceStatus, IData> obj_map
+10: optional list<i32> i_list
 }

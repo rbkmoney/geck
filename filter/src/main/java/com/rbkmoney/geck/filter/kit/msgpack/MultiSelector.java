@@ -9,23 +9,38 @@ abstract class MultiSelector extends Selector {
         super(type);
     }
 
+
     @Override
-    SelectionResult select(byte eventFlag, Object val, Config config) {
-        Context context = (Context) config.context;
+    SelectionResult select(byte eventFlag, Object val, Selector.Config config) {
+        /*Context context = (Context) config.context;//tryInitContext
         if (context.isLevelConsumed()) {
             return mismatchResult(config);//TODO remove this
         }
 
-        /*SelectionResult result = null;
+        SelectionResult result = null;
         for (int i = 0; i < context.children.length; ++i) {
             Selector.Context chContext = context.children[i];
             if (!chContext.isFinalResult()) {
-                SelectionResult chResult = chContext.getSelector().select(eventType, val, contexts);
+                SelectionResult chResult = chContext.getSelector().select(eventFlag, val, contexts);
                 result = nearestResult(result, chResult);
             }
         }*/
         return null;
 
+    }
+
+    @Override
+    Config createConfig() {
+        return new Config(createContext());
+    }
+
+
+    static class Config extends Selector.Config {
+        Selector.Config[] enclosedConfigs;
+
+        Config(Selector.Context context) {
+            super(context);
+        }
     }
 
     private SelectionResult nearestResult(SelectionResult prevResult, SelectionResult newResult) {
