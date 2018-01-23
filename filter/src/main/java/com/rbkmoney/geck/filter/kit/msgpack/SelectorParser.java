@@ -83,6 +83,9 @@ public class SelectorParser {
                 }
                 switch (state) {
                     case NAME:
+                        if (prevState == KEY_OPEN) {
+                            selectors.add(createMapKeySelector());
+                        }
                         if (prevState != NAME) {
                             selectors.add(createStructSelector());
                         }
@@ -115,21 +118,28 @@ public class SelectorParser {
                     case ANY_KEY:
                         selectors.add(createMapKeySelector());
                         selectors.add(createMapKeyMatchSelector());
-                        selectors.add(createMapValueSelector());
                         break;
                     case KEY_CLOSE:
-                        //add value selector if next level exists
+                        if (prevState == NAME) {
+                            selectors.add(createNameSelector(getAndReset(buffer), true));
+                        }
+                        selectors.add(createMapValueSelector());
                         break;
                 }
 
                 prevState = state;
             }
 
+            prevState = stateStack.peek(1);
+
             if (stateStack.peek(state == breakState && state != EVAL_FINISHED ? 0 : 1) == NAME) {
                 selectors.add(createNameSelector(getAndReset(buffer)));
             }
 
             if (valueMatcher != null) {
+                /*if (state == EVAL_FINISHED && prevState == KEY_CLOSE && breakState == null) {
+                    selectors.add(createMapValueSelector());
+                }*/
                 selectors.add(createValueSelector(valueMatcher));
             }
 
@@ -144,7 +154,7 @@ public class SelectorParser {
         State nextState;
         switch (c) {
             case '[':
-                if (prevState == EVAL_READY || prevState == LEVEL) {
+                if (prevState == EVAL_READY || prevState == LEVEL || prevState == KEY_OPEN) {
                     nextState = ARRAY_OPEN;
                 } else {
                     throw new IllegalArgumentException(String.format("Illegal state transition: %s -> %s", prevState, ARRAY_OPEN));
@@ -168,7 +178,7 @@ public class SelectorParser {
                 }
                 break;
             case '}':
-                if (prevState == NAME || prevState == ANY_NAME || prevState == ARRAY_CLOSE || prevState == KEY_CLOSE || prevState == ANY_KEY) {
+                if (prevState == NAME || prevState == ANY_NAME || prevState == ARRAY_CLOSE || prevState == KEY_CLOSE || prevState == ANY_KEY || prevState == EVAL_FINISHED) {
                     nextState = KEY_CLOSE;
                 } else if (prevState == KEY_OPEN) {
                     stack.push(KEY_CLOSE);
@@ -192,18 +202,18 @@ public class SelectorParser {
                 }
                 break;
             case -1:
-                if (prevState == ARRAY_CLOSE || prevState == KEY_CLOSE) {
+                /*if (prevState == ARRAY_CLOSE || prevState == KEY_CLOSE) {
                     State lastEncloseState = stack.peek(1);
                     if (lastEncloseState != ARRAY_OPEN && lastEncloseState != KEY_OPEN) {
                         throw new IllegalArgumentException(String.format("Illegal state transition: %s -> %s -> EOF", lastEncloseState, prevState));
                     }
                 } else if (prevState != NAME && prevState != ANY_NAME && prevState != EVAL_FINISHED) {
                     throw new IllegalArgumentException(String.format("Illegal state transition: %s -> EOF", prevState));
-                }
+                }*/
                 nextState = EVAL_FINISHED;
                 break;
             default:
-                if (prevState == EVAL_READY || prevState == NAME || prevState == LEVEL) {
+                if (prevState == EVAL_READY || prevState == NAME || prevState == LEVEL || prevState == KEY_OPEN) {
                     nextState = NAME;
                 } else {
                     throw new IllegalArgumentException(String.format("Illegal state transition: %s -> %s", prevState, NAME));
@@ -259,12 +269,18 @@ public class SelectorParser {
         return createNameSelector(MATCH_RULE, Selector.Type.REPEATABLE);
     }
 
+    private FieldSelector createNameSelector(String name, boolean jumpValue) {
+        return createNameSelector(new ConditionRule(new EqualsCondition(name)), Selector.Type.REPEATABLE, jumpValue);
+    }
     private FieldSelector createNameSelector(String name) {
-        return createNameSelector(new ConditionRule(new EqualsCondition(name)), Selector.Type.REPEATABLE);
+        return createNameSelector(name, false);
     }
 
+    private FieldSelector createNameSelector(Rule rule, Selector.Type type, boolean jumpValue) {
+        return new FieldSelector(rule, type, jumpValue);
+    }
     private FieldSelector createNameSelector(Rule rule, Selector.Type type) {
-        return new FieldSelector(rule, type);
+        return createNameSelector(rule, type, false);
     }
 
     private ValueSelector createValueSelector(Rule rule) {

@@ -8,10 +8,16 @@ import com.rbkmoney.geck.serializer.kit.EventFlags;
  */
 class FieldSelector extends Selector {
     private final Rule rule;
+    private final boolean jumpValue;
 
     FieldSelector(Rule rule, Type type) {
+        this(rule, type, false);
+    }
+
+    FieldSelector(Rule rule, Type type, boolean jumpValue) {
         super(type);
         this.rule = rule;
+        this.jumpValue = jumpValue;
     }
 
     @Override
@@ -28,7 +34,7 @@ class FieldSelector extends Selector {
         if (remains > 0 || eventFlag == EventFlags.endStruct) {
             if (eventFlag == EventFlags.pointName) {
                 context.setRemainSelections(remains - 1);
-                return selectPushResult(val, rule, config.nextConfig, config);
+                return selectPushResult(val, rule, config.nextConfig, config, jumpValue);
             } else if (eventFlag == EventFlags.endStruct) {
                 context.reset();
                 return reuseResult(config.prevConfig, config);

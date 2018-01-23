@@ -74,6 +74,34 @@ public class SelectorParserTest {
     }
 
     @Test
+    public void testArrayNotExistsParser() throws IOException {
+        Invoice invoice = preparePaidInvoice2("value", true, 2);
+        List<Rule> rules = applyRules(new SelectorParser().parse("i_list.[]", new ConditionRule(obj -> true)), prepareSample(invoice));
+        assertEquals(0, rules.size());
+    }
+
+    @Test
+    public void testArrayExistsParser() throws IOException {
+        Invoice invoice = preparePaidInvoice2("value", true, 2);
+        invoice.setIList(new ArrayList<>());
+        List<Rule> rules = applyRules(new SelectorParser().parse("i_list.[]", new ConditionRule(obj -> true)), prepareSample(invoice));
+        assertEquals(1, rules.size());
+    }
+
+    @Test
+    public void testAnyElemValueParser() throws IOException {
+        Invoice invoice = createInvoice(1, "", "", InvoiceStatus.paid(new IStatusPaid()));
+        invoice.setIList(Arrays.asList(0, 1, 2, 3));
+
+        List<Rule> rules = applyRules(new SelectorParser().parse("i_list.[*]", new ConditionRule(new EqualsCondition(2L))), prepareSample(invoice));
+        assertEquals(1, rules.size());
+
+        invoice.setIList(Arrays.asList());
+        rules = applyRules(new SelectorParser().parse("i_list.[*]", new ConditionRule(new EqualsCondition(2L))), prepareSample(invoice));
+        assertEquals(0, rules.size());
+    }
+
+    @Test
     public void testMapExistsParser() throws IOException {
         Invoice invoice = preparePaidInvoice1("value");
         invoice.setIMap(new LinkedHashMap<Integer, IData>() {{
@@ -110,17 +138,6 @@ public class SelectorParserTest {
     }
 
     @Test
-    public void test2ObjMapKeyParser() throws IOException {
-        Invoice invoice = preparePaidInvoice1("value");
-        invoice.setObjMap(new LinkedHashMap(){{
-            put(iPaidStatus("p"), new IData("val1"));
-            put(iCanceledStatus("c"), new IData("val2"));
-        }});
-        List<Rule> rules = applyRules(new SelectorParser().parse("obj_map.{*}.data_val", new ConditionRule(new EqualsCondition("val3"))), prepareSample(invoice));
-        assertEquals(0, rules.size());
-    }
-
-    @Test
     public void testObjMapKeyParser() throws IOException {
         Invoice invoice = preparePaidInvoice1("value");
         invoice.setObjMap(new LinkedHashMap(){{
@@ -132,17 +149,67 @@ public class SelectorParserTest {
     }
 
     @Test
+    public void test2ObjMapKeyParser() throws IOException {
+        Invoice invoice = preparePaidInvoice1("value");
+        invoice.setObjMap(new LinkedHashMap(){{
+            put(iPaidStatus("p"), new IData("val1"));
+            put(iCanceledStatus("c"), new IData("val2"));
+        }});
+        List<Rule> rules = applyRules(new SelectorParser().parse("obj_map.{*}.data_val", new ConditionRule(new EqualsCondition("val3"))), prepareSample(invoice));
+        assertEquals(0, rules.size());
+    }
+
+    @Test
+    public void test3ObjMapKeyParser() throws IOException {
+        Invoice invoice = preparePaidInvoice1("value");
+        invoice.setObjMap(new LinkedHashMap(){{
+            put(iPaidStatus("p"), new IData("val1"));
+            put(iCanceledStatus("c"), new IData("val2"));
+        }});
+        List<Rule> rules = applyRules(new SelectorParser().parse("obj_map.{canceled}.data_val", new ConditionRule(new EqualsCondition("val2"))), prepareSample(invoice));
+        assertEquals(1, rules.size());
+        rules = applyRules(new SelectorParser().parse("obj_map.{canceled}.data_val", new ConditionRule(new EqualsCondition("val3"))), prepareSample(invoice));
+        assertEquals(0, rules.size());
+    }
+
+    @Test
+    public void testListMapKeyParser() throws IOException {
+        MapTest mapTest = new MapTest();
+        mapTest.setLstKeyMap(new HashMap<List<IData>, Integer>(){{
+            put(Arrays.asList(), -1);
+        }});
+
+        List<Rule> rules = null;/*applyRules(new SelectorParser().parse("lst_key_map.{[]}", new ConditionRule(new EqualsCondition(-1L))), prepareSample(mapTest));
+        assertEquals(1, rules.size());*/
+
+        rules = applyRules(new SelectorParser().parse("lst_key_map.{*}", new ConditionRule(new EqualsCondition(-1L))), prepareSample(mapTest));
+        assertEquals(1, rules.size());
+
+
+        mapTest.setLstKeyMap(new HashMap<List<IData>, Integer>(){{
+            put(Arrays.asList(), 0);
+        }});
+
+        rules = applyRules(new SelectorParser().parse("lst_key_map.{[]}", new ConditionRule(new EqualsCondition(-1L))), prepareSample(mapTest));
+        assertEquals(0, rules.size());
+
+        rules = applyRules(new SelectorParser().parse("lst_key_map.{*}", new ConditionRule(new EqualsCondition(-1L))), prepareSample(mapTest));
+        assertEquals(0, rules.size());
+
+    }
+
+    @Test
     public void testMapNotExistsParser() throws IOException {
         Invoice invoice = preparePaidInvoice1("value");
         List<Rule> rules = applyRules(new SelectorParser().parse("i_map.{}", new ConditionRule(obj -> true)), prepareSample(invoice));
         assertEquals(0, rules.size());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    /*@Test(expected = IllegalArgumentException.class)
     public void testBadFormat1MapExistsParser() throws IOException {
         List<Rule> rules = applyRules(new SelectorParser().parse("i_map.{*}", new ConditionRule(obj -> true)), preparePaidSample2("value", true, 2));
         assertEquals(1, rules.size());
-    }
+    }*/
 
     @Test(expected = IllegalArgumentException.class)
     public void testBadFormat2MapExistsParser() throws IOException {
@@ -150,26 +217,11 @@ public class SelectorParserTest {
         assertEquals(1, rules.size());
     }
 
-    @Test
-    public void testArrayNotExistsParser() throws IOException {
-        Invoice invoice = preparePaidInvoice2("value", true, 2);
-        List<Rule> rules = applyRules(new SelectorParser().parse("i_list.[]", new ConditionRule(obj -> true)), prepareSample(invoice));
-        assertEquals(0, rules.size());
-    }
-
-    @Test
-    public void testArrayExistsParser() throws IOException {
-        Invoice invoice = preparePaidInvoice2("value", true, 2);
-        invoice.setIList(new ArrayList<>());
-        List<Rule> rules = applyRules(new SelectorParser().parse("i_list.[]", new ConditionRule(obj -> true)), prepareSample(invoice));
-        assertEquals(1, rules.size());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
+    /*@Test(expected = IllegalArgumentException.class)
     public void testBadFormat1ArrayExistsParser() throws IOException {
         List<Rule> rules = applyRules(new SelectorParser().parse("i_list.[*]", new ConditionRule(obj -> true)), preparePaidSample2("value", true, 2));
         assertEquals(1, rules.size());
-    }
+    }*/
 
     @Test(expected = IllegalArgumentException.class)
     public void testBadFormat2ArrayExistsParser() throws IOException {
@@ -185,9 +237,9 @@ public class SelectorParserTest {
         return rules;
     }
 
-    byte[] prepareSample(Invoice invoice) throws IOException {
-        printJson(invoice);
-        return new TBaseProcessor().process(invoice, MsgPackHandler.newBufferedInstance());
+    byte[] prepareSample(TBase tBase) throws IOException {
+        printJson(tBase);
+        return new TBaseProcessor().process(tBase, MsgPackHandler.newBufferedInstance());
     }
 
     byte[] preparePaidSample1(String dataVal) throws IOException {

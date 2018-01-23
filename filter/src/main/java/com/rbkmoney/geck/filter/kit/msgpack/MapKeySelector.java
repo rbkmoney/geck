@@ -3,8 +3,6 @@ package com.rbkmoney.geck.filter.kit.msgpack;
 import com.rbkmoney.geck.filter.Rule;
 import com.rbkmoney.geck.serializer.kit.EventFlags;
 
-import static com.rbkmoney.geck.serializer.kit.EventFlags.endMapKey;
-import static com.rbkmoney.geck.serializer.kit.EventFlags.startMap;
 import static com.rbkmoney.geck.serializer.kit.EventFlags.startMapKey;
 
 /**
@@ -41,7 +39,7 @@ class MapKeySelector extends Selector {
 
     @Override
     SelectionResult select(byte eventFlag, Object val, Selector.Config config) {
-        Context context = (Context) tryInitContext(config.context);
+        /*Context context = (Context) tryInitContext(config.context);
 
         if (eventFlag == startMapKey && !context.isLevelSelected()) {
             MapSelector.Context mapContext = (MapSelector.Context) config.prevNativeConfig.context;
@@ -59,7 +57,32 @@ class MapKeySelector extends Selector {
                 context.setLevelConsumed(true);
             }
             return mismatchResult(config);
+        }*/
+
+
+        Context context = (Context) tryInitContext(config.context);
+
+        if (eventFlag == startMapKey && !context.isLevelSelected()) {
+            MapSelector.Context mapContext = (MapSelector.Context) config.prevNativeConfig.context;
+            context.setLevelSelected(true);
+            context.setRemainSelections(mapContext.getMapSize());
         }
+
+        int remains = context.getRemainSelections();
+        if (remains > 0 || eventFlag == EventFlags.endMap) {
+            if (eventFlag == EventFlags.startMapKey) {
+                context.setRemainSelections(remains - 1);
+                 return selectPushResult(val, rule, config.nextConfig, config);
+            } else {
+                if (eventFlag == EventFlags.endMap) {
+                    context.reset();
+                    context.setLevelConsumed(true);
+                    return reuseResult(config.prevConfig, config);
+                }
+                context.setLevelConsumed(true);
+            }
+        }
+        return mismatchResult(config);
     }
 
     @Override

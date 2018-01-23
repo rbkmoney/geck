@@ -12,7 +12,11 @@ class ArraySelector extends Selector {
     private final Rule rule;
 
     ArraySelector(Rule rule, Type type) {
-        super(type);
+        this(rule, type, false);
+    }
+
+    ArraySelector(Rule rule, Type type, boolean jumpValue) {
+        super(type, jumpValue);
         this.rule = rule;
     }
 

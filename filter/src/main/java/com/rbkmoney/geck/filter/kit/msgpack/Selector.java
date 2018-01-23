@@ -59,7 +59,11 @@ abstract class Selector {
     }
 
     SelectionResult selectPushResult(Object val, Rule rule, Config nextConfig, Config config) {
-        return selectResult(val, rule, nextConfig, config, SelectionResult.SelectionType.PUSH_LEVEL);
+        return selectPushResult(val, rule, nextConfig, config, false);
+    }
+
+    SelectionResult selectPushResult(Object val, Rule rule, Config nextConfig, Config config, boolean jumpValue) {
+        return selectResult(val, rule, nextConfig, config, SelectionResult.SelectionType.PUSH_LEVEL, jumpValue);
     }
 
     SelectionResult selectReuseResult(Object val, Rule rule, Config nextConfig, Config config) {

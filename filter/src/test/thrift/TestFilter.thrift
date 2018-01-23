@@ -44,3 +44,7 @@ struct Invoice {
 9: optional map<InvoiceStatus, IData> obj_map
 10: optional list<i32> i_list
 }
+
+struct MapTest {
+1: optional map<list<IData>, i32> lst_key_map
+}
