@@ -27,7 +27,7 @@ public class SelectorParserTest {
 
     @Test
     public void test1LvlParser() throws IOException {
-        List<Rule> rules = applyRules(new SelectorParser().parse("id", new ConditionRule(new EqualsCondition(1L))), preparePaidSample1(""));
+        List<Rule> rules = applyRules(new SelectorParser().parse("id", new ConditionRule(new EqualsCondition(1))), preparePaidSample1(""));
         assertEquals(1, rules.size());
     }
 
@@ -182,7 +182,7 @@ public class SelectorParserTest {
         List<Rule> rules = null;/*applyRules(new SelectorParser().parse("lst_key_map.{[]}", new ConditionRule(new EqualsCondition(-1L))), prepareSample(mapTest));
         assertEquals(1, rules.size());*/
 
-        rules = applyRules(new SelectorParser().parse("lst_key_map.{*}", new ConditionRule(new EqualsCondition(-1L))), prepareSample(mapTest));
+        rules = applyRules(new SelectorParser().parse("lst_key_map.{*}", new ConditionRule(new EqualsCondition(-1.0))), prepareSample(mapTest));
         assertEquals(1, rules.size());
 
 
@@ -190,10 +190,10 @@ public class SelectorParserTest {
             put(Arrays.asList(), 0);
         }});
 
-        rules = applyRules(new SelectorParser().parse("lst_key_map.{[]}", new ConditionRule(new EqualsCondition(-1L))), prepareSample(mapTest));
+        rules = applyRules(new SelectorParser().parse("lst_key_map.{[]}", new ConditionRule(new EqualsCondition((byte)-1))), prepareSample(mapTest));
         assertEquals(0, rules.size());
 
-        rules = applyRules(new SelectorParser().parse("lst_key_map.{*}", new ConditionRule(new EqualsCondition(-1L))), prepareSample(mapTest));
+        rules = applyRules(new SelectorParser().parse("lst_key_map.{*}", new ConditionRule(new EqualsCondition((short)-1))), prepareSample(mapTest));
         assertEquals(0, rules.size());
 
     }
