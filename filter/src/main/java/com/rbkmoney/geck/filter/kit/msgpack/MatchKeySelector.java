@@ -6,7 +6,7 @@ import com.rbkmoney.geck.filter.rule.ConditionRule;
 /**
  * Created by vpankrashkin on 15.01.18.
  */
-public class MatchKeySelector extends Selector {
+class MatchKeySelector extends Selector {
     public static final Rule MATCH_RULE = new ConditionRule(obj -> true);
 
     MatchKeySelector(Type type) {

@@ -36,4 +36,15 @@ class MsgPackFilter implements Filter<byte[]> {
             throw new RuntimeException("Unexpected error", e);
         }
     }
+
+    public static class Builder implements Filter.Builder<String, byte[]> {
+
+        public static Filter<byte[]> buildInstance(String path, Rule rule) {
+            return new MsgPackFilter(new SelectorRule(path, rule));
+        }
+
+        public Filter<byte[]> build(String path, Rule rule) {
+            return buildInstance(path, rule);
+        }
+    }
 }

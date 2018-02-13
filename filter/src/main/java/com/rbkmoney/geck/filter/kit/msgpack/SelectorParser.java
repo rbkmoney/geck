@@ -17,7 +17,7 @@ import static com.rbkmoney.geck.filter.kit.msgpack.SelectorParser.State.*;
 /**
  * Created by vpankrashkin on 21.09.17.
  */
-public class SelectorParser {
+class SelectorParser {
     enum State {
         EVAL_READY,
         EVAL_FINISHED,

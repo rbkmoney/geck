@@ -8,10 +8,16 @@ import com.rbkmoney.geck.filter.rule.ConditionRule;
  */
 class SelectorRule extends ConditionRule {
     private final Selector.Config configs[];
+    private final Rule valueRule;
 
-    SelectorRule(String path, Rule rule) {
-        super(rule.getConditions());
-        this.configs = new SelectorParser().parse(path, rule);
+    SelectorRule(String path, Rule valueRule) {
+        super(valueRule.getConditions());
+        this.valueRule = valueRule;
+        this.configs = new SelectorParser().parse(path, valueRule);
+    }
+
+    Rule getValueRule() {
+        return valueRule;
     }
 
     Selector.Config[] getConfigs() {
