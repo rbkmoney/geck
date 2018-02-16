@@ -37,14 +37,18 @@ class MsgPackFilter implements Filter<byte[]> {
         }
     }
 
-    public static class Builder implements Filter.Builder<String, byte[]> {
+    public static class Builder implements Filter.Builder<SelectorRule, byte[]> {
 
         public static Filter<byte[]> buildInstance(String path, Rule rule) {
             return new MsgPackFilter(new SelectorRule(path, rule));
         }
 
-        public Filter<byte[]> build(String path, Rule rule) {
-            return buildInstance(path, rule);
+        public static Filter<byte[]> buildInstance(SelectorRule rule) {
+            return new MsgPackFilter(rule);
+        }
+
+        public Filter<byte[]> build(SelectorRule rule) {
+            return buildInstance(rule);
         }
     }
 }

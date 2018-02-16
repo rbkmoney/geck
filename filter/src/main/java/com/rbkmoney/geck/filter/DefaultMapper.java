@@ -1,50 +1,49 @@
 package com.rbkmoney.geck.filter;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiFunction;
 
 /**
  * Created by vpankrashkin on 12.02.18.
  */
 public class DefaultMapper<T, R> implements Mapper<T, R> {
-    private final List<Map.Entry<Filter<T>, Handler<T, R>>> mappings;
+    private final Map<? extends Rule, Handler<T, R>> mappings;
+    private final List<Filter<T>> filters;
 
-    protected DefaultMapper(List<Map.Entry<Filter<T>, Handler<T, R>>> mappings) {
+    protected DefaultMapper(Map<? extends Rule, Handler<T, R>> mappings, List<Filter<T>> filters) {
         this.mappings = mappings;
+        this.filters = filters;
     }
 
     @Override
-    public R map(T obj) {
-        return map(obj, (acc, tmp) -> tmp);
-    }
-
-    @Override
-    public R map(T obj, BiFunction<R, R, R> combiner) {
+    public <AR> R map(T obj, Object context, Action<T, AR> action, BiFunction<R, AR, R> reducer) {
         R result = null;
-        for (int i = 0; i < mappings.size(); ++i) {
-            Map.Entry<Filter<T>, Handler<T, R>> mapping = mappings.get(i);
-            List<Rule> rules = mapping.getKey().matchRules(obj);
+        for (int i = 0; i < filters.size(); ++i) {
+            List<Rule> rules = filters.get(i).matchRules(obj);
             for (int j = 0; j < rules.size(); j++) {
-                result = combiner.apply(result, mapping.getValue().handle(obj, rules.get(j)));
+                Rule rule = rules.get(j);
+                Handler<T, R> handler = mappings.get(rule);
+                if (handler != null) {
+                    result = reducer.apply(result, action.perform(obj, rule, context, handler));
+                }
             }
         }
         return result;
     }
 
-    protected static class Builder<T, R> implements Mapper.Builder<T, R> {
-        private final List<Map.Entry<Filter<T>, Handler<T, R>>> mappings = new ArrayList<>();
+    abstract protected static class Builder<RL extends Rule, T, R> implements Mapper.Builder<RL, T, R> {
+        protected final Map<RL, Handler<T, R>> mappings = new LinkedHashMap<>();
 
         @Override
-        public void mapping(Filter<T> filter, Handler<T, R> handler) {
-            mappings.add(new AbstractMap.SimpleImmutableEntry<>(filter, handler));
+        public void mapping(RL rule, Handler<T, R> handler) {
+            mappings.put(rule, handler);
         }
 
         @Override
         public Mapper build() {
-            return new DefaultMapper(mappings);
+            return new DefaultMapper(mappings, toFilters(mappings.keySet()));
         }
+
+        abstract protected List<Filter<T>> toFilters(Collection<RL> rules);
     }
 }

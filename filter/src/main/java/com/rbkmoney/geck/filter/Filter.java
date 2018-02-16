@@ -22,8 +22,8 @@ public interface Filter<T> {
      * */
     List<Rule> matchRules(T value);
 
-    interface Builder<S, T> {
-            Filter<T> build(S selector, Rule rule);
+    interface Builder<R extends Rule, T> {
+            Filter<T> build(R rule);
     }
 
 }
