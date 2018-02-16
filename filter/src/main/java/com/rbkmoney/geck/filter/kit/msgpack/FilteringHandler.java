@@ -12,7 +12,7 @@ import static com.rbkmoney.geck.serializer.kit.EventFlags.*;
 /**
  * Created by vpankrashkin on 13.09.17.
  */
-public class FilteringHandler implements StructHandler<List<Rule>>{
+class FilteringHandler implements StructHandler<List<Rule>>{
     private final StructVisitor visitor;
     private StructHandleResult handleResult;
 
