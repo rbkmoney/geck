@@ -28,4 +28,16 @@ public class ErrorMappingTest {
         Assert.assertEquals("authorization_failed:payment_tool_rejected:bank_card_rejected:card_expired", TErrorMapping.toStringVal(toGeneral(failure)));
         Assert.assertEquals("authorization_failed:payment_tool_rejected:bank_card_rejected:card_expired", TErrorMapping.toStringVal(failure));
     }
+
+    @Test
+    public void testStringToFailure() {
+        String strFailure = "rejected_by_inspector";
+        Assert.assertEquals(strFailure, toStringVal(toGeneral(strFailure)));
+    }
+
+    @Test
+    public void testStringToSubFailure() {
+        String strFailure = "authorization_failed:payment_tool_rejected:bank_card_rejected:card_expired";
+        Assert.assertEquals(strFailure, toStringVal(toGeneral(strFailure)));
+    }
 }
