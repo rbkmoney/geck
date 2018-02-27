@@ -7,7 +7,7 @@ import java.io.IOException;
 /**
  * Created by vpankrashkin on 27.02.18.
  */
-public abstract class TErrorHandler<R> implements StructHandler<R> {
+abstract class TErrorHandler<R> implements StructHandler<R> {
 
     @Override
     public void beginList(int size) throws IOException {
