@@ -175,7 +175,7 @@ public class DamselTest {
         transformer.transform(new DOMSource(domResult_v130.getNode()), domResult_t_v113);
         com.rbkmoney.damsel.v113.payment_processing.InvoicePaymentStarted invoice_t_v113 =
                 new XMLProcessor().process(domResult_t_v113, new TBaseHandler<>(com.rbkmoney.damsel.v113.payment_processing.InvoicePaymentStarted.class));
-        //System.out.println(string_v130.toStringVal());
+        //System.out.println(string_v130.toString());
 
         com.rbkmoney.damsel.v113.payment_processing.InvoicePaymentStarted invoice_v113 =
                 new MockTBaseProcessor(MockMode.ALL, new FixedValueGenerator()).process(new com.rbkmoney.damsel.v113.payment_processing.InvoicePaymentStarted(),
