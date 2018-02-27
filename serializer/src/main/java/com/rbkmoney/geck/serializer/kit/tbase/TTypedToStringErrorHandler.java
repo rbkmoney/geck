@@ -5,7 +5,7 @@ import java.io.IOException;
 /**
  * Created by vpankrashkin on 27.02.18.
  */
-public class TTypedStringErrorHandler extends TDomainStringErrorHandler {
+public class TTypedToStringErrorHandler extends TDomainToStringErrorHandler {
 
     @Override
     public void beginStruct(int size) throws IOException {
@@ -18,10 +18,11 @@ public class TTypedStringErrorHandler extends TDomainStringErrorHandler {
 
     @Override
     public void name(String name) throws IOException {
-        super.value(name);
+        super.processCode(name);
     }
 
     @Override
     public void value(String value) throws IOException {
+        throw new UnsupportedOperationException();
     }
 }

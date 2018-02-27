@@ -1,5 +1,6 @@
 package com.rbkmoney.geck.serializer.kit.tbase;
 
+import com.rbkmoney.damsel.domain.Failure;
 import com.rbkmoney.damsel.payment_processing.errors.*;
 import org.junit.Assert;
 import org.junit.Test;
@@ -15,7 +16,9 @@ public class ErrorMappingTest {
     @Test
     public void testFailure() throws IOException {
         PaymentFailure failure = PaymentFailure.rejected_by_inspector(new GeneralFailure());
-        Assert.assertEquals("rejected_by_inspector", TErrorMapping.toStringVal(toGeneral(failure)));
+        Failure gFailure = toGeneral(failure);
+        gFailure.setReason("test");
+        Assert.assertEquals("rejected_by_inspector", TErrorMapping.toStringVal(gFailure));
         Assert.assertEquals("rejected_by_inspector", TErrorMapping.toStringVal(failure));
     }
 

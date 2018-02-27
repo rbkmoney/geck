@@ -10,7 +10,7 @@ import java.io.IOException;
 /**
  * Created by vpankrashkin on 27.02.18.
  */
-public class TDomainErrorHandler extends TErrorHandler<Failure> {
+public class TTypedToDomainErrorHandler extends TErrorHandler<Failure> {
     private Failure failure;
     private ObjectStack<SubFailure> subFailures = new ObjectStack<>();
 

@@ -11,7 +11,7 @@ import java.io.IOException;
 public class TErrorMapping {
     public static Failure toGeneral(PaymentFailure failure) {
         try {
-            return new TBaseProcessor().process(failure, new TDomainErrorHandler());
+            return new TBaseProcessor().process(failure, new TTypedToDomainErrorHandler());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -19,7 +19,7 @@ public class TErrorMapping {
 
     public static String toStringVal(Failure failure) {
         try {
-            return new TBaseProcessor().process(failure, new TDomainStringErrorHandler());
+            return new TBaseProcessor().process(failure, new TDomainToStringErrorHandler());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -27,7 +27,7 @@ public class TErrorMapping {
 
     public static String toStringVal(PaymentFailure failure) {
         try {
-            return new TBaseProcessor().process(failure, new TTypedStringErrorHandler());
+            return new TBaseProcessor().process(failure, new TTypedToStringErrorHandler());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
