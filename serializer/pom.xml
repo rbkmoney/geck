@@ -25,6 +25,7 @@
         <dependency>
             <groupId>com.rbkmoney</groupId>
             <artifactId>damsel</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.msgpack</groupId>
