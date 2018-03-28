@@ -46,6 +46,6 @@ public class ErrorMappingTest {
     public void testWhenDelimiterInCode() {
         Failure failure = new Failure("delimiter:here");
         failure.setSub(new SubFailure("another:delimiter:here"));
-        Assert.assertEquals("delimiterhere:anotherdelimiterhere", TErrorUtil.toStringVal(failure));
+        Assert.assertEquals("delimiter here:another delimiter here", TErrorUtil.toStringVal(failure));
     }
 }
