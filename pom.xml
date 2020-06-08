@@ -7,13 +7,32 @@
     <parent>
         <groupId>com.rbkmoney</groupId>
         <artifactId>parent</artifactId>
-        <version>1.0.2</version>
+        <version>1.0.4</version>
     </parent>
 
     <groupId>com.rbkmoney.geck</groupId>
     <artifactId>parent</artifactId>
-    <version>0.6.9</version>
+    <version>0.6.10</version>
     <packaging>pom</packaging>
+
+    <name>Geck</name>
+    <description>A set of tools for serializing, migrating, filtering and generating thrift objects.</description>
+    <url>https://github.com/rbkmoney/geck.git</url>
+
+    <developers>
+        <developer>
+            <name>Pavel Popov</name>
+            <email>p.popov@rbkmoney.com</email>
+            <organization>RBK.money</organization>
+            <organizationUrl>https://rbk.money</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/rbkmoney/geck.git</connection>
+        <developerConnection>scm:git:ssh://github.com/rbkmoney/geck.git</developerConnection>
+        <url>https://github.com/rbkmoney/geck/tree/master</url>
+    </scm>
 
     <modules>
         <module>serializer</module>
