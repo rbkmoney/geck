@@ -103,6 +103,7 @@
                 <groupId>com.rbkmoney</groupId>
                 <artifactId>damsel</artifactId>
                 <version>1.431-2f62a8c</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
