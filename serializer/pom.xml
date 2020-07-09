@@ -56,14 +56,14 @@
         <dependency>
             <groupId>com.rbkmoney</groupId>
             <artifactId>damsel</artifactId>
-            <version>1.113-bfed187</version>
+            <version>1.113-7404322</version>
             <classifier>v113</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.rbkmoney</groupId>
             <artifactId>damsel</artifactId>
-            <version>1.130-4e4e214</version>
+            <version>1.130-00f2abe</version>
             <classifier>v130</classifier>
             <scope>test</scope>
         </dependency>
