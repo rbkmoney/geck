@@ -6,7 +6,31 @@ import org.apache.thrift.TFieldIdEnum;
 
 import java.util.Random;
 
-
+@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
+        "EmptyLineSeparator",
+        "LineLength",
+        "MissingSwitchDefault",
+        "EmptyBlock",
+        "NeedBraces",
+        "LeftCurly",
+        "LocalVariableName",
+        "TypeName",
+        "WhitespaceAround",
+        "MemberName",
+        "ParameterName",
+        "NoWhitespaceBefore",
+        "ParenPad",
+        "AbbreviationAsWordInName",
+        "MethodName",
+        "ArrayTypeStyle",
+        "VariableDeclarationUsageDistance",
+        "RightCurlySame",
+        "RightCurlyAlone",
+        "FallThrough",
+        "NoWhitespaceBefore",
+        "NonEmptyAtclauseDescription",
+        "OverloadMethodsDeclarationOrder",
+})
 public class RandomValueGenerator implements ValueGenerator {
 
     public int randomNumber(int bitSize) {

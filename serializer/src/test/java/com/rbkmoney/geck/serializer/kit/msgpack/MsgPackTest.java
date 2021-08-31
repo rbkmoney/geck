@@ -13,7 +13,24 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.stream.IntStream;
 
-
+@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
+        "EmptyLineSeparator",
+        "LineLength",
+        "MissingSwitchDefault",
+        "EmptyBlock",
+        "NeedBraces",
+        "LeftCurly",
+        "LocalVariableName",
+        "TypeName",
+        "WhitespaceAround",
+        "MemberName",
+        "ParameterName",
+        "NoWhitespaceBefore",
+        "ParenPad",
+        "AbbreviationAsWordInName",
+        "MethodName",
+        "ArrayTypeStyle",
+})
 public class MsgPackTest {
     Geck geck = new Geck();
 

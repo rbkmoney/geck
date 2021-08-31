@@ -13,7 +13,30 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Base64;
 
-
+@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
+        "EmptyLineSeparator",
+        "LineLength",
+        "MissingSwitchDefault",
+        "EmptyBlock",
+        "NeedBraces",
+        "LeftCurly",
+        "LocalVariableName",
+        "TypeName",
+        "WhitespaceAround",
+        "MemberName",
+        "ParameterName",
+        "NoWhitespaceBefore",
+        "ParenPad",
+        "AbbreviationAsWordInName",
+        "MethodName",
+        "ArrayTypeStyle",
+        "VariableDeclarationUsageDistance",
+        "RightCurlySame",
+        "RightCurlyAlone",
+        "FallThrough",
+        "NoWhitespaceBefore",
+        "NonEmptyAtclauseDescription",
+})
 public class XMLProcessor implements StructProcessor<DOMResult> {
     @Override
     public <R> R process(DOMResult value, StructHandler<R> handler) throws IOException {

@@ -11,6 +11,35 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
+        "EmptyLineSeparator",
+        "LineLength",
+        "MissingSwitchDefault",
+        "EmptyBlock",
+        "NeedBraces",
+        "LeftCurly",
+        "LocalVariableName",
+        "TypeName",
+        "WhitespaceAround",
+        "MemberName",
+        "ParameterName",
+        "NoWhitespaceBefore",
+        "ParenPad",
+        "AbbreviationAsWordInName",
+        "MethodName",
+        "ArrayTypeStyle",
+        "VariableDeclarationUsageDistance",
+        "RightCurlySame",
+        "RightCurlyAlone",
+        "FallThrough",
+        "NoWhitespaceBefore",
+        "NonEmptyAtclauseDescription",
+        "OverloadMethodsDeclarationOrder",
+        "ModifierOrder",
+        "OperatorWrap",
+        "GenericWhitespace",
+        "CommentsIndentation",
+})
 public class PathConditionFilter implements Filter<TBase> {
 
     private final PathConditionRule[] rules;

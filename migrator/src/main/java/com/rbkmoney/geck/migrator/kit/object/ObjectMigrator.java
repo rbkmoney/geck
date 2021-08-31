@@ -4,7 +4,32 @@ import com.rbkmoney.geck.common.util.TypeUtil;
 import com.rbkmoney.geck.migrator.*;
 import com.rbkmoney.geck.migrator.kit.AbstractMigrator;
 
-
+@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
+        "EmptyLineSeparator",
+        "LineLength",
+        "MissingSwitchDefault",
+        "EmptyBlock",
+        "NeedBraces",
+        "LeftCurly",
+        "LocalVariableName",
+        "TypeName",
+        "WhitespaceAround",
+        "MemberName",
+        "ParameterName",
+        "NoWhitespaceBefore",
+        "ParenPad",
+        "AbbreviationAsWordInName",
+        "MethodName",
+        "ArrayTypeStyle",
+        "VariableDeclarationUsageDistance",
+        "RightCurlySame",
+        "RightCurlyAlone",
+        "FallThrough",
+        "NoWhitespaceBefore",
+        "NonEmptyAtclauseDescription",
+        "OverloadMethodsDeclarationOrder",
+        "ModifierOrder",
+})
 public class ObjectMigrator extends AbstractMigrator {
     public static final SerializerDef<Object> SERIALIZER_DEF = new SerializerDef<>(MigrationType.JOBJECT.getKey());
     @Override

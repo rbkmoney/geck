@@ -5,7 +5,30 @@ import com.rbkmoney.damsel.payment_processing.errors.PaymentFailure;
 
 import java.io.IOException;
 
-
+@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
+        "EmptyLineSeparator",
+        "LineLength",
+        "MissingSwitchDefault",
+        "EmptyBlock",
+        "NeedBraces",
+        "LeftCurly",
+        "LocalVariableName",
+        "TypeName",
+        "WhitespaceAround",
+        "MemberName",
+        "ParameterName",
+        "NoWhitespaceBefore",
+        "ParenPad",
+        "AbbreviationAsWordInName",
+        "MethodName",
+        "ArrayTypeStyle",
+        "VariableDeclarationUsageDistance",
+        "RightCurlySame",
+        "RightCurlyAlone",
+        "FallThrough",
+        "NoWhitespaceBefore",
+        "NonEmptyAtclauseDescription",
+})
 public class TErrorUtil {
     public static Failure toGeneral(PaymentFailure failure) {
         try {

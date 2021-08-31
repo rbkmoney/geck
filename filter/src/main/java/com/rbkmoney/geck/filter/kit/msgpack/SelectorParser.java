@@ -14,7 +14,33 @@ import java.util.List;
 import static com.rbkmoney.geck.filter.kit.msgpack.MatchKeySelector.MATCH_RULE;
 import static com.rbkmoney.geck.filter.kit.msgpack.SelectorParser.State.*;
 
-
+@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
+        "EmptyLineSeparator",
+        "LineLength",
+        "MissingSwitchDefault",
+        "EmptyBlock",
+        "NeedBraces",
+        "LeftCurly",
+        "LocalVariableName",
+        "TypeName",
+        "WhitespaceAround",
+        "MemberName",
+        "ParameterName",
+        "NoWhitespaceBefore",
+        "ParenPad",
+        "AbbreviationAsWordInName",
+        "MethodName",
+        "ArrayTypeStyle",
+        "VariableDeclarationUsageDistance",
+        "RightCurlySame",
+        "RightCurlyAlone",
+        "FallThrough",
+        "NoWhitespaceBefore",
+        "NonEmptyAtclauseDescription",
+        "OverloadMethodsDeclarationOrder",
+        "ModifierOrder",
+        "OperatorWrap",
+})
 public class SelectorParser {
     enum State {
         EVAL_READY,

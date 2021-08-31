@@ -3,6 +3,7 @@ package com.rbkmoney.geck.common.util;
 import java.nio.charset.Charset;
 import java.util.StringTokenizer;
 
+@SuppressWarnings({"LocalVariableName"})
 public final class StringUtil {
     public static final Charset CHARSET = Charset.forName("UTF-8");
     private static final int LOW_ASCII_FLAG = 0x80;
@@ -103,8 +104,9 @@ public final class StringUtil {
             int mask = 1 << i;
             result.append((number & mask) != 0 ? "1" : "0");
 
-            if (i % groupSize == 0 && i > 0)
+            if (i % groupSize == 0 && i > 0) {
                 result.append(" ");
+            }
         }
         return result.toString();
     }

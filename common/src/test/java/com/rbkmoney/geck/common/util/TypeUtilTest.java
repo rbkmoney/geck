@@ -7,6 +7,7 @@ import java.time.ZoneOffset;
 
 import static org.junit.Assert.assertEquals;
 
+@SuppressWarnings({"AbbreviationAsWordInName"})
 public class TypeUtilTest {
 
     String dateTime = "2017-06-19T10:21:09.539909Z";

@@ -26,6 +26,28 @@ import static com.rbkmoney.geck.serializer.StructHandleResult.SKIP_SIBLINGS;
 import static com.rbkmoney.geck.serializer.StructHandleResult.SKIP_SUBTREE;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
+        "EmptyLineSeparator",
+        "LineLength",
+        "MissingSwitchDefault",
+        "EmptyBlock",
+        "NeedBraces",
+        "LeftCurly",
+        "LocalVariableName",
+        "TypeName",
+        "WhitespaceAround",
+        "MemberName",
+        "ParameterName",
+        "NoWhitespaceBefore",
+        "ParenPad",
+        "AbbreviationAsWordInName",
+        "MethodName",
+        "ArrayTypeStyle",
+        "VariableDeclarationUsageDistance",
+        "RightCurlySame",
+        "RightCurlyAlone",
+        "FallThrough",
+})
 public class TestFilterMsgPackProcessor {
     @Test
     @Ignore

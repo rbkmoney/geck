@@ -6,6 +6,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
+@SuppressWarnings({"AbbreviationAsWordInName"})
 public final class ObjectCache<T> {
     private T cached;
     private final ReadWriteLock updateRWLock = new ReentrantReadWriteLock();

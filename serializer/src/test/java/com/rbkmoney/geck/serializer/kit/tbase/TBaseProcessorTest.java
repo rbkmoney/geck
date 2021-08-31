@@ -13,7 +13,24 @@ import java.util.List;
 import static com.rbkmoney.geck.serializer.GeckTestUtil.getTestObject;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-
+@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
+        "EmptyLineSeparator",
+        "LineLength",
+        "MissingSwitchDefault",
+        "EmptyBlock",
+        "NeedBraces",
+        "LeftCurly",
+        "LocalVariableName",
+        "TypeName",
+        "WhitespaceAround",
+        "MemberName",
+        "ParameterName",
+        "NoWhitespaceBefore",
+        "ParenPad",
+        "AbbreviationAsWordInName",
+        "MethodName",
+        "ArrayTypeStyle",
+})
 public class TBaseProcessorTest {
 
     @Test

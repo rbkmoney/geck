@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 
+@SuppressWarnings({"LineLength", "ParameterName", "AbbreviationAsWordInName"})
 public class TypeUtil {
 
     private static final DateTimeFormatter FORMATTER = ISO_INSTANT;
@@ -17,7 +18,8 @@ public class TypeUtil {
         return stringToLocalDateTime(dateTimeStr, ZoneOffset.UTC);
     }
 
-    public static LocalDateTime stringToLocalDateTime(String dateTimeStr, ZoneId zoneId) throws IllegalArgumentException {
+    public static LocalDateTime stringToLocalDateTime(String dateTimeStr, ZoneId zoneId)
+            throws IllegalArgumentException {
         try {
             return LocalDateTime.ofInstant(stringToInstant(dateTimeStr), zoneId);
         } catch (DateTimeException e) {

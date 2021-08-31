@@ -9,6 +9,7 @@ import org.apache.thrift.meta_data.FieldValueMetaData;
 import java.util.Map;
 import java.util.Objects;
 
+@SuppressWarnings({"LineLength", "ParameterName", "AbbreviationAsWordInName", "LocalVariableName"})
 public class TBaseUtil {
 
     public static TFieldIdEnum getField(String name, TBase tBase) {
