@@ -12,24 +12,6 @@ import java.util.Collection;
 import static org.junit.Assert.*;
 import static java.lang.System.*;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
-        "EmptyLineSeparator",
-        "LineLength",
-        "MissingSwitchDefault",
-        "EmptyBlock",
-        "NeedBraces",
-        "LeftCurly",
-        "LocalVariableName",
-        "TypeName",
-        "WhitespaceAround",
-        "MemberName",
-        "ParameterName",
-        "NoWhitespaceBefore",
-        "ParenPad",
-        "AbbreviationAsWordInName",
-        "MethodName",
-        "ArrayTypeStyle",
-})
 @RunWith(Parameterized.class)
 public class StringUtilCompressingTest {
     private String testString;

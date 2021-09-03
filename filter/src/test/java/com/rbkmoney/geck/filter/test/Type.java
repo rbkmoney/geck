@@ -2,33 +2,6 @@ package com.rbkmoney.geck.filter.test;
 
 import org.apache.thrift.TEnum;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
-        "EmptyLineSeparator",
-        "LineLength",
-        "MissingSwitchDefault",
-        "EmptyBlock",
-        "NeedBraces",
-        "LeftCurly",
-        "LocalVariableName",
-        "TypeName",
-        "WhitespaceAround",
-        "MemberName",
-        "ParameterName",
-        "NoWhitespaceBefore",
-        "ParenPad",
-        "AbbreviationAsWordInName",
-        "MethodName",
-        "ArrayTypeStyle",
-        "VariableDeclarationUsageDistance",
-        "RightCurlySame",
-        "RightCurlyAlone",
-        "FallThrough",
-        "NoWhitespaceBefore",
-        "NonEmptyAtclauseDescription",
-        "OverloadMethodsDeclarationOrder",
-        "ModifierOrder",
-        "OperatorWrap",
-})
 public enum Type implements TEnum {
   BLACK(1),
   RED(2),

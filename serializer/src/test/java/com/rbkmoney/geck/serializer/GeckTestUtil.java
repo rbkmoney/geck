@@ -12,28 +12,6 @@ import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
-        "EmptyLineSeparator",
-        "LineLength",
-        "MissingSwitchDefault",
-        "EmptyBlock",
-        "NeedBraces",
-        "LeftCurly",
-        "LocalVariableName",
-        "TypeName",
-        "WhitespaceAround",
-        "MemberName",
-        "ParameterName",
-        "NoWhitespaceBefore",
-        "ParenPad",
-        "AbbreviationAsWordInName",
-        "MethodName",
-        "ArrayTypeStyle",
-        "VariableDeclarationUsageDistance",
-        "RightCurlySame",
-        "RightCurlyAlone",
-        "FallThrough",
-})
 public class GeckTestUtil {
     public static TestObject getTestObject(int statusCount, IntFunction<Status> statusGen) throws IOException {
         TestObject testObject = getTestObject();

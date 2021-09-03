@@ -4,33 +4,6 @@ import org.apache.thrift.protocol.TProtocolException;
 
 import java.util.*;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
-        "EmptyLineSeparator",
-        "LineLength",
-        "MissingSwitchDefault",
-        "EmptyBlock",
-        "NeedBraces",
-        "LeftCurly",
-        "LocalVariableName",
-        "TypeName",
-        "WhitespaceAround",
-        "MemberName",
-        "ParameterName",
-        "NoWhitespaceBefore",
-        "ParenPad",
-        "AbbreviationAsWordInName",
-        "MethodName",
-        "ArrayTypeStyle",
-        "VariableDeclarationUsageDistance",
-        "RightCurlySame",
-        "RightCurlyAlone",
-        "FallThrough",
-        "NoWhitespaceBefore",
-        "NonEmptyAtclauseDescription",
-        "OverloadMethodsDeclarationOrder",
-        "ModifierOrder",
-        "OperatorWrap",
-})
 public class IDataCollection extends org.apache.thrift.TUnion<IDataCollection, IDataCollection._Fields> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("IDataCollection");
   private static final org.apache.thrift.protocol.TField DATA_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("data_list", org.apache.thrift.protocol.TType.LIST, (short)1);

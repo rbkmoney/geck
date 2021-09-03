@@ -3,30 +3,6 @@ package com.rbkmoney.geck.serializer.kit.tbase;
 import org.apache.thrift.meta_data.FieldValueMetaData;
 import org.apache.thrift.protocol.TType;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
-        "EmptyLineSeparator",
-        "LineLength",
-        "MissingSwitchDefault",
-        "EmptyBlock",
-        "NeedBraces",
-        "LeftCurly",
-        "LocalVariableName",
-        "TypeName",
-        "WhitespaceAround",
-        "MemberName",
-        "ParameterName",
-        "NoWhitespaceBefore",
-        "ParenPad",
-        "AbbreviationAsWordInName",
-        "MethodName",
-        "ArrayTypeStyle",
-        "VariableDeclarationUsageDistance",
-        "RightCurlySame",
-        "RightCurlyAlone",
-        "FallThrough",
-        "NoWhitespaceBefore",
-        "NonEmptyAtclauseDescription",
-})
 public enum ThriftType {
 
     NULL(-1),

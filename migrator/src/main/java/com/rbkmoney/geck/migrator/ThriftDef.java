@@ -2,33 +2,6 @@ package com.rbkmoney.geck.migrator;
 
 import java.util.Objects;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
-        "EmptyLineSeparator",
-        "LineLength",
-        "MissingSwitchDefault",
-        "EmptyBlock",
-        "NeedBraces",
-        "LeftCurly",
-        "LocalVariableName",
-        "TypeName",
-        "WhitespaceAround",
-        "MemberName",
-        "ParameterName",
-        "NoWhitespaceBefore",
-        "ParenPad",
-        "AbbreviationAsWordInName",
-        "MethodName",
-        "ArrayTypeStyle",
-        "VariableDeclarationUsageDistance",
-        "RightCurlySame",
-        "RightCurlyAlone",
-        "FallThrough",
-        "NoWhitespaceBefore",
-        "NonEmptyAtclauseDescription",
-        "OverloadMethodsDeclarationOrder",
-        "ModifierOrder",
-        "OperatorWrap",
-})
 public class ThriftDef {
     public static final int NO_VERSION = -1;
     private final String type;
@@ -56,8 +29,8 @@ public class ThriftDef {
         if (this == o) return true;
         if (!(o instanceof ThriftDef)) return false;
         ThriftDef thriftDef = (ThriftDef) o;
-        return getVersion() == thriftDef.getVersion() &&
-                Objects.equals(getType(), thriftDef.getType());
+        return getVersion() == thriftDef.getVersion()
+                && Objects.equals(getType(), thriftDef.getType());
     }
 
     @Override

@@ -1,32 +1,5 @@
 package com.rbkmoney.geck.filter.kit.msgpack;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
-        "EmptyLineSeparator",
-        "LineLength",
-        "MissingSwitchDefault",
-        "EmptyBlock",
-        "NeedBraces",
-        "LeftCurly",
-        "LocalVariableName",
-        "TypeName",
-        "WhitespaceAround",
-        "MemberName",
-        "ParameterName",
-        "NoWhitespaceBefore",
-        "ParenPad",
-        "AbbreviationAsWordInName",
-        "MethodName",
-        "ArrayTypeStyle",
-        "VariableDeclarationUsageDistance",
-        "RightCurlySame",
-        "RightCurlyAlone",
-        "FallThrough",
-        "NoWhitespaceBefore",
-        "NonEmptyAtclauseDescription",
-        "OverloadMethodsDeclarationOrder",
-        "ModifierOrder",
-        "OperatorWrap",
-})
 abstract class MultiSelector extends Selector {
 
     public MultiSelector(Type type) {

@@ -14,6 +14,10 @@
     <artifactId>serializer</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <checkstyle.config.suppressions.path>./src/main/resources/checkstyle/checkstyle-suppressions.xml</checkstyle.config.suppressions.path>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.rbkmoney.geck</groupId>

@@ -10,33 +10,6 @@ import java.util.function.Supplier;
 
 import static com.rbkmoney.geck.serializer.StructHandleResult.*;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
-        "EmptyLineSeparator",
-        "LineLength",
-        "MissingSwitchDefault",
-        "EmptyBlock",
-        "NeedBraces",
-        "LeftCurly",
-        "LocalVariableName",
-        "TypeName",
-        "WhitespaceAround",
-        "MemberName",
-        "ParameterName",
-        "NoWhitespaceBefore",
-        "ParenPad",
-        "AbbreviationAsWordInName",
-        "MethodName",
-        "ArrayTypeStyle",
-        "VariableDeclarationUsageDistance",
-        "RightCurlySame",
-        "RightCurlyAlone",
-        "FallThrough",
-        "NoWhitespaceBefore",
-        "NonEmptyAtclauseDescription",
-        "OverloadMethodsDeclarationOrder",
-        "ModifierOrder",
-        "OperatorWrap",
-})
 class StructVisitor {
     private final Supplier<Selector.Config[]> cnfSupplier;
     private Selector.Config config;

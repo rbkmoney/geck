@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 
-@SuppressWarnings({"LineLength", "ParameterName", "AbbreviationAsWordInName"})
 public class TypeUtil {
 
     private static final DateTimeFormatter FORMATTER = ISO_INSTANT;

@@ -13,29 +13,6 @@ import java.util.*;
 import static com.rbkmoney.geck.serializer.kit.EventFlags.*;
 import static com.rbkmoney.geck.serializer.kit.object.ObjectHandlerConstants.*;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
-        "EmptyLineSeparator",
-        "LineLength",
-        "MissingSwitchDefault",
-        "EmptyBlock",
-        "NeedBraces",
-        "LeftCurly",
-        "LocalVariableName",
-        "TypeName",
-        "WhitespaceAround",
-        "MemberName",
-        "ParameterName",
-        "NoWhitespaceBefore",
-        "ParenPad",
-        "AbbreviationAsWordInName",
-        "MethodName",
-        "ArrayTypeStyle",
-        "VariableDeclarationUsageDistance",
-        "RightCurlySame",
-        "RightCurlyAlone",
-        "FallThrough",
-        "NoWhitespaceBefore",
-})
 public class ObjectHandler implements StructHandler<Object> {
     private final ByteStack state = new ByteStack(nop);
     private final ObjectStack context = new ObjectStack(null);

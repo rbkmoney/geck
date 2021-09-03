@@ -4,19 +4,6 @@ import org.apache.thrift.protocol.TProtocolException;
 
 import java.util.*;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
-        "EmptyLineSeparator",
-        "LineLength",
-        "MissingSwitchDefault",
-        "EmptyBlock",
-        "NeedBraces",
-        "LeftCurly",
-        "LocalVariableName",
-        "TypeName",
-        "WhitespaceAround",
-        "MemberName",
-        "ParameterName",
-})
 public class FilterUnion extends org.apache.thrift.TUnion<FilterUnion, FilterUnion._Fields> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FilterUnion");
   private static final org.apache.thrift.protocol.TField LIST_OBJECT_1_FIELD_DESC = new org.apache.thrift.protocol.TField("list_object_1", org.apache.thrift.protocol.TType.STRUCT, (short)1);

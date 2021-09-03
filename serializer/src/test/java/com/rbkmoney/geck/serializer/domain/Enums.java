@@ -3,19 +3,6 @@ package com.rbkmoney.geck.serializer.domain;
 
 import org.apache.thrift.TEnum;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
-        "EmptyLineSeparator",
-        "LineLength",
-        "MissingSwitchDefault",
-        "EmptyBlock",
-        "NeedBraces",
-        "LeftCurly",
-        "LocalVariableName",
-        "TypeName",
-        "WhitespaceAround",
-        "MemberName",
-        "ParameterName",
-})
 public enum Enums implements TEnum {
   TEST1(0),
   TEST2(1),

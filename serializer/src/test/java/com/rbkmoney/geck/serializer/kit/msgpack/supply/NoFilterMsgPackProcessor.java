@@ -18,24 +18,6 @@ import java.io.IOException;
 
 import static com.rbkmoney.geck.serializer.kit.EventFlags.*;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused", "Indentation",
-        "EmptyLineSeparator",
-        "LineLength",
-        "MissingSwitchDefault",
-        "EmptyBlock",
-        "NeedBraces",
-        "LeftCurly",
-        "LocalVariableName",
-        "TypeName",
-        "WhitespaceAround",
-        "MemberName",
-        "ParameterName",
-        "NoWhitespaceBefore",
-        "ParenPad",
-        "AbbreviationAsWordInName",
-        "MethodName",
-        "ArrayTypeStyle",
-})
 public abstract class NoFilterMsgPackProcessor<S> implements StructProcessor<S> {
     private final TCharObjectHashMap<String> dictionary;
     private final char noDictEntryValue = 0;
