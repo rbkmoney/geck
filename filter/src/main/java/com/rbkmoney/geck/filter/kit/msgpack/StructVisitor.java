@@ -112,7 +112,7 @@ class StructVisitor {
                 return currConfig.context;
             }
             currConfig = currConfig.prevConfig;
-        } while (currConfig != null);
-        return currConfig == null ? null : currConfig.context;
+        } while (currConfig != null);//NOSONAR
+        return currConfig == null ? null : currConfig.context;//NOSONAR
     }
 }
